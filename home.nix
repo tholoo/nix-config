@@ -209,7 +209,7 @@
       # aliases = {
       # }
       delta.enable = true;
-      diff-so-fancy.enable = true;
+      # diff-so-fancy.enable = true;
       extraConfig = {
         core.editor = "nvim";
         init.defaultBranch = "main";
