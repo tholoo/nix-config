@@ -89,12 +89,6 @@
 
     python3
     poetry
-
-    nodejs_21
-
-    # browser
-    # vivaldi
-    # vivaldi-ffmpeg-codecs
   ];
 
   # link the configuration file in current directory to the specified location in home directory
@@ -303,8 +297,6 @@
             bind ! __history_previous_command
             bind '$' __history_previous_command_arguments
         end
-
-        setxkbmap -option caps:escape
 
 	### AUTOCOMPLETE AND HIGHLIGHT COLORS ###
         set fish_color_normal brcyan
@@ -802,10 +794,6 @@
     rofi = {
       enable = true;
       terminal = "wezterm";
-    };
-
-    chromium = {
-      enable = true;
     };
   };
 

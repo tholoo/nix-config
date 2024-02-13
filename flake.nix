@@ -29,6 +29,8 @@
       username = "tholo";
       pkgs = nixpkgs.legacyPackages.${system};
     in {
+      allowUnfree = true;
+      allowUnfreePredicate = (_: true);
       homeConfigurations."${username}" = home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
         modules = [ ./home.nix ];
