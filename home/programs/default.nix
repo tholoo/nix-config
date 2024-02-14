@@ -47,6 +47,7 @@ in
   ./tmux
   ./python
   ./xsession
+  # ./nixvim
   more
 ]
 

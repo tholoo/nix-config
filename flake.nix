@@ -16,6 +16,14 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+   nixvim = {
+      url = "github:nix-community/nixvim";
+      # If you are not running an unstable channel of nixpkgs, select the corresponding branch of nixvim.
+      # url = "github:nix-community/nixvim/nixos-23.05";
+
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # for storing secrets
     # agenix = {
       # url = "github:ryantm/agenix";
@@ -37,7 +45,7 @@
 
         # Optionally use extraSpecialArgs
         # to pass through arguments to home.nix
-        extraSpecialArgs = { inherit username; };
+        extraSpecialArgs = { inherit username; inherit (inputs) nixvim; };
       };
     };
 
