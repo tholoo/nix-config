@@ -1,17 +1,21 @@
 { pkgs, lib, ... }: {
-  imports = lib.concatMap import [
+  # imports = lib.concatMap import [
+    # ./plugins
+  # ];
+  imports = [
     ./plugins
   ];
   programs.nixvim = {
     enable = true;
     defaultEditor = true;
 
-    extraPackages = with pkgs; [
-      # clipboard manager
-      xsel
-    ];
+    # extraPackages = with pkgs; [
+    # ];
 
     luaLoader.enable = true;
+    clipboard.providers = {
+      xsel.enable = true;
+    };
 
     # Highlight and remove extra white spaces
     highlight.ExtraWhitespace.bg = "red";
@@ -20,55 +24,19 @@
     options = {
       number = true;
       relativenumber = true;
-      shiftwidth = 4;
+      shiftwidth = 2;
+      tabstop = 2;
       clipboard = ["unnamedplus"];
+      smartindent = true;
+      expandtab = true;
     };
 
     globals.mapleader = " ";
 
     plugins = {
       lualine.enable = true;
-
-      lsp = {
-        enable = true;
-	keymaps = {
-          silent = true;
-          diagnostic = {
-            # Navigate in diagnostics
-            "[d" = "goto_prev";
-            "]d" = "goto_next";
-          };
-        };
-	lspBuf = {
-          gd = "definition";
-          gD = "references";
-          gt = "type_definition";
-          gi = "implementation";
-          K = "hover";
-            "<leader>cr" = "rename";
-        };
-	servers = {
-	  tsserver.enable = true;
-	  lua-ls.enable = true;
-        };
-      };
-
-      nvim-cmp = {
-        enable = true;
-        autoEnableSources = true;
-        sources = [
-          {name = "nvim_lsp";}
-          {name = "path";}
-          {name = "buffer";}
-        ];
-        mapping = {
-          "<C-Space>" = "cmp.mapping.confirm({ select = true })";
-        };
-      };
-
       telescope.enable = true;
       oil.enable = true;
-      treesitter.enable = true;
       luasnip.enable = true;
     };
   };

@@ -4,14 +4,14 @@
     plugins = {
       lsp = {
         enable = true;
-	keymaps = {
+        keymaps = {
           silent = true;
           diagnostic = {
             # Navigate in diagnostics
             "[d" = "goto_prev";
             "]d" = "goto_next";
           };
-	  lspBuf = {
+          lspBuf = {
             gd = "definition";
             gD = "references";
             gt = "type_definition";
@@ -20,10 +20,24 @@
               "<leader>cr" = "rename";
           };
         };
-	servers = {
-	  tsserver.enable = true;
-	  lua-ls.enable = true;
+        servers = {
+          tsserver.enable = true;
+
+          lua-ls.enable = true;
+
+          ruff-lsp.enable = true;
+          pyright.enable = true;
+          # pylyzer.enable = true;
+          # pylsp.enable = true;
+
+          nil_ls.enable = true;
+
+          html.enable = true;
         };
+      };
+
+      lsp-format = {
+        enable = true;
       };
     };
   };

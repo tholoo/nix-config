@@ -1,16 +1,19 @@
 { config, pkgs, ... }:
 {
   imports = [
-    ./harpoon.nix
     ./cmp.nix
-    ./lsp.nix
-    ./treesitter.nix
-    ./telescope.nix
     ./comment.nix
+    ./harpoon.nix
+    ./lsp.nix
+    ./neo-tree.nix
+    ./nix.nix
+    ./none-ls.nix
+    ./telescope.nix
+    ./treesitter.nix
   ];
 
   programs.nixvim = {
-    colorschemes.gruvbox.enable = true;
+    colorschemes.ayu.enable = true;
 
     plugins = {
       gitsigns = {

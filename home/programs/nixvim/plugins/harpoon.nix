@@ -5,6 +5,8 @@
       enable = false;
 
       keymapsSilent = true;
+      enableTelescope = true;
+      saveOnToggle = true;
 
       keymaps = {
         addFile = "<leader>a";
