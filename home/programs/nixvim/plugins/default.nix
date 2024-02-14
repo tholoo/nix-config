@@ -8,6 +8,7 @@
     ./neo-tree.nix
     ./nix.nix
     ./none-ls.nix
+    ./oil.nix
     ./telescope.nix
     ./treesitter.nix
   ];
