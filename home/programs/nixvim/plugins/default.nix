@@ -10,7 +10,9 @@
     ./none-ls.nix
     ./oil.nix
     ./telescope.nix
+    ./tmux-navigator.nix
     ./treesitter.nix
+    ./ts.nix
   ];
 
   programs.nixvim = {
