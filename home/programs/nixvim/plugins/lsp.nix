@@ -1,0 +1,30 @@
+{ config, pkgs, ... }:
+{
+  programs.nixvim = {
+    plugins = {
+      lsp = {
+        enable = true;
+	keymaps = {
+          silent = true;
+          diagnostic = {
+            # Navigate in diagnostics
+            "[d" = "goto_prev";
+            "]d" = "goto_next";
+          };
+	  lspBuf = {
+            gd = "definition";
+            gD = "references";
+            gt = "type_definition";
+            gi = "implementation";
+            K = "hover";
+              "<leader>cr" = "rename";
+          };
+        };
+	servers = {
+	  tsserver.enable = true;
+	  lua-ls.enable = true;
+        };
+      };
+    };
+  }
+}

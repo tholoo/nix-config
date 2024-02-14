@@ -2,6 +2,8 @@
 {
   imports = [
     ./harpoon.nix
+    ./cmp.nix
+    ./lsp.nix
   ];
 
   programs.nixvim = {
