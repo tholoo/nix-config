@@ -3,6 +3,7 @@
   imports = [
     ./cmp.nix
     ./comment.nix
+    ./copilot.nix
     ./harpoon.nix
     ./lsp.nix
     ./neo-tree.nix
