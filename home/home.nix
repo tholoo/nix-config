@@ -34,6 +34,8 @@
     vazir-fonts # persian font
     codespell
 
+    proxychains
+
     # # It is sometimes useful to fine-tune packages, for example, by applying
     # # overrides. You can do that directly here, just don't forget the
     # # parentheses. Maybe you want to install Nerd Fonts with a limited number of
@@ -48,7 +50,7 @@
     # '')
 
     # nix related
-    
+
     # it provides the command `nom` works just like `nix`
     # with more details log output
     nix-output-monitor
@@ -158,11 +160,19 @@
     DIFFPROG = "nvim -d";
     MANPAGER = "nvim +Man!";
 
+    http_proxy = "http://localhost:2081";
+    HTTP_PROXY="http://localhost:2081";
+
+    https_proxy = "http://localhost:2081";
+    HTTPS_PROXY = "http://localhost:2081";
+
+    socks_proxy = "socks://localhost:2080";
+    SOCKS_PROXY = "socks://localhost:2080";
 
     # System
     # XDG_DATA_DIRS = "/usr/share:/usr/local/share"
     # XDG_CONFIG_DIRS = "/etc/xdg"
- 
+
     # User
     # XDG_CACHE_HOME = "$HOME/.cache"
     # XDG_CONFIG_HOME = "$HOME/.config"
@@ -281,7 +291,7 @@
       # # cursorTheme.name = "Bibata-Modern-Ice";
       # # iconTheme.name = "GruvboxPlus";
     # # };
- 
+
     # chromium = {
       # enable = true;
     # };
