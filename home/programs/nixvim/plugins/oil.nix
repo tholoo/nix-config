@@ -4,8 +4,9 @@
       enable = true;
       deleteToTrash = true;
       keymaps = {
-        open_cwd = "<leader>i";
+        "<leader>i" =  "open_cwd";
       };
+      skipConfirmForSimpleEdits = true;
     };
   };
 }

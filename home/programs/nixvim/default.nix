@@ -35,8 +35,6 @@
 
     plugins = {
       lualine.enable = true;
-      telescope.enable = true;
-      oil.enable = true;
       luasnip.enable = true;
     };
   };

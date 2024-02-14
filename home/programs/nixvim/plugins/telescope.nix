@@ -13,7 +13,8 @@
 
         # FZF like bindings
         "<C-p>" = "git_files";
-        "<leader>fp" = "oldfiles";
+        # find recent
+        "<leader>fr" = "oldfiles";
         "<C-f>" = "live_grep";
       };
 
@@ -29,6 +30,10 @@
           "%.ipynb"
         ];
         set_env.COLORTERM = "truecolor";
+        layout_strategy = "horizontal";
+        layout_config = { prompt_position = "top"; };
+        sorting_strategy = "ascending";
+        winblend = 0;
       };
     };
   };
