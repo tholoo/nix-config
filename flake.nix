@@ -41,7 +41,10 @@
       allowUnfreePredicate = (_: true);
       homeConfigurations."${username}" = home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
-        modules = [ nixvim.homeManagerModules.nixvim ./home/home.nix ];
+        modules = [ 
+	  nixvim.homeManagerModules.nixvim
+	  ./home/home.nix 
+	];
 
         # Optionally use extraSpecialArgs
         # to pass through arguments to home.nix

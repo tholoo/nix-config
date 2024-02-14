@@ -120,10 +120,10 @@
   # plain files is through 'home.file'.
   # FIXME: temporary solution, should switch to nixvim
   home.file = {
-    ".config/nvim" = {
-      source = /home/tholo/dotfiles/nvim/.config/nvim;
-      recursive = true;
-    };
+    # ".config/nvim" = {
+      # source = /home/tholo/dotfiles/nvim/.config/nvim;
+      # recursive = true;
+    # };
     # # Building this configuration will create a copy of 'dotfiles/screenrc' in
     # # the Nix store. Activating the configuration will then make '~/.screenrc' a
     # # symlink to the Nix store copy.
