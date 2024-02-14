@@ -1,7 +1,15 @@
-{ pkgs, ... }: {
+{ pkgs, lib, ... }: {
+  imports = lib.concatMap import [
+    ./plugins
+  ];
   programs.nixvim = {
     enable = true;
     defaultEditor = true;
+
+    extraPackages = with pkgs; [
+      # clipboard manager
+      xsel
+    ];
 
     luaLoader.enable = true;
 
@@ -13,6 +21,7 @@
       number = true;
       relativenumber = true;
       shiftwidth = 4;
+      clipboard = ["unnamedplus"];
     };
 
     globals.mapleader = " ";
