@@ -4,6 +4,9 @@
     ./harpoon.nix
     ./cmp.nix
     ./lsp.nix
+    ./treesitter.nix
+    ./telescope.nix
+    ./comment.nix
   ];
 
   programs.nixvim = {
