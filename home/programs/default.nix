@@ -46,8 +46,8 @@ in
   ./fish
   ./tmux
   ./python
-  ./xsession
-  # ./nixvim
+  # ./xsession
+  ./nixvim
   more
 ]
 

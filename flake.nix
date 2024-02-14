@@ -3,16 +3,16 @@
    
   inputs = {
     # stable
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.11";
+    # nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.11";
     # unstable
-    # nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 
     # home-manager, used for managing user configuration
     home-manager = {
       # stable
-      url = "github:nix-community/home-manager/release-23.11";
+      # url = "github:nix-community/home-manager/release-23.11";
       # unstable
-      # url = "github:nix-community/home-manager";
+      url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -31,7 +31,7 @@
     # };
   };
 
-  outputs = { self, nixpkgs, home-manager, ... }@inputs:
+  outputs = { self, nixpkgs, home-manager, nixvim, ... }@inputs:
     let
       system = "x86_64-linux";
       username = "tholo";
@@ -41,11 +41,11 @@
       allowUnfreePredicate = (_: true);
       homeConfigurations."${username}" = home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
-        modules = [ ./home/home.nix ];
+        modules = [ nixvim.homeManagerModules.nixvim ./home/home.nix ];
 
         # Optionally use extraSpecialArgs
         # to pass through arguments to home.nix
-        extraSpecialArgs = { inherit username; inherit (inputs) nixvim; };
+        extraSpecialArgs = { inherit username; };
       };
     };
 
@@ -54,7 +54,7 @@
           # system = "x86_64-linux";
           # # specialArgs = inputs;
           # specialArgs = { inherit inputs; };
-          # modules = [
+          # modules = /[
             # ./configuration.nix
             # # make home-manager as a module of nixos
             # # so that home-manager configuration will be deployed automatically when executing `nixos-rebuild switch`
