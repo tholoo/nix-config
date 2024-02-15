@@ -1,7 +1,5 @@
 {
-  programs.nixvim = {
-    plugins.tmux-navigator = {
-      enable = true;
-    };
+  tmux-navigator = {
+    enable = true;
   };
 }

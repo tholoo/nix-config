@@ -1,9 +1,5 @@
 {
-  programs.nixvim = {
-    plugins = {
-      ts-autotag.enable = true;
-      ts-context-commentstring.enable = true;
-      typescript-tools.enable = true;
-    };
-  };
+  ts-autotag.enable = true;
+  ts-context-commentstring.enable = true;
+  typescript-tools.enable = true;
 }
