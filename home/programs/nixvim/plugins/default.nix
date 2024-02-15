@@ -1,17 +1,19 @@
 { config, pkgs, lib, ... }:
 let plugins = [
-    ./oil.nix
     ./cmp.nix
     ./comment.nix
+    ./conform.nix
     ./copilot.nix
     ./harpoon.nix
     ./lsp.nix
     ./neo-tree.nix
     ./nix.nix
     ./none-ls.nix
+    ./oil.nix
     ./telescope.nix
     ./tmux-navigator.nix
     ./treesitter.nix
+    ./trouble.nix
     ./ts.nix
 ];
 importedPlugins = lib.fold (elem: container: import elem // container) {} plugins;
