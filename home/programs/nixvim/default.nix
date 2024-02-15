@@ -21,6 +21,8 @@
     highlight.ExtraWhitespace.bg = "red";
     match.ExtraWhitespace = "\\s\\+$";
 
+    globals.mapleader = " ";
+
     options = {
       number = true;
       relativenumber = true;
@@ -29,9 +31,17 @@
       clipboard = ["unnamedplus"];
       smartindent = true;
       expandtab = true;
+      wrap = false;
+      # swapfile = false; #Undotree
+      # backup = false; #Undotree
+      undofile = true;
+      incsearch = true;
+      termguicolors = true;
+      scrolloff = 8;
+      signcolumn = "yes";
+      updatetime = 50;
+      # foldlevelstart = 99;
     };
-
-    globals.mapleader = " ";
 
     plugins = {
       lualine.enable = true;
