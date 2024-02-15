@@ -1,10 +1,8 @@
 { pkgs, lib, ... }: {
   # imports = lib.concatMap import [
-    # ./plugins
+  # ./plugins
   # ];
-  imports = [
-    ./plugins
-  ];
+  imports = [ ./plugins ];
   programs.nixvim = {
     enable = true;
     defaultEditor = true;
@@ -13,9 +11,7 @@
     # ];
 
     luaLoader.enable = true;
-    clipboard.providers = {
-      xsel.enable = true;
-    };
+    clipboard.providers = { xsel.enable = true; };
 
     # Highlight and remove extra white spaces
     highlight.ExtraWhitespace.bg = "red";
@@ -28,7 +24,7 @@
       relativenumber = true;
       shiftwidth = 2;
       tabstop = 2;
-      clipboard = ["unnamedplus"];
+      clipboard = [ "unnamedplus" ];
       smartindent = true;
       expandtab = true;
       wrap = false;

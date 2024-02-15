@@ -1,5 +1,1 @@
-{
-  none-ls = {
-    enable = true;
-  };
-}
+{ none-ls = { enable = true; }; }

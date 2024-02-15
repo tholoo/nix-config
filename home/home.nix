@@ -2,13 +2,12 @@
 
 {
   # imports = [
-    # inputs.sops-nix.homeManagerModules.sops
-    # agenix.homeManagerModules.default
+  # inputs.sops-nix.homeManagerModules.sops
+  # agenix.homeManagerModules.default
   # ];
 
   home.username = inputs.username;
   home.homeDirectory = "/home/${inputs.username}";
-
 
   # This value determines the Home Manager release that your configuration is
   # compatible with. This helps avoid breakage when a new Home Manager release
@@ -18,7 +17,6 @@
   # want to update the value, then make sure to first check the Home Manager
   # release notes.
   home.stateVersion = "23.11"; # Please read the comment before changing.
-
 
   home.packages = with pkgs; [
     # essentials
@@ -112,7 +110,6 @@
   #   executable = true;  # make all files executable
   # };
 
-
   # encode the file content in nix configuration file directly
   # home.file.".xxx".text = ''
   #     xxx
@@ -123,8 +120,8 @@
   # FIXME: temporary solution, should switch to nixvim
   home.file = {
     # ".config/nvim" = {
-      # source = /home/tholo/dotfiles/nvim/.config/nvim;
-      # recursive = true;
+    # source = /home/tholo/dotfiles/nvim/.config/nvim;
+    # recursive = true;
     # };
     # # Building this configuration will create a copy of 'dotfiles/screenrc' in
     # # the Nix store. Activating the configuration will then make '~/.screenrc' a
@@ -161,7 +158,7 @@
     MANPAGER = "nvim +Man!";
 
     http_proxy = "http://localhost:2081";
-    HTTP_PROXY="http://localhost:2081";
+    HTTP_PROXY = "http://localhost:2081";
 
     https_proxy = "http://localhost:2081";
     HTTPS_PROXY = "http://localhost:2081";
@@ -186,115 +183,113 @@
   };
 
   # wayland.windowManager.sway = {
-    # enable = true;
-    # xwayland = true;
+  # enable = true;
+  # xwayland = true;
   # };
 
   # Use sway desktop environment with Wayland display server
   # wayland.windowManager.sway = {
-    # enable = true;
-    # wrapperFeatures.gtk = true;
-    # # Sway-specific Configuration
-    # config = {
-      # terminal = "alacritty";
-      # menu = "wofi --show run";
-      # # Status bar(s)
-      # bars = [{
-        # fonts.size = 15.0;
-        # command = "waybar";
-        # position = "bottom";
-      # }];
-      # # Display device configuration
-      # output = {
-        # eDP-1 = {
-          # # Set HIDP scale (pixel integer scaling)
-          # scale = "1";
-        # };
-      # };
-    # };
+  # enable = true;
+  # wrapperFeatures.gtk = true;
+  # # Sway-specific Configuration
+  # config = {
+  # terminal = "alacritty";
+  # menu = "wofi --show run";
+  # # Status bar(s)
+  # bars = [{
+  # fonts.size = 15.0;
+  # command = "waybar";
+  # position = "bottom";
+  # }];
+  # # Display device configuration
+  # output = {
+  # eDP-1 = {
+  # # Set HIDP scale (pixel integer scaling)
+  # scale = "1";
+  # };
+  # };
+  # };
   # };
 
   # Let Home Manager install and manage itself.
   programs.home-manager.enable = true;
 
-  imports = lib.concatMap import [
-    ./programs
-  ];
+  imports = lib.concatMap import [ ./programs ];
 
   # programs = {
-    # neovim = {
-      # enable = true;
-      # defaultEditor = true;
-      # withPython3 = true;
-      # withNodeJs = true;
-      # withRuby = true;
-      # # vimAlias = true;
-      # # extraConfig = ''
-        # # set number
-        # # syntax on
-        # # set shiftwidth=2
-        # # set tabstop=2
-        # # set expandtab
-        # # set smarttab
-        # # set clipboard+=unnamedplus
-      # # '';
-      # # plugins = with pkgs.vimPlugins; [
-        # # vim-devicons
-        # # vim-nix
-      # # ];
-    # };
+  # neovim = {
+  # enable = true;
+  # defaultEditor = true;
+  # withPython3 = true;
+  # withNodeJs = true;
+  # withRuby = true;
+  # # vimAlias = true;
+  # # extraConfig = ''
+  # # set number
+  # # syntax on
+  # # set shiftwidth=2
+  # # set tabstop=2
+  # # set expandtab
+  # # set smarttab
+  # # set clipboard+=unnamedplus
+  # # '';
+  # # plugins = with pkgs.vimPlugins; [
+  # # vim-devicons
+  # # vim-nix
+  # # ];
+  # };
 
-    # alacritty = {
-      # enable = true;
-      # settings = {
-        # env.TERM = "alacritty";
-        # window = {
-          # decorations = "full";
-          # title = "Alacritty";
-          # dynamic_title = true;
-          # class = {
-            # instance = "Alacritty";
-            # general = "Alacritty";
-          # };
-        # };
-        # font = {
-          # normal = {
-            # family = "monospace";
-            # style = "regular";
-          # };
-          # bold = {
-            # family = "monospace";
-            # style = "regular";
-          # };
-          # italic = {
-            # family = "monospace";
-            # style = "regular";
-          # };
-          # bold_italic = {
-            # family = "monospace";
-            # style = "regular";
-          # };
-          # size = 14.00;
-        # };
-        # colors = {
-          # primary = {
-            # background = "#1d1f21";
-            # foreground = "#c5c8c6";
-          # };
-        # };
-      # };
-    # };
+  # alacritty = {
+  # enable = true;
+  # settings = {
+  # env.TERM = "alacritty";
+  # window = {
+  # decorations = "full";
+  # title = "Alacritty";
+  # dynamic_title = true;
+  # class = {
+  # instance = "Alacritty";
+  # general = "Alacritty";
+  # };
+  # };
+  # font = {
+  # normal = {
+  # family = "monospace";
+  # style = "regular";
+  # };
+  # bold = {
+  # family = "monospace";
+  # style = "regular";
+  # };
+  # italic = {
+  # family = "monospace";
+  # style = "regular";
+  # };
+  # bold_italic = {
+  # family = "monospace";
+  # style = "regular";
+  # };
+  # size = 14.00;
+  # };
+  # colors = {
+  # primary = {
+  # background = "#1d1f21";
+  # foreground = "#c5c8c6";
+  # };
+  # };
+  # };
+  # };
 
-    # # gtk = {
-      # # enable = true;
-      # # theme.name = "adw-gtk3";
-      # # cursorTheme.name = "Bibata-Modern-Ice";
-      # # iconTheme.name = "GruvboxPlus";
-    # # };
+  # # gtk = {
+  # # enable = true;
+  # # theme.name = "adw-gtk3";
+  # # cursorTheme.name = "Bibata-Modern-Ice";
+  # # iconTheme.name = "GruvboxPlus";
+  # # };
 
-    # chromium = {
-      # enable = true;
-    # };
+  # chromium = {
+  # enable = true;
+  # };
   # };
 
   services = {

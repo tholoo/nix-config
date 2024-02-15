@@ -1,10 +1,8 @@
 { pkgs, ... }: {
-    programs.pyenv = {
-      enable = true;
-    };
+  programs.pyenv = { enable = true; };
 
-    # python formatter
-    # programs.ruff = {
-      # enable = true;
-    # };
+  # python formatter
+  # programs.ruff = {
+  # enable = true;
+  # };
 }

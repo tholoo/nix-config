@@ -89,7 +89,8 @@
       set-option -g window-status-current-format '#[bg=#{@minimal-tmux-bg},fg=#000000] #I: #W#{?window_zoomed_flag,  , }'
     '';
 
-    plugins = with pkgs.tmuxPlugins; [
+    plugins = with pkgs.tmuxPlugins;
+      [
         # unsupported plugins
         # set -g @plugin 'omerxx/tmux-sessionx'
         # set -g @plugin '27medkamal/tmux-session-wizard'
@@ -100,16 +101,16 @@
         vim-tmux-navigator
         # yank
         # {
-          # plugin = resurrect;
-          # extraConfig = "set -g @resurrect-strategy-nvim 'session'";
+        # plugin = resurrect;
+        # extraConfig = "set -g @resurrect-strategy-nvim 'session'";
         # }
         # {
-          # plugin = continuum;
-          # extraConfig = ''
-            # set -g @continuum-restore 'on'
-            # set -g @continuum-save-interval '60' # minutes
-          # '';
+        # plugin = continuum;
+        # extraConfig = ''
+        # set -g @continuum-restore 'on'
+        # set -g @continuum-save-interval '60' # minutes
+        # '';
         # }
-    ];
+      ];
   };
 }

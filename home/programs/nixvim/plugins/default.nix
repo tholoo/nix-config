@@ -1,5 +1,6 @@
 { config, pkgs, lib, ... }:
-let plugins = [
+let
+  plugins = [
     ./cmp.nix
     ./comment.nix
     ./conform.nix
@@ -15,17 +16,17 @@ let plugins = [
     ./treesitter.nix
     ./trouble.nix
     ./ts.nix
-];
-importedPlugins = lib.fold (elem: container: import elem // container) {} plugins;
-in
-{
+  ];
+  importedPlugins =
+    lib.fold (elem: container: import elem // container) { } plugins;
+in {
   # imports = [
   # ];
 
   programs.nixvim = {
     colorschemes.ayu.enable = true;
 
-    plugins =  importedPlugins // {
+    plugins = importedPlugins // {
 
       gitsigns = {
         enable = true;

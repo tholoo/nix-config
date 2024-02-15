@@ -4,11 +4,7 @@
   #   # proxy = "localhost:2081"
   # };
 
-  copilot-lua = {
-    enable = true;
-  };
+  copilot-lua = { enable = true; };
 
-  copilot-cmp = {
-    enable = true;
-  };
+  copilot-cmp = { enable = true; };
 }

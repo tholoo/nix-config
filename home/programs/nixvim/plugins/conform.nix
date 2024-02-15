@@ -4,13 +4,13 @@
     # formatters = {inherit }
 
     formattersByFt = {
-      lua = ["stylua"];
-      nix = ["alejandra" "nixfmt"];
-      python = ["ruff_format"];
+      lua = [ "stylua" ];
+      nix = [ "alejandra" "nixfmt" ];
+      python = [ "ruff_format" ];
       # Use a sub-list to run only the first available formatter
-      javascript = [["prettierd" "prettier"]];
-      typescript = ["prettierd" "prettier"];
-      typescriptreact = ["prettier"];
+      javascript = [[ "prettierd" "prettier" ]];
+      typescript = [ "prettierd" "prettier" ];
+      typescriptreact = [ "prettier" ];
 
       # asm = ["asmfmt"];
       # c = ["astyle"];
@@ -27,14 +27,12 @@
       # sh = ["shfmt"];
       # yaml = ["prettierd" "prettier"];
       # Use the "*" filetype to run formatters on all filetypes.
-      "*" = ["codespell"];
+      "*" = [ "codespell" ];
       # Use the "_" filetype to run formatters on filetypes that don't
       # have other formatters configured.
-      "_" = ["trim_whitespace"];
+      "_" = [ "trim_whitespace" ];
     };
 
-    formatOnSave = {
-      lspFallback = true;
-    };
+    formatOnSave = { lspFallback = true; };
   };
 }

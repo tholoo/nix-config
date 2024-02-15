@@ -14,7 +14,7 @@
         gt = "type_definition";
         gi = "implementation";
         K = "hover";
-          "<leader>cr" = "rename";
+        "<leader>cr" = "rename";
       };
     };
     servers = {
@@ -33,7 +33,5 @@
     };
   };
 
-  lsp-format = {
-    enable = true;
-  };
+  lsp-format = { enable = true; };
 }

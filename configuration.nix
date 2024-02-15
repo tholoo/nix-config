@@ -5,10 +5,9 @@
 { config, lib, pkgs, ... }@inputs:
 
 {
-  imports =
-    [ # Include the results of the hardware scan.
-      ./hardware-configuration.nix
-    ];
+  imports = [ # Include the results of the hardware scan.
+    ./hardware-configuration.nix
+  ];
 
   nixpkgs.config = {
     allowUnfree = true;
@@ -16,9 +15,7 @@
     nvidia.acceptLicense = true;
   };
 
-  nix.settings = {
-    experimental-features = [ "nix-command" "flakes" ];
-  };
+  nix.settings = { experimental-features = [ "nix-command" "flakes" ]; };
 
   security = {
     polkit.enable = true;
@@ -37,7 +34,6 @@
   boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.grub.configurationLimit = 30;
 
-
   systemd.services.vpn = {
     wantedBy = [ "multi-user.target" ];
     after = [ "network.target" ];
@@ -45,29 +41,31 @@
     serviceConfig = {
       Type = "simple";
       User = "tholo";
-      ExecStart = ''${pkgs.v2ray}/bin/v2ray run --config=/home/tholo/v2ray/config.json''; 
+      ExecStart =
+        "${pkgs.v2ray}/bin/v2ray run --config=/home/tholo/v2ray/config.json";
       Restart = "on-failure";
     };
   };
   systemd.user.services.polkit-gnome-authentication-agent-1 = {
-      description = "polkit-gnome-authentication-agent-1";
-      wantedBy = [ "graphical-session.target" ];
-      wants = [ "graphical-session.target" ];
-      after = [ "graphical-session.target" ];
-      serviceConfig = {
-        Type = "simple";
-        ExecStart =
-          "${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1";
-        Restart = "on-failure";
-        RestartSec = 1;
-        TimeoutStopSec = 10;
-      };
+    description = "polkit-gnome-authentication-agent-1";
+    wantedBy = [ "graphical-session.target" ];
+    wants = [ "graphical-session.target" ];
+    after = [ "graphical-session.target" ];
+    serviceConfig = {
+      Type = "simple";
+      ExecStart =
+        "${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1";
+      Restart = "on-failure";
+      RestartSec = 1;
+      TimeoutStopSec = 10;
+    };
   };
 
   networking.hostName = "nixos"; # Define your hostname.
   # Pick only one of the below networking options.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
-  networking.networkmanager.enable = true;  # Easiest to use and most distros use this by default.
+  networking.networkmanager.enable =
+    true; # Easiest to use and most distros use this by default.
 
   # Set your time zone.
   time.timeZone = "Asia/Tehran";
@@ -93,8 +91,8 @@
       layout = "us";
       # videoDrivers = ["nvidia" "amdgpu" "modesetting" "radeon"];
       # displayManager = {
-       # defaultSession = "none+i3";
-       # lightdm.enable = true;
+      # defaultSession = "none+i3";
+      # lightdm.enable = true;
       # };
       windowManager.i3.enable = true;
     };
@@ -102,20 +100,18 @@
     gnome.gnome-keyring.enable = true;
     blueman.enable = true;
     # pipewire = {
-      # enable = true;
-      # alsa = {
-        # enable = true;
-        # support32Bit = true;
-      # };
-      # pulse.enable = true;
+    # enable = true;
+    # alsa = {
+    # enable = true;
+    # support32Bit = true;
+    # };
+    # pulse.enable = true;
     # };
   };
-
 
   # Enable the GNOME Desktop Environment.
   services.xserver.displayManager.gdm.enable = true;
   services.xserver.desktopManager.gnome.enable = true;
-  
 
   # Configure keymap in X11
   # services.xserver.xkb.layout = "us";
@@ -132,9 +128,7 @@
       # extra codecs
       package = pkgs.pulseaudioFull;
       # automatically switch sound to bluetooth device
-      extraConfig = "
-         load-module module-switch-on-connect
-      ";
+      extraConfig = "load-module module-switch-on-connect";
     };
     bluetooth = {
       enable = true;
@@ -147,15 +141,15 @@
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.tholo = {
-     isNormalUser = true;
-     extraGroups = [ "wheel" "networkmanager" ]; # Enable ‘sudo’ for the user.
-  #   packages = with pkgs; [
-  #     firefox
-  #     tree
-  #   ];
-   };
-   programs.fish.enable = true;
-   users.users.tholo.shell = pkgs.fish;
+    isNormalUser = true;
+    extraGroups = [ "wheel" "networkmanager" ]; # Enable ‘sudo’ for the user.
+    #   packages = with pkgs; [
+    #     firefox
+    #     tree
+    #   ];
+  };
+  programs.fish.enable = true;
+  users.users.tholo.shell = pkgs.fish;
 
   # List packages installed in system profile. To search, run:
   # $ nix search wget
@@ -212,4 +206,3 @@
   system.stateVersion = "23.11"; # Did you read the comment?
 
 }
-
