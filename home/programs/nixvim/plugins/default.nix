@@ -1,6 +1,6 @@
-{ config, pkgs, ... }:
-{
-  imports = [
+{ config, pkgs, lib, ... }:
+let plugins = [
+    ./oil.nix
     ./cmp.nix
     ./comment.nix
     ./copilot.nix
@@ -9,17 +9,23 @@
     ./neo-tree.nix
     ./nix.nix
     ./none-ls.nix
-    ./oil.nix
     ./telescope.nix
     ./tmux-navigator.nix
     ./treesitter.nix
     ./ts.nix
-  ];
+];
+importedPlugins = lib.fold (elem: c: import elem // c) {} plugins;
+in
+{
+  # imports = [
+  # ];
+
 
   programs.nixvim = {
     colorschemes.ayu.enable = true;
 
-    plugins = {
+    plugins =  importedPlugins // {
+
       gitsigns = {
         enable = true;
         signs = {
@@ -36,8 +42,6 @@
         enable = true;
         userDefaultOptions.names = false;
       };
-
-      oil.enable = true;
     };
   };
 }

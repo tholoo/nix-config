@@ -1,7 +1,5 @@
 {
-  programs.nixvim = {
-    plugins.none-ls = {
-      enable = true;
-    };
+  none-ls = {
+    enable = true;
   };
 }
