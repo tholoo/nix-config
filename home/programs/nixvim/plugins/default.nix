@@ -20,7 +20,6 @@ in
   # imports = [
   # ];
 
-
   programs.nixvim = {
     colorschemes.ayu.enable = true;
 
