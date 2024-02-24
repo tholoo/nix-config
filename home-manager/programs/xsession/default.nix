@@ -1,6 +1,6 @@
 { pkgs, ... }: {
   xsession = {
-    enable = true;
+    enable = false;
     windowManager = {
       i3 = {
         enable = false;

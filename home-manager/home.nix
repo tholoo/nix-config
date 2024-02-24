@@ -253,6 +253,7 @@
   services = {
     # use headphone buttons to control volume
     mpris-proxy.enable = true;
+    kanshi.enable = true;
   };
 
   # Nicely reload system units when changing configs

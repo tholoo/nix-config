@@ -106,20 +106,20 @@
   };
   # Enable CUPS to print documents.
   services = {
-    xserver = {
-      enable = true;
-      xkb = {
-        variant = "";
-        options = "caps:escape";
-        layout = "us";
-      };
-      # videoDrivers = ["nvidia" "amdgpu" "modesetting" "radeon"];
-      # displayManager = {
-      # defaultSession = "none+i3";
-      # lightdm.enable = true;
-      # };
-      windowManager.i3.enable = true;
-    };
+    # xserver = {
+    # enable = true;
+    # xkb = {
+    # variant = "";
+    # options = "caps:escape";
+    # layout = "us";
+    # };
+    # # videoDrivers = ["nvidia" "amdgpu" "modesetting" "radeon"];
+    # # displayManager = {
+    # # defaultSession = "none+i3";
+    # # lightdm.enable = true;
+    # # };
+    # windowManager.i3.enable = true;
+    # };
     gvfs.enable = true;
     gnome.gnome-keyring.enable = true;
     blueman.enable = true;
