@@ -1,5 +1,17 @@
 { pkgs, ... }: {
-  programs.tmux = {
+  programs.tmux = let
+    tmux-session-wizard = pkgs.tmuxPlugins.mkTmuxPlugin {
+      pluginName = "tmux-session-wizard";
+      rtpFilePath = "session-wizard.tmux";
+      version = "1.0";
+      src = pkgs.fetchFromGitHub {
+        owner = "27medkamal";
+        repo = "tmux-session-wizard";
+        rev = "e13c4c47c72039b3bcf2706ecf428b099c00b215";
+        sha256 = "sha256-Nz1vfl4owkQG3l2laao9Z6IW1w0nlhYuwHTuag1ajwM=";
+      };
+    };
+  in {
     enable = true;
     baseIndex = 1;
     clock24 = true;
@@ -80,6 +92,16 @@
       set-option -g set-titles on
       setw -g monitor-activity on
 
+      set -g @session-wizard 't'
+      set -g @session-wizard-height 80
+      set -g @session-wizard-width 80
+
+      set -g @sessionx-bind 'f'
+      set -g @sessionx-window-mode 'on'
+
+      set -g @continuum-restore 'on'
+      set -g @resurrect-strategy-nvim 'session'
+
       set -g @minimal-tmux-bg "#36a3d9"
       set-option -g status-style bg=terminal,fg=terminal
       set-option -g status-justify centre
@@ -89,28 +111,28 @@
       set-option -g window-status-current-format '#[bg=#{@minimal-tmux-bg},fg=#000000] #I: #W#{?window_zoomed_flag,  , }'
     '';
 
-    plugins = with pkgs.tmuxPlugins;
-      [
-        # unsupported plugins
-        # set -g @plugin 'omerxx/tmux-sessionx'
-        # set -g @plugin '27medkamal/tmux-session-wizard'
+    plugins = with pkgs.tmuxPlugins; [
+      # unsupported plugins
+      # 'omerxx/tmux-sessionx'
+      tmux-session-wizard
+      # '27medkamal/tmux-session-wizard'
 
-        # fzf
-        # fzf-url
-        # yank
-        vim-tmux-navigator
-        # yank
-        # {
-        # plugin = resurrect;
-        # extraConfig = "set -g @resurrect-strategy-nvim 'session'";
-        # }
-        # {
-        # plugin = continuum;
-        # extraConfig = ''
-        # set -g @continuum-restore 'on'
-        # set -g @continuum-save-interval '60' # minutes
-        # '';
-        # }
-      ];
+      # fzf
+      # fzf-url
+      # yank
+      vim-tmux-navigator
+      # yank
+      # {
+      # plugin = resurrect;
+      # extraConfig = "set -g @resurrect-strategy-nvim 'session'";
+      # }
+      # {
+      # plugin = continuum;
+      # extraConfig = ''
+      # set -g @continuum-restore 'on'
+      # set -g @continuum-save-interval '60' # minutes
+      # '';
+      # }
+    ];
   };
 }

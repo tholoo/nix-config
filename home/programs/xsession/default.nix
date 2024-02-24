@@ -3,7 +3,7 @@
     enable = true;
     windowManager = {
       i3 = {
-        enable = true;
+        enable = false;
         config = {
           modifier = "Mod4";
           terminal = "${pkgs.wezterm}/bin/wezterm";

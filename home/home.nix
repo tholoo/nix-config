@@ -5,6 +5,10 @@
   # inputs.sops-nix.homeManagerModules.sops
   # agenix.homeManagerModules.default
   # ];
+  nixpkgs.config = {
+    allowUnfree = true;
+    allowUnfreePredicate = (_: true);
+  };
 
   home.username = inputs.username;
   home.homeDirectory = "/home/${inputs.username}";
@@ -96,6 +100,10 @@
     nodejs_21
 
     # browser
+    # (vivaldi.override {
+    # proprietaryCodecs = true;
+    # enableWidevine = false;
+    # })
     # vivaldi
     # vivaldi-ffmpeg-codecs
   ];
@@ -188,28 +196,28 @@
   # };
 
   # Use sway desktop environment with Wayland display server
-  # wayland.windowManager.sway = {
-  # enable = true;
-  # wrapperFeatures.gtk = true;
-  # # Sway-specific Configuration
-  # config = {
-  # terminal = "alacritty";
-  # menu = "wofi --show run";
-  # # Status bar(s)
-  # bars = [{
-  # fonts.size = 15.0;
-  # command = "waybar";
-  # position = "bottom";
-  # }];
-  # # Display device configuration
-  # output = {
-  # eDP-1 = {
-  # # Set HIDP scale (pixel integer scaling)
-  # scale = "1";
-  # };
-  # };
-  # };
-  # };
+  wayland.windowManager.sway = {
+    enable = true;
+    wrapperFeatures.gtk = true;
+    # Sway-specific Configuration
+    config = {
+      terminal = "wezterm";
+      menu = "wofi --show run";
+      # Status bar(s)
+      bars = [{
+        fonts.size = 15.0;
+        command = "waybar";
+        position = "bottom";
+      }];
+      # Display device configuration
+      # output = {
+      #   eDP-1 = {
+      #     # Set HIDP scale (pixel integer scaling)
+      #     scale = "1";
+      #   };
+      # };
+    };
+  };
 
   # Let Home Manager install and manage itself.
   programs.home-manager.enable = true;

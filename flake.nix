@@ -24,6 +24,8 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    flake-utils.url = "github:numtide/flake-utils";
+
     # for storing secrets
     # agenix = {
     # url = "github:ryantm/agenix";
@@ -32,13 +34,12 @@
   };
 
   outputs = { self, nixpkgs, home-manager, nixvim, ... }@inputs:
+    # flake-utils.lib.eachDefaultSystem (system:
     let
       system = "x86_64-linux";
       username = "tholo";
       pkgs = nixpkgs.legacyPackages.${system};
     in {
-      allowUnfree = true;
-      allowUnfreePredicate = (_: true);
       homeConfigurations."${username}" =
         home-manager.lib.homeManagerConfiguration {
           inherit pkgs;
