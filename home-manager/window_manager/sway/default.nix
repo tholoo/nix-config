@@ -1,5 +1,6 @@
 { config, pkgs, lib, ... }: {
   # Use sway desktop environment with Wayland display server
+  programs.swaylock = { enable = true; };
   wayland.windowManager.sway = {
     enable = true;
     wrapperFeatures.gtk = true;
@@ -10,8 +11,7 @@
       # defaultWorkspace = 1;
       menu = "${pkgs.wofi}/bin/wofi --show run";
       startup = [
-        # Launch Firefox on start
-        { command = "firefox"; }
+        { command = "vivaldi"; }
         { command = "wezterm"; }
         {
           command = "telegram-desktop";

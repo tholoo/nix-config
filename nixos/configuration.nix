@@ -74,6 +74,7 @@
   security = {
     polkit.enable = true;
     rtkit.enable = true;
+    pam.services.swaylock = { text= ''auth include login''; };
   };
 
   nix.gc = {
