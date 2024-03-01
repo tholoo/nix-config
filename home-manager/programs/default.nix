@@ -35,13 +35,14 @@ in [
   # ./xsession
   ./fish
   ./git
+  ./i3status-rust
   ./kitty
   ./nixvim
   ./python
-  ./tmux
   ./rofi
-  ./wofi
+  ./tmux
   ./waybar
   ./wezterm
+  ./wofi
   more
 ]

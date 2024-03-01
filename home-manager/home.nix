@@ -245,14 +245,21 @@
         # { command = "systemctl --user restart waybar"; always = true; }
       ];
       assigns = {
-        "0" = [{ class = "^Wezterm$"; }];
-        "1" = [{ class = "^Firefox$"; }];
+        "0" = [{ app_id = "^org.wezfurlong.wezterm$"; }];
+        "1" = [{ app_id = "^firefox$"; }];
       };
       bars = [{
         # command = "${pkgs.waybar}/bin/waybar";
         position = "bottom";
-        statusCommand = "${pkgs.i3status-rust}/bin/i3status-rs";
+        # statusCommand = "${pkgs.i3status-rust}/bin/i3status-rs";
       }];
+      input = {
+        "*" = {
+          xkb_layout = "us,ir";
+          xkb_options = "caps:escape,grp:alt_shift_toggle";
+        };
+      };
+      window = { hideEdgeBorders = "smart"; };
       # bars = [{
       #   fonts.size = 15.0;
       #   command = "${pkgs.waybar}/bin/waybar";
