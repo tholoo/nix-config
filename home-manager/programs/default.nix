@@ -39,6 +39,8 @@ in [
   ./nixvim
   ./python
   ./tmux
+  ./rofi
+  ./wofi
   ./waybar
   ./wezterm
   more

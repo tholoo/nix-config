@@ -1,5 +1,5 @@
 {pkgs, ...}: {
   programs.wofi = {
-    enable = true;
+    enable = false;
   };
 }

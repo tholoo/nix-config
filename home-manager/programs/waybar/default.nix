@@ -1,6 +1,6 @@
 { pkgs, ... }: {
-  programs.waybar = {
-    enable = true;
-    systemd.enable = true;
-  };
+  # programs.waybar = {
+  #   enable = false;
+  #   systemd.enable = false;
+  # };
 }

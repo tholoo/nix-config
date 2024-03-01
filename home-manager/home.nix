@@ -232,24 +232,38 @@
     # Sway-specific Configuration
     config = {
       modifier = "Mod4";
-      terminal = "${pkgs.wezterm}/bin/wezterm";
+      terminal = "wezterm";
+      defaultWorkspace = "1";
       menu = "${pkgs.wofi}/bin/wofi --show run";
       # Status bar(s)
       startup = [
         # Launch Firefox on start
         { command = "firefox"; }
+        {
+          command = "wezterm";
+        }
+        # { command = "systemctl --user restart waybar"; always = true; }
       ];
-      bars = [{
-        fonts.size = 15.0;
-        command = "${pkgs.waybar}/bin/waybar";
-        position = "bottom";
-      }];
-      keybindings = {
-        "Print" = "exec shotman -c output";
-        "Print+Shift" = "exec shotman -c region";
-        "Print+Shift+Control" = "exec shotman -c window";
+      assigns = {
+        "0" = [{ class = "^Wezterm$"; }];
+        "1" = [{ class = "^Firefox$"; }];
       };
-      # output = { "*" = "bg /etc/... fill"; };
+      bars = [{
+        # command = "${pkgs.waybar}/bin/waybar";
+        position = "bottom";
+        statusCommand = "${pkgs.i3status-rust}/bin/i3status-rs";
+      }];
+      # bars = [{
+      #   fonts.size = 15.0;
+      #   command = "${pkgs.waybar}/bin/waybar";
+      #   position = "bottom";
+      # }];
+      keybindings = lib.mkOptionDefault {
+        "Print" = "exec ${pkgs.shotman}/bin/shotman -c output";
+        "Print+Shift" = "exec ${pkgs.shotman}/bin/shotman -c region";
+        "Print+Shift+Control" = "exec ${pkgs.shotman}/bin/shotman -c window";
+      };
+      # output = { "*" = { bg = "/etc/... fill"; }; };
       # Display device configuration
       # output = {
       #   eDP-1 = {
