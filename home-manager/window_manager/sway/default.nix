@@ -1,6 +1,16 @@
 { config, pkgs, lib, ... }: {
   # Use sway desktop environment with Wayland display server
-  programs.swaylock = { enable = true; };
+  programs.swaylock = {
+    enable = true;
+    settings = {
+      image = "${../../../resources/wallpapers/wallhaven-car-swamp.png}";
+      ignore-empty-password = true;
+      show-failed-attempts = true;
+      scaling = "fit";
+      font-size = 25;
+      indicator-radius = 100;
+    };
+  };
   wayland.windowManager.sway = {
     enable = true;
     wrapperFeatures.gtk = true;
@@ -47,6 +57,7 @@
         "alt+tab" = "workspace back_and_forth";
         "${modifier}+period" = "exec makoctl dismiss";
         "${modifier}+shift+period" = "exec makoctl dismiss -a";
+        "${modifier}+z" = "exec swaylock";
         # "Print+Shift" = "exec ${pkgs.flameshot}/bin/flameshot -c region";
         # "Print+Shift+Control" = "exec ${pkgs.flameshot}/bin/flameshot -c window";
       };
