@@ -136,8 +136,8 @@
       # proprietaryCodecs = true;
       # enableWidevine = false;
       # })
-      # vivaldi
-      # vivaldi-ffmpeg-codecs
+      vivaldi
+      vivaldi-ffmpeg-codecs
     ];
   };
 
