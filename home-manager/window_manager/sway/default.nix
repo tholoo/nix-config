@@ -12,14 +12,14 @@
       startup = [
         # Launch Firefox on start
         { command = "firefox"; }
-        {
-          command = "wezterm";
-        }
+        { command = "wezterm"; }
+        { command = "telegram-desktop"; }
         # { command = "systemctl --user restart waybar"; always = true; }
       ];
       assigns = {
         "1" = [{ app_id = "^org.wezfurlong.wezterm$"; }];
-        "2" = [{ app_id = "^firefox$"; }];
+        "2" = [ { app_id = "^firefox$"; } { class = "Vivaldi-stable"; } ];
+        "3" = [{ class = "Telegram"; }];
       };
       # bars = [{
       #   #   fonts.size = 15.0;
@@ -41,7 +41,7 @@
         # "Print" = "exec ${pkgs.shotman}/bin/shotman -c output";
         # "Print+Shift" = "exec ${pkgs.shotman}/bin/shotman -c region";
         # "Print+Shift+Control" = "exec ${pkgs.shotman}/bin/shotman -c window";
-        "Print" = "exec --no-startup-id \"${pkgs.flameshot}/bin/flameshot\"";
+        "Print" = ''exec --no-startup-id "${pkgs.flameshot}/bin/flameshot"'';
         "alt+tab" = "workspace back_and_forth";
         # "Print+Shift" = "exec ${pkgs.flameshot}/bin/flameshot -c region";
         # "Print+Shift+Control" = "exec ${pkgs.flameshot}/bin/flameshot -c window";

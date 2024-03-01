@@ -128,6 +128,9 @@
       # screenshot
       shotman
 
+      # social
+      telegram-desktop
+
       # browser
       # (vivaldi.override {
       # proprietaryCodecs = true;
