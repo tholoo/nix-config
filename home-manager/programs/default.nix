@@ -25,10 +25,6 @@ let
         # };
       };
       ssh = { enable = true; };
-      rofi = {
-        enable = true;
-        terminal = "${pkgs.wezterm}/bin/wezterm";
-      };
     };
   };
 in [
