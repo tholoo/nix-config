@@ -53,10 +53,14 @@
   # This will additionally add your inputs to the system's legacy channels
   # Making legacy nix commands consistent as well, awesome!
   nix.nixPath = [ "/etc/nix/path" ];
-  environment.etc = lib.mapAttrs' (name: value: {
+  environment.etc = (lib.mapAttrs' (name: value: {
     name = "nix/path/${name}";
     value.source = value.flake;
-  }) config.nix.registry;
+  }) config.nix.registry) // {
+    "greetd/environments".text = ''
+      sway
+    '';
+  };
 
   nix.settings = {
     # Enable flakes and new 'nix' command
@@ -90,36 +94,36 @@
     };
   };
 
-  systemd.user.services.polkit-gnome-authentication-agent-1 = {
-    description = "polkit-gnome-authentication-agent-1";
-    wantedBy = [ "graphical-session.target" ];
-    wants = [ "graphical-session.target" ];
-    after = [ "graphical-session.target" ];
-    serviceConfig = {
-      Type = "simple";
-      ExecStart =
-        "${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1";
-      Restart = "on-failure";
-      RestartSec = 1;
-      TimeoutStopSec = 10;
-    };
-  };
+  # systemd.user.services.polkit-gnome-authentication-agent-1 = {
+  #   description = "polkit-gnome-authentication-agent-1";
+  #   wantedBy = [ "graphical-session.target" ];
+  #   wants = [ "graphical-session.target" ];
+  #   after = [ "graphical-session.target" ];
+  #   serviceConfig = {
+  #     Type = "simple";
+  #     ExecStart =
+  #       "${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1";
+  #     Restart = "on-failure";
+  #     RestartSec = 1;
+  #     TimeoutStopSec = 10;
+  #   };
+  # };
   # Enable CUPS to print documents.
   services = {
-    xserver = {
-      enable = true;
-      xkb = {
-        variant = "";
-        options = "caps:escape";
-        layout = "us";
-      };
-      # videoDrivers = ["nvidia" "amdgpu" "modesetting" "radeon"];
-      # displayManager = {
-      # defaultSession = "none+i3";
-      # lightdm.enable = true;
-      # };
-      windowManager.i3.enable = true;
-    };
+    #   xserver = {
+    #     enable = true;
+    #     xkb = {
+    #       variant = "";
+    #       options = "caps:escape";
+    #       layout = "us";
+    #     };
+    # videoDrivers = ["nvidia" "amdgpu" "modesetting" "radeon"];
+    # displayManager = {
+    # defaultSession = "none+i3";
+    # lightdm.enable = true;
+    # };
+    #   windowManager.i3.enable = true;
+    # };
     # enable = true;
     # xkb = {
     # variant = "";
@@ -146,14 +150,29 @@
     # };
   };
 
+  services.greetd = {
+    enable = true;
+    settings = {
+      default_session.command = ''
+        ${pkgs.greetd.tuigreet}/bin/tuigreet \
+          --time \
+          --asterisks \
+          --user-menu \
+          --cmd sway
+      '';
+    };
+  };
+
   # Enable the GNOME Desktop Environment.
-  services.xserver.displayManager.gdm.enable = true;
-  services.xserver.desktopManager.gnome.enable = true;
+  # programs.sway.enable = true;
+  # services.xserver.displayManager.gdm.enable = true;
+  # services.xserver.desktopManager.gnome.enable = true;
   # services.printing.enable = true;
 
   # Enable sound.
   sound.enable = true;
   hardware = {
+    opengl.enable = true;
     pulseaudio = {
       enable = true;
       # extra codecs
