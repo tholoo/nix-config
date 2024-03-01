@@ -78,7 +78,9 @@
                 bind '$' __history_previous_command_arguments
             end
 
-            setxkbmap -option caps:escape
+            if type -q $setxkbmap
+              setxkbmap -option caps:escape
+            end
 
       ### AUTOCOMPLETE AND HIGHLIGHT COLORS ###
             set fish_color_normal brcyan
