@@ -7,19 +7,21 @@
     config = rec {
       modifier = "Mod4";
       terminal = "wezterm";
-      defaultWorkspace = "1";
+      defaultWorkspace = 1;
       menu = "${pkgs.wofi}/bin/wofi --show run";
       startup = [
         # Launch Firefox on start
         { command = "firefox"; }
         { command = "wezterm"; }
-        { command = "telegram-desktop"; }
+        {
+          command = "telegram-desktop";
+        }
         # { command = "systemctl --user restart waybar"; always = true; }
       ];
       assigns = {
         "1" = [{ app_id = "^org.wezfurlong.wezterm$"; }];
         "2" = [ { app_id = "^firefox$"; } { class = "Vivaldi-stable"; } ];
-        "3" = [{ class = "Telegram"; }];
+        "3" = [{ app_id = "org.telegram.desktop"; }];
       };
       # bars = [{
       #   #   fonts.size = 15.0;
