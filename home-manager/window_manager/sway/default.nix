@@ -7,7 +7,7 @@
     config = rec {
       modifier = "Mod4";
       terminal = "wezterm";
-      defaultWorkspace = 1;
+      # defaultWorkspace = 1;
       menu = "${pkgs.wofi}/bin/wofi --show run";
       startup = [
         # Launch Firefox on start
