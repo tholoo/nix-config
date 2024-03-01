@@ -32,13 +32,14 @@ let
     };
   };
 in [
-  ./wezterm
-  ./git
-  ./fish
-  ./tmux
-  ./python
   # ./xsession
+  ./fish
+  ./git
+  ./kitty
   ./nixvim
+  ./python
+  ./tmux
+  ./waybar
+  ./wezterm
   more
 ]
-

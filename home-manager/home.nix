@@ -88,6 +88,7 @@
       # eza # A modern replacement for ‘ls’
       # fzf # A command-line fuzzy finder
       fd # A rust alternative to find
+      lazygit
 
       # archives
       zip
@@ -122,6 +123,9 @@
       poetry
 
       nodejs_21
+
+      # screenshot
+      shotman
 
       # browser
       # (vivaldi.override {
@@ -228,8 +232,8 @@
     # Sway-specific Configuration
     config = {
       modifier = "Mod4";
-      terminal = "wezterm";
-      menu = "wofi --show run";
+      terminal = "${pkgs.wezterm}/bin/wezterm";
+      menu = "${pkgs.wofi}/bin/wofi --show run";
       # Status bar(s)
       startup = [
         # Launch Firefox on start
@@ -237,9 +241,15 @@
       ];
       bars = [{
         fonts.size = 15.0;
-        command = "waybar";
+        command = "${pkgs.waybar}/bin/waybar";
         position = "bottom";
       }];
+      keybindings = {
+        "Print" = "exec shotman -c output";
+        "Print+Shift" = "exec shotman -c region";
+        "Print+Shift+Control" = "exec shotman -c window";
+      };
+      # output = { "*" = "bg /etc/... fill"; };
       # Display device configuration
       # output = {
       #   eDP-1 = {
@@ -254,6 +264,10 @@
     # use headphone buttons to control volume
     mpris-proxy.enable = true;
     kanshi.enable = true;
+    # notification daemon
+    mako = { enable = true; };
+    # clipboard manager for wayland
+    copyq.enable = true;
   };
 
   # Nicely reload system units when changing configs
