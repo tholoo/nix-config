@@ -111,6 +111,7 @@
   # };
   # Enable CUPS to print documents.
   services = {
+    v2raya.enable = true;
     xserver = {
       # Load nvidia driver for Xorg and Wayland
       videoDrivers = [ "nvidiaLegacy470" ];
