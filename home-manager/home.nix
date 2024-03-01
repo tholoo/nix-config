@@ -234,6 +234,8 @@
     mako = { enable = true; };
     # clipboard manager for wayland
     copyq.enable = true;
+    # screenshot
+    flameshot.enable = true;
   };
 
   # Nicely reload system units when changing configs

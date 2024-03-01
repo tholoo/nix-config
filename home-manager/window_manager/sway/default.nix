@@ -38,9 +38,13 @@
         titlebar = false;
       };
       keybindings = lib.mkOptionDefault {
-        "Print" = "exec ${pkgs.shotman}/bin/shotman -c output";
-        "Print+Shift" = "exec ${pkgs.shotman}/bin/shotman -c region";
-        "Print+Shift+Control" = "exec ${pkgs.shotman}/bin/shotman -c window";
+        # "Print" = "exec ${pkgs.shotman}/bin/shotman -c output";
+        # "Print+Shift" = "exec ${pkgs.shotman}/bin/shotman -c region";
+        # "Print+Shift+Control" = "exec ${pkgs.shotman}/bin/shotman -c window";
+        "Print" = "exec --no-startup-id \"${pkgs.flameshot}/bin/flameshot\"";
+        "alt+tab" = "workspace back_and_forth";
+        # "Print+Shift" = "exec ${pkgs.flameshot}/bin/flameshot -c region";
+        # "Print+Shift+Control" = "exec ${pkgs.flameshot}/bin/flameshot -c window";
       };
       output = {
         "*" = {
