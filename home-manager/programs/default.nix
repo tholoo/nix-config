@@ -39,6 +39,7 @@ in [
   ./tmux
   ./waybar
   ./wezterm
+  ./wlogout
   ./wofi
   more
 ]

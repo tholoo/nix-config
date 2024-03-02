@@ -11,6 +11,8 @@
       indicator-radius = 100;
     };
   };
+  # for showing notifications for common actions like changing volume
+  services.swayosd.enable = true;
   wayland.windowManager.sway = {
     enable = true;
     wrapperFeatures.gtk = true;
@@ -18,8 +20,13 @@
     config = rec {
       modifier = "Mod4";
       terminal = "wezterm";
+      workspaceAutoBackAndForth = true;
       # defaultWorkspace = 1;
       menu = "${pkgs.wofi}/bin/wofi --show run";
+      gaps = {
+        smartGaps = true;
+        smartBorders = "on";
+      };
       startup = [
         { command = "vivaldi"; }
         { command = "wezterm"; }
@@ -53,13 +60,40 @@
         # "Print" = "exec ${pkgs.shotman}/bin/shotman -c output";
         # "Print+Shift" = "exec ${pkgs.shotman}/bin/shotman -c region";
         # "Print+Shift+Control" = "exec ${pkgs.shotman}/bin/shotman -c window";
-        "Print" = ''exec --no-startup-id "${pkgs.flameshot}/bin/flameshot"'';
-        "alt+tab" = "workspace back_and_forth";
-        "${modifier}+period" = "exec makoctl dismiss";
-        "${modifier}+shift+period" = "exec makoctl dismiss -a";
-        "${modifier}+z" = "exec swaylock";
+        # "Print" = ''exec --no-startup-id "${pkgs.flameshot}/bin/flameshot"'';
+        "Print" = ''
+          exec ${pkgs.grim}/bin/grim -g "$(${pkgs.slurp}/bin/slurp)" - | ${pkgs.swappy}/bin/swappy -f -'';
+        # Screen recording
+        # "${modifier}+Print" = "exec wayrecorder --notify screen";
+        # "${modifier}+Shift+Print" = "exec wayrecorder --notify --input area";
+        # "${modifier}+Alt+Print" = "exec wayrecorder --notify --input active";
+        # "${modifier}+Shift+Alt+Print" =
+        #   "exec wayrecorder --notify --input window";
+        # "${modifier}+Ctrl+Print" =
+        #   "exec wayrecorder --notify --clipboard --input screen";
+        # "${modifier}+Ctrl+Shift+Print" =
+        #   "exec wayrecorder --notify --clipboard --input area";
+        # "${modifier}+Ctrl+Alt+Print" =
+        #   "exec wayrecorder --notify --clipboard --input active";
+        # "${modifier}+Ctrl+Shift+Alt+Print" =
+        #   "exec wayrecorder --notify --clipboard --input window";
+
         # "Print+Shift" = "exec ${pkgs.flameshot}/bin/flameshot -c region";
         # "Print+Shift+Control" = "exec ${pkgs.flameshot}/bin/flameshot -c window";
+        "alt+tab" = "workspace back_and_forth";
+        # "${modifier}+period" = "exec makoctl dismiss";
+        # "${modifier}+shift+period" = "exec makoctl dismiss -a";
+        "${modifier}+z" = "exec swaylock";
+        "${modifier}+Shift+z" = "exec ${pkgs.wlogout}/bin/logout";
+        "XF86AudioMute" = "exec pactl set-sink-mute @DEFAULT_SINK@ toggle";
+        "XF86AudioRaiseVolume" =
+          "exec pactl set-sink-volume @DEFAULT_SINK@ +5%";
+        "XF86AudioLowerVolume" =
+          "exec pactl set-sink-volume @DEFAULT_SINK@ -5%";
+
+        # Toggle control center
+        "${modifier}+Shift+n" =
+          "exec ${pkgs.swaynotificationcenter}/bin/swaync-client -t -sw";
       };
       output = {
         "*" = {
@@ -67,6 +101,7 @@
             "${../../../resources/wallpapers/wallhaven-fields-858z32.png} fill";
         };
       };
+
       # Display device configuration
       # output = {
       #   eDP-1 = {
@@ -75,5 +110,6 @@
       #   };
       # };
     };
+    extraConfig = "exec ${pkgs.swaynotificationcenter}/bin/swaync";
   };
 }

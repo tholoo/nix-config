@@ -127,6 +127,12 @@
 
       # screenshot
       shotman
+      grim
+      swappy
+      slurp
+
+      # clipboard
+      wl-clipboard
 
       # social
       telegram-desktop
@@ -234,7 +240,7 @@
     mpris-proxy.enable = true;
     kanshi.enable = true;
     # notification daemon
-    mako = { enable = true; };
+    # mako = { enable = true; };
     # clipboard manager for wayland
     copyq.enable = true;
     # screenshot
