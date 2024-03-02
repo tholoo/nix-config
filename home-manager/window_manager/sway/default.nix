@@ -84,7 +84,7 @@
         # "${modifier}+period" = "exec makoctl dismiss";
         # "${modifier}+shift+period" = "exec makoctl dismiss -a";
         "${modifier}+z" = "exec swaylock";
-        "${modifier}+Shift+z" = "exec ${pkgs.wlogout}/bin/logout";
+        "${modifier}+Shift+z" = "exec ${pkgs.wlogout}/bin/wlogout";
         "XF86AudioMute" = "exec pactl set-sink-mute @DEFAULT_SINK@ toggle";
         "XF86AudioRaiseVolume" =
           "exec pactl set-sink-volume @DEFAULT_SINK@ +5%";
