@@ -2,8 +2,12 @@
 # Use this to configure your home environment (it replaces ~/.config/nixpkgs/home.nix)
 { inputs, outputs, lib, config, pkgs, ... }: {
   # You can import other home-manager modules here
-  imports = lib.concatMap import [ ./programs ]
-    ++ lib.concatMap import [ ./window_manager ];
+  imports = let
+    packages = dir:
+      with lib;
+      map (file: dir + "/${file}") (attrNames
+        (filterAttrs (file: type: type == "directory") (builtins.readDir dir)));
+  in packages ./programs ++ lib.concatMap import [ ./window_manager ];
   # imports = [
   # If you want to use modules your own flake exports (from modules/home-manager):
   # outputs.homeManagerModules.example
@@ -89,7 +93,6 @@
       # eza # A modern replacement for ‘ls’
       # fzf # A command-line fuzzy finder
       fd # A rust alternative to find
-      lazygit
 
       # archives
       zip
@@ -232,7 +235,7 @@
   # programs.neovim.enable = true;
   # home.packages = with pkgs; [ steam ];
 
-  # Enable home-manager and git
+  # Enable home-manager
   programs.home-manager.enable = true;
 
   services = {

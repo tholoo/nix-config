@@ -187,21 +187,21 @@
       gcb = "git checkout -b";
     };
     shellAliases = {
-      ls = "eza --color=always --group-directories-first --git";
+      ls = "${pkgs.eza}/bin/eza --color=always --group-directories-first --git";
       la =
-        "eza -la --color=always --group-directories-first --git --git-ignore -I .venv -I __pycache__ -I .git";
-      laa = "eza -la --color=always --group-directories-first";
+        "${pkgs.eza}/bin/eza -la --color=always --group-directories-first --git --git-ignore -I .venv -I __pycache__ -I .git";
+      laa = "${pkgs.eza}/bin/eza -la --color=always --group-directories-first";
       ll =
-        "eza -l --color=always --group-directories-first --git -I .venv -I __pycache__ -I .git";
+        "${pkgs.eza}/bin/eza -l --color=always --group-directories-first --git -I .venv -I __pycache__ -I .git";
       lt =
-        "eza -l --tree --level=2 --color=always --group-directories-first -I .venv -I __pycache__ -I .git";
+        "${pkgs.eza}/bin/eza -l --tree --level=2 --color=always --group-directories-first -I .venv -I __pycache__ -I .git";
       ltt =
-        "eza -l --tree --color=always --group-directories-first -I .venv -I __pycache__ -I .git";
+        "${pkgs.eza}/bin/eza -l --tree --color=always --group-directories-first -I .venv -I __pycache__ -I .git";
       lat =
-        "eza -la --tree --level=2 --color=always --group-directories-first -I .venv -I __pycache__ -I .git";
+        "${pkgs.eza}/bin/eza -la --tree --level=2 --color=always --group-directories-first -I .venv -I __pycache__ -I .git";
       latt =
-        "eza -la --tree --color=always --group-directories-first -I .venv -I __pycache__ -I .git";
-      "l." = ''eza -la | egrep "^\."'';
+        "${pkgs.eza}/bin/eza -la --tree --color=always --group-directories-first -I .venv -I __pycache__ -I .git";
+      "l." = ''${pkgs.eza}/bin/eza -la | egrep "^\."'';
 
       grep = "grep --color=auto";
       egrep = "egrep --color=auto";
