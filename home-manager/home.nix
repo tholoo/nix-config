@@ -255,8 +255,8 @@
     # screen annotatiaon tool
     gromit-mpx = {
       enable = true;
-      hotKey = "Insert";
-      undoKey = "Shift+Insert";
+      hotKey = "F9";
+      # undoKey = "Shift+Insert";
     };
     # progress bar
     wob = {

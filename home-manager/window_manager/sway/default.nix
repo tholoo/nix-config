@@ -15,6 +15,7 @@
   services.swayosd.enable = true;
   wayland.windowManager.sway = {
     enable = true;
+    swaynag.enable = true;
     wrapperFeatures.gtk = true;
     # Sway-specific Configuration
     config = rec {
@@ -40,12 +41,12 @@
         "2" = [ { app_id = "^firefox$"; } { class = "Vivaldi-stable"; } ];
         "3" = [{ app_id = "org.telegram.desktop"; }];
       };
-      # bars = [{
-      #   #   fonts.size = 15.0;
-      #   # command = "${pkgs.waybar}/bin/waybar";
-      #   position = "bottom";
-      #   # statusCommand = "${pkgs.i3status-rust}/bin/i3status-rs";
-      # }];
+      bars = [{
+        #   fonts.size = 15.0;
+        # command = "${pkgs.waybar}/bin/waybar";
+        position = "bottom";
+        # statusCommand = "${pkgs.i3status-rust}/bin/i3status-rs";
+      }];
       input = {
         "*" = {
           xkb_layout = "us,ir";
