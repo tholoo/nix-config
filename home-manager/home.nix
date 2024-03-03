@@ -258,6 +258,11 @@
       hotKey = "Insert";
       undoKey = "Shift+Insert";
     };
+    # progress bar
+    wob = {
+      enable = true;
+      systemd = true;
+    };
   };
 
   # Nicely reload system units when changing configs
