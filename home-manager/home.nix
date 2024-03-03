@@ -252,6 +252,12 @@
     copyq.enable = true;
     # screenshot
     flameshot.enable = true;
+    # screen annotatiaon tool
+    gromit-mpx = {
+      enable = true;
+      hotKey = "Insert";
+      undoKey = "Shift+Insert";
+    };
   };
 
   # Nicely reload system units when changing configs
