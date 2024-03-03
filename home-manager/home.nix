@@ -147,6 +147,10 @@
       # })
       vivaldi
       vivaldi-ffmpeg-codecs
+
+      # audio
+      qpwgraph
+      helvum
     ];
   };
 
