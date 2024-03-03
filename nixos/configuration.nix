@@ -40,7 +40,7 @@
       # Disable if you don't want unfree packages
       allowUnfree = true;
 
-      pulseaudio = true;
+      # pulseaudio = true;
       nvidia.acceptLicense = true;
     };
   };
@@ -74,7 +74,7 @@
   security = {
     polkit.enable = true;
     rtkit.enable = true;
-    pam.services.swaylock = { text= ''auth include login''; };
+    pam.services.swaylock = { text = "auth include login"; };
   };
 
   nix.gc = {
@@ -146,14 +146,17 @@
     gvfs.enable = true;
     gnome.gnome-keyring.enable = true;
     blueman.enable = true;
-    # pipewire = {
-    # enable = true;
-    # alsa = {
-    # enable = true;
-    # support32Bit = true;
-    # };
-    # pulse.enable = true;
-    # };
+    pipewire = {
+      enable = true;
+      audio.enable = true;
+      wireplumber.enable = true;
+      pulse.enable = true;
+      # jack.enable = true;
+      alsa = {
+        enable = true;
+        support32Bit = true;
+      };
+    };
   };
 
   services.greetd = {
@@ -211,13 +214,13 @@
       driSupport = true;
       driSupport32Bit = true;
     };
-    pulseaudio = {
-      enable = true;
-      # extra codecs
-      package = pkgs.pulseaudioFull;
-      # automatically switch sound to bluetooth device
-      extraConfig = "load-module module-switch-on-connect";
-    };
+    # pulseaudio = {
+    #   enable = true;
+    #   # extra codecs
+    #   package = pkgs.pulseaudioFull;
+    #   # automatically switch sound to bluetooth device
+    #   extraConfig = "load-module module-switch-on-connect";
+    # };
     bluetooth = {
       enable = true;
       powerOnBoot = true;
