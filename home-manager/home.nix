@@ -83,22 +83,26 @@
       # nix related
 
       # it provides the command `nom` works just like `nix`
-      # with more details log output
+      # with more detailed log output
       nix-output-monitor
 
       # utils
       ripgrep # recursively searches directories for a regex pattern
       jq # A lightweight and flexible command-line JSON processor
       yq-go # yaml processor https://github.com/mikefarah/yq
-      # eza # A modern replacement for ‘ls’
-      # fzf # A command-line fuzzy finder
       fd # A rust alternative to find
+      watchexec # Run commands based on file change
+      satty # Screen annotatiaon tool
 
       # archives
       zip
       xz
       unzip
       p7zip
+
+      # learning
+      tldr
+      cht-sh
 
       # productivity
       # hugo # static site generator
@@ -251,13 +255,13 @@
     # clipboard manager for wayland
     copyq.enable = true;
     # screenshot
-    flameshot.enable = true;
+    # flameshot.enable = true;
     # screen annotatiaon tool
-    gromit-mpx = {
-      enable = true;
-      hotKey = "F9";
-      # undoKey = "Shift+Insert";
-    };
+    # gromit-mpx = {
+    #   enable = true;
+    #   hotKey = "F9";
+    #   # undoKey = "Shift+Insert";
+    # };
     # progress bar
     wob = {
       enable = true;

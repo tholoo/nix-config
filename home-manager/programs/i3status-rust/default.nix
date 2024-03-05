@@ -1,1 +1,1 @@
-{ pkgs, ... }: { programs.i3status-rust = { enable = false; }; }
+{ pkgs, ... }: { programs.i3status-rust = { enable = true; }; }

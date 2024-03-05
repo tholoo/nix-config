@@ -45,7 +45,7 @@
         #   fonts.size = 15.0;
         # command = "${pkgs.waybar}/bin/waybar";
         position = "bottom";
-        # statusCommand = "${pkgs.i3status-rust}/bin/i3status-rs";
+        statusCommand = "${pkgs.i3status-rust}/bin/i3status-rs";
       }];
       input = {
         "*" = {
@@ -64,6 +64,9 @@
         # "Print" = ''exec --no-startup-id "${pkgs.flameshot}/bin/flameshot"'';
         "Print" = ''
           exec ${pkgs.grim}/bin/grim -g "$(${pkgs.slurp}/bin/slurp)" - | ${pkgs.swappy}/bin/swappy -f -'';
+
+        "Insert" =
+          "exec grim -o $(swaymsg -t get_outputs | jq -r '.[] | select(.focused) | .name') | ${pkgs.satty}/bin/satty --filename - --fullscreen";
         # Screen recording
         # "${modifier}+Print" = "exec wayrecorder --notify screen";
         # "${modifier}+Shift+Print" = "exec wayrecorder --notify --input area";
