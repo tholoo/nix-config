@@ -94,6 +94,8 @@
       watchexec # Run commands based on file change
       satty # Screen annotatiaon tool
 
+      grc # command colorizer
+
       # archives
       zip
       xz
