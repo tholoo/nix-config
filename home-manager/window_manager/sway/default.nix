@@ -1,5 +1,7 @@
-{ config, pkgs, lib, ... }: {
+{ config, pkgs, lib, options, ... }: {
   # Use sway desktop environment with Wayland display server
+  home.packages = options.home.packages.default
+    ++ (with pkgs; [ swaynotificationcenter ]);
   programs.swaylock = {
     enable = true;
     settings = {
@@ -30,6 +32,7 @@
       startup = [
         { command = "vivaldi"; }
         { command = "wezterm"; }
+        { command = "exec ${pkgs.swaynotificationcenter}/bin/swaync"; }
         {
           command = "telegram-desktop";
         }
@@ -114,6 +117,6 @@
       #   };
       # };
     };
-    extraConfig = "exec ${pkgs.swaynotificationcenter}/bin/swaync";
+    # extraConfig = "exec ${pkgs.swaynotificationcenter}/bin/swaync";
   };
 }
