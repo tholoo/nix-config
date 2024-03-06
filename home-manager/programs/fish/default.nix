@@ -183,7 +183,7 @@
       # restow = ''stow --restow --verbose --target ~'';
 
       glog =
-        "git log --oneline --graph --decorate --all --abbrev-commit --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset";
+        "git log --oneline --graph --decorate --all --abbrev-commit --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset'";
       gcb = "git checkout -b";
     };
     shellAliases = {
