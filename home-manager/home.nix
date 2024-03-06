@@ -267,6 +267,18 @@
       enable = true;
       systemd = true;
     };
+    # connect android to linux
+    kdeconnect = {
+      enable = true;
+      indicator = true;
+    };
+    # auto dark mode
+    darkman = {
+      enable = true;
+      settings = {
+        usegeoclue = true;
+      };
+    };
   };
 
   # Nicely reload system units when changing configs
