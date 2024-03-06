@@ -28,16 +28,12 @@
       bind-key & kill-window
       bind-key x kill-pane
 
-      # bind t to terminal
-      # unbind t
-      # unbind T
       bind T switchc -t 'terminal'
 
       bind | split-window -h # vertical split
       bind - split-window -v # horizontal split
 
       # Linux only
-      set -g mouse on
       bind -n WheelUpPane if-shell -F -t = "#{mouse_any_flag}" "send-keys -M" "if -Ft= '#{pane_in_mode}' 'send-keys -M' 'select-pane -t=; copy-mode -e; send-keys -M'"
       bind -n WheelDownPane select-pane -t= \; send-keys -M
       bind -n C-WheelUpPane select-pane -t= \; copy-mode -e \; send-keys -M
@@ -47,23 +43,18 @@
       bind -T copy-mode-emacs C-WheelDownPane send-keys -X halfpage-down
 
       # set-window-option -g mode-keys vi
-      # bind-key -T copy-mode-vi v send -X begin-selection
-      # bind-key -T copy-mode-vi V send -X select-line
-      # bind-key -T copy-mode-vi y send -X copy-pipe 'xclip -in -selection clipboard'
+      bind-key -T copy-mode-vi v send -X begin-selection
+      bind-key -T copy-mode-vi V send -X select-line
+      bind-key -T copy-mode-vi y send -X copy-pipe 'xclip -in -selection clipboard'
       # To copy, left click and drag to highlight text in yellow,
       # once you release left click yellow text will disappear and will automatically be available in clibboard
       # # Use vim keybindings in copy mode
       # setw -g mode-keys vi
       # Update default binding of `Enter` to also use copy-pipe
-      # unbind -T copy-mode-vi Enter
-      # bind-key -T copy-mode-vi Enter send-keys -X copy-pipe-and-cancel "xclip -selection c"
-      # bind-key -T copy-mode-vi MouseDragEnd1Pane send-keys -X copy-pipe-and-cancel "xclip -in -selection clipboard"
+      unbind -T copy-mode-vi Enter
+      bind-key -T copy-mode-vi Enter send-keys -X copy-pipe-and-cancel "xclip -selection c"
+      bind-key -T copy-mode-vi MouseDragEnd1Pane send-keys -X copy-pipe-and-cancel "xclip -in -selection clipboard"
 
-      # Act like vim
-      # bind-key -T copy-mode-vi 'v' send -X begin-selection
-      # bind-key -T copy-mode-vi 'y' send -X copy-selection
-
-      # set -g base-index 1              # start indexing windows at 1 instead of 0
       # setw -g pane-base-index 1
       set -g detach-on-destroy off     # don't exit from tmux when closing a session
       # set -g escape-time 0             # zero-out escape time delay
