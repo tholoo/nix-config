@@ -23,7 +23,7 @@
       modifier = "Mod4";
       terminal = "wezterm";
       workspaceAutoBackAndForth = true;
-      # defaultWorkspace = 1;
+      defaultWorkspace = "1";
       menu = "${pkgs.wofi}/bin/wofi --show run";
       gaps = {
         smartGaps = true;
