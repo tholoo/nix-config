@@ -15,7 +15,6 @@
   services.swayosd.enable = true;
   wayland.windowManager.sway = {
     enable = true;
-    swaynag.enable = true;
     wrapperFeatures.gtk = true;
     # Sway-specific Configuration
     config = rec {
