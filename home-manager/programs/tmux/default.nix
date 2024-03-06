@@ -29,8 +29,8 @@
       bind-key x kill-pane
 
       # bind t to terminal
-      unbind t
-      unbind T
+      # unbind t
+      # unbind T
       bind T switchc -t 'terminal'
 
       bind | split-window -h # vertical split
@@ -92,10 +92,6 @@
       set-option -g set-titles on
       setw -g monitor-activity on
 
-      set -g @session-wizard 't'
-      set -g @session-wizard-height 80
-      set -g @session-wizard-width 80
-
       set -g @sessionx-bind 'f'
       set -g @sessionx-window-mode 'on'
 
@@ -114,7 +110,14 @@
     plugins = with pkgs.tmuxPlugins; [
       # unsupported plugins
       # 'omerxx/tmux-sessionx'
-      tmux-session-wizard
+      {
+        plugin = tmux-session-wizard;
+        extraConfig = ''
+          set -g @session-wizard 't'
+          set -g @session-wizard-height 80
+          set -g @session-wizard-width 80
+        '';
+      }
       # '27medkamal/tmux-session-wizard'
 
       # fzf
