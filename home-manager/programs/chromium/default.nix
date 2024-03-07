@@ -1,4 +1,4 @@
-{ pkgs, lib, ... }: {
+{ pkgs, ... }: {
   programs.chromium = {
     dictionaries = with pkgs; [ hunspellDictsChromium.en_US ];
     enable = true;
@@ -9,7 +9,7 @@
         updateUrl =
           "https://raw.githubusercontent.com/iamadamdev/bypass-paywalls-chrome/master/updates.xml";
       }
-    ] ++ lib.fold (id: ids: [{ inherit id; }] ++ ids) [ ] [
+    ] ++ map (id: { inherit id; }) [
       # UBlock Origin
       "cjpalhdlnbpafiamejdnhcphjbkeiagm"
       # Global Speed
