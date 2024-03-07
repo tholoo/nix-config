@@ -89,7 +89,8 @@
 
         # "Print+Shift" = "exec ${pkgs.flameshot}/bin/flameshot -c region";
         # "Print+Shift+Control" = "exec ${pkgs.flameshot}/bin/flameshot -c window";
-        "alt+tab" = "workspace back_and_forth";
+        # I don't like this because ultimately I just keep switching to the wrong workspace
+        # "alt+tab" = "workspace back_and_forth";
         # "${modifier}+period" = "exec makoctl dismiss";
         # "${modifier}+shift+period" = "exec makoctl dismiss -a";
         "${modifier}+z" = "exec swaylock";

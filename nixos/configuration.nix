@@ -112,6 +112,28 @@
   # };
   # Enable CUPS to print documents.
   services = {
+    keyd = {
+      enable = true;
+      keyboards = {
+        default = {
+          settings = {
+            main = {
+              # https://github.com/rvaiya/keyd/blob/2338f11b1ddd81eaddd957de720a3b4279222da0/t/keys.py
+              capslock = "esc";
+              # leftbrace = "overload(meta, leftbrace)";
+              rightalt = "overload(meta, rightalt)";
+              # rightalt = "layer(rightalt)";
+            };
+            nav = {
+              h = "left";
+              j = "down";
+              k = "up";
+              l = "right";
+            };
+          };
+        };
+      };
+    };
     v2raya.enable = true;
     xserver = {
       # Load nvidia driver for Xorg and Wayland
