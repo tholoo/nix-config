@@ -65,10 +65,13 @@
         # "Print+Shift+Control" = "exec ${pkgs.shotman}/bin/shotman -c window";
         # "Print" = ''exec --no-startup-id "${pkgs.flameshot}/bin/flameshot"'';
         "Print" = ''
-          exec ${pkgs.grim}/bin/grim -g "$(${pkgs.slurp}/bin/slurp)" - | ${pkgs.satty}/bin/satty --filename -'';
+          exec ${pkgs.wayshot}/bin/wayshot -s "$(${pkgs.slurp}/bin/slurp)" --stdout | ${pkgs.satty}/bin/satty --filename -'';
 
         "Insert" =
-          "exec ${pkgs.grim}/bin/grim -o $(swaymsg -t get_outputs | ${pkgs.jq}/bin/jq -r '.[] | select(.focused) | .name') - | ${pkgs.satty}/bin/satty --filename - --fullscreen";
+          "exec ${pkgs.wayshot}/bin/wayshot --stdout | ${pkgs.satty}/bin/satty --filename - --fullscreen";
+
+        # "Insert" =
+        #   "exec ${pkgs.grim}/bin/grim -o $(swaymsg -t get_outputs | ${pkgs.jq}/bin/jq -r '.[] | select(.focused) | .name') - | ${pkgs.satty}/bin/satty --filename - --fullscreen";
         # Screen recording
         # "${modifier}+Print" = "exec wayrecorder --notify screen";
         # "${modifier}+Shift+Print" = "exec wayrecorder --notify --input area";
