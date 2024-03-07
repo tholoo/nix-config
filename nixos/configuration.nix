@@ -120,10 +120,16 @@
             main = {
               # https://github.com/rvaiya/keyd/blob/2338f11b1ddd81eaddd957de720a3b4279222da0/t/keys.py
               capslock = "esc";
-              # leftbrace = "overload(meta, leftbrace)";
-              rightalt = "overload(meta, rightalt)";
-              # rightalt = "layer(rightalt)";
+              leftbrace = "overload(meta, leftbrace)";
+              # rightalt = "overload(meta, rightalt)";
+              rightalt = "layer(nav)";
+              # backtick = "layer(layout_switch)";
             };
+            # TODO: Make layout layers
+            # layout_switch = {
+            # "1" = "setlayout(qwerty)";
+            # "2" = "setlayout(dvorak)";
+            # };
             nav = {
               h = "left";
               j = "down";
