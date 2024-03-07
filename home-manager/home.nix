@@ -287,6 +287,9 @@
       script = "polybar bar &";
       enable = true;
     };
+
+    # pipewire audio effects
+    easyeffects.enable = true;
   };
 
   # Nicely reload system units when changing configs
