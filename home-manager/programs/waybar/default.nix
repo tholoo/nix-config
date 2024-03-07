@@ -1,7 +1,8 @@
-{ ... }: {
+{ lib, ... }: {
   programs.waybar = {
-    enable = true;
+    enable = false;
     # systemd.enable = true;
-    # settings = { mainBar = { position = "bottom"; output = "eDP-1"; }; };
+    # settings = { options = { position = "bottom"; }; };
+    # settings = { "sway/workspaces" = { position = "bottom"; }; };
   };
 }

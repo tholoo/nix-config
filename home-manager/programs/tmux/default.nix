@@ -114,7 +114,7 @@
       # fzf
       # fzf-url
       # yank
-      vim-tmux-navigator
+      # vim-tmux-navigator
       # yank
       # {
       # plugin = resurrect;

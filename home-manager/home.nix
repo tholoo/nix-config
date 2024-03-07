@@ -85,6 +85,7 @@
       # it provides the command `nom` works just like `nix`
       # with more detailed log output
       nix-output-monitor
+      nix-prefetch-github
 
       # utils
       ripgrep # recursively searches directories for a regex pattern
@@ -280,6 +281,11 @@
       settings = {
         usegeoclue = true;
       };
+    };
+
+    polybar = {
+      script = "polybar bar &";
+      enable = true;
     };
   };
 
