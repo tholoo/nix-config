@@ -15,7 +15,7 @@
       thumbfast
       mpvacious
       # Youtube
-      sponserblock
+      sponsorblock
       quality-menu
     ];
   };
