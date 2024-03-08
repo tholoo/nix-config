@@ -46,6 +46,7 @@
       bars = [{
         #   fonts.size = 15.0;
         # command = "waybar";
+        command = "waybar";
         position = "bottom";
         # statusCommand = "${pkgs.i3status-rust}/bin/i3status-rs";
       }];
