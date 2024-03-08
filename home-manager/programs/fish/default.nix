@@ -137,6 +137,20 @@
         mkdir $argv
         and cd $argv
       '';
+
+      # try out packages
+      try = ''
+        set cmd "nix-shell"
+        for arg in $argv
+            set cmd "$cmd -p $arg"
+        end
+        set cmd "$cmd --command fish"
+        eval $cmd
+      '';
+      # try out package and execute it
+      trye = ''
+        eval "nix-shell --command fish -p $argv[1] --run $argv[1]"
+      '';
     };
 
     shellAbbrs = {
