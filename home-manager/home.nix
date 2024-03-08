@@ -95,6 +95,9 @@
       watchexec # Run commands based on file change
       satty # Screen annotatiaon tool
       bottom # System monitor
+      dust # a better du
+      duf # a better df
+      gping # ping but with a graph
 
       grc # command colorizer
 
