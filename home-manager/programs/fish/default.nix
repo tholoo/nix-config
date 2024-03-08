@@ -139,18 +139,36 @@
       '';
 
       # try out packages
-      try = ''
-        set cmd "nix-shell"
-        for arg in $argv
-            set cmd "$cmd -p $arg"
-        end
-        set cmd "$cmd --command fish"
-        eval $cmd
-      '';
+      try = {
+        description =
+          "spawn a new shell with the specified packages to try them out";
+        wraps = "nix-shell";
+        body = ''
+          set cmd "nix-shell --command $SHELL"
+          for arg in $argv
+              set cmd "$cmd -p \"$arg\""
+          end
+          eval $cmd
+        '';
+      };
       # try out package and execute it
-      trye = ''
-        eval "nix-shell --command fish -p $argv[1] --run $argv[1]"
-      '';
+      trye = {
+        description =
+          "run and execute the specified package. an optional second argument as the command to be run can be provided";
+        wraps = "nix-shell";
+        argumentNames = [ "package" "command" ];
+        body = ''
+          set cmd "nix-shell --command $SHELL -p \"$package\""
+
+          if test -n "$command"
+              set cmd "$cmd --run \"$command\""
+          else
+              set cmd "$cmd --run \"$package\""
+          end
+
+          eval "$cmd"
+        '';
+      };
     };
 
     shellAbbrs = {
