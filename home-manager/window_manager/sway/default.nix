@@ -45,7 +45,6 @@
       };
       bars = [{
         #   fonts.size = 15.0;
-        # command = "waybar";
         command = "waybar";
         position = "bottom";
         # statusCommand = "${pkgs.i3status-rust}/bin/i3status-rs";
@@ -70,6 +69,9 @@
 
         "Insert" =
           "exec ${pkgs.wayshot}/bin/wayshot --stdout | ${pkgs.satty}/bin/satty --filename - --fullscreen";
+
+        "${modifier}+period" =
+          "exec ${pkgs.swaynotificationcenter}/bin/swaync-client --hide-latest";
 
         # "Insert" =
         #   "exec ${pkgs.grim}/bin/grim -o $(swaymsg -t get_outputs | ${pkgs.jq}/bin/jq -r '.[] | select(.focused) | .name') - | ${pkgs.satty}/bin/satty --filename - --fullscreen";
@@ -105,7 +107,7 @@
 
         # Toggle control center
         "${modifier}+Shift+n" =
-          "exec ${pkgs.swaynotificationcenter}/bin/swaync-client -t -sw";
+          "exec ${pkgs.swaynotificationcenter}/bin/swaync-client --toggle-panel --skip-wait";
       };
       output = {
         "*" = {
