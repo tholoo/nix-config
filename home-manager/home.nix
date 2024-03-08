@@ -94,6 +94,7 @@
       fd # A rust alternative to find
       watchexec # Run commands based on file change
       satty # Screen annotatiaon tool
+      bottom # System monitor
 
       grc # command colorizer
 
@@ -278,9 +279,7 @@
     # auto dark mode
     darkman = {
       enable = true;
-      settings = {
-        usegeoclue = true;
-      };
+      settings = { usegeoclue = true; };
     };
 
     polybar = {
