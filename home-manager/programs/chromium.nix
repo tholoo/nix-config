@@ -1,7 +1,7 @@
 { pkgs, ... }: {
   programs.chromium = {
-    dictionaries = with pkgs; [ hunspellDictsChromium.en_US ];
     enable = true;
+    dictionaries = with pkgs; [ hunspellDictsChromium.en_US ];
     extensions = [
       # Bypass Paywalls
       {
