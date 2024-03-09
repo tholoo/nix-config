@@ -75,7 +75,20 @@
         format = "{:%Y-%m-%d | %H:%M}";
         tooltip-format = "{:%Y-%m-%d | %H:%M}";
       };
-      cpu = { format = "{usage}% "; };
+      cpu = {
+        format = "{usage}% ({load}) {icon} ";
+        # interval = 1
+        format-icons = [
+          "<span color='#69ff94'>▁</span>"
+          "<span color='#2aa9ff'>▂</span>"
+          "<span color='#f8f8f2'>▃</span>"
+          "<span color='#f8f8f2'>▄</span>"
+          "<span color='#ffffa5'>▅</span>"
+          "<span color='#ffffa5'>▆</span>"
+          "<span color='#ff9977'>▇</span>"
+          "<span color='#dd532e'>█</span>"
+        ];
+      };
       memory = { format = "{}% "; };
       network = {
         # interval = 1;
@@ -87,24 +100,6 @@
         format-linked = "{ifname} (No IP) ";
         format-wifi = "{essid} ({signalStrength}%) ";
       };
-      # pulseaudio = {
-      #   format = "{volume}% {icon} {format_source}";
-      #   format-bluetooth = "{volume}% {icon} {format_source}";
-      #   format-bluetooth-muted = " {icon} {format_source}";
-      #   format-icons = {
-      #     car = "";
-      #     default = [ "" "" "" ];
-      #     handsfree = "";
-      #     headphones = "";
-      #     headset = "";
-      #     phone = "";
-      #     portable = "";
-      #   };
-      #   format-muted = " {format_source}";
-      #   format-source = "{volume}% ";
-      #   format-source-muted = "";
-      #   on-click = "pavucontrol";
-      # };
       "sway/mode" = { format = ''<span style="italic">{}</span>''; };
       temperature = {
         critical-threshold = 80;
