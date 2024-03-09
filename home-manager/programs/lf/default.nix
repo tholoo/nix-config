@@ -2,6 +2,15 @@
   xdg.configFile."lf/icons".source = ./icons;
   programs.lf = {
     enable = true;
+    commands = {
+      mkdir = ''
+        ''${{
+          printf "Directory Name: "
+          read DIR
+          mkdir -p $DIR
+        }}
+      '';
+    };
     settings = {
       number = true;
       preview = true;
@@ -9,7 +18,11 @@
       drawbox = true;
       icons = true;
       ignorecase = true;
-      previewer = ''${pkgs.pistol}/bin/pistol "$file"'';
     };
+    keybindings = {
+      "<enter>" = "open";
+      o = "mkdir";
+    };
+    previewer.source = pkgs.pistol + /bin/pistol;
   };
 }
