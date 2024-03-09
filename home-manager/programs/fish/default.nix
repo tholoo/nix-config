@@ -155,20 +155,35 @@
       trye = {
         description =
           "run and execute the specified package. an optional second argument as the command to be run can be provided";
-        wraps = "nix-shell";
+        wraps = "nix run";
         argumentNames = [ "package" "command" ];
         body = ''
-          set cmd "nix-shell --command $SHELL -p \"$package\""
+          set cmd "nix run \"nixpkgs#$package\""
 
           if test -n "$command"
-              set cmd "$cmd --run \"$command\""
-          else
-              set cmd "$cmd --run \"$package\""
+              set cmd "$cmd -- \"$command\""
           end
 
           eval "$cmd"
         '';
       };
+      # trye = {
+      #   description =
+      #     "run and execute the specified package. an optional second argument as the command to be run can be provided";
+      #   wraps = "nix-shell";
+      #   argumentNames = [ "package" "command" ];
+      #   body = ''
+      #     set cmd "nix-shell --command $SHELL -p \"$package\""
+      #
+      #     if test -n "$command"
+      #         set cmd "$cmd --run \"$command\""
+      #     else
+      #         set cmd "$cmd --run \"$package\""
+      #     end
+      #
+      #     eval "$cmd"
+      #   '';
+      # };
     };
 
     shellAbbrs = {
