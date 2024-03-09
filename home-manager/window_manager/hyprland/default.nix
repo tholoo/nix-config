@@ -1,6 +1,3 @@
 { config, pkgs, lib, ... }: {
-  wayland.windowManager.hyprland = {
-    enableNvidiaPatches = true;
-    enable = true;
-  };
+  wayland.windowManager.hyprland = { enable = true; };
 }

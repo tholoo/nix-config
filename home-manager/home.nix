@@ -5,9 +5,10 @@
   imports = let
     packages = dir:
       with lib;
-      map (file: dir + "/${file}") (attrNames
-        (filterAttrs (file: type: type == "directory") (builtins.readDir dir)));
-  in packages ./programs ++ lib.concatMap import [ ./window_manager ];
+      map (file: dir + "/${file}") (attrNames (filterAttrs
+        (file: type: (hasSuffix ".nix" file) || (type == "directory"))
+        (builtins.readDir dir)));
+  in packages ./programs ++ packages ./window_manager;
   # imports = [
   # If you want to use modules your own flake exports (from modules/home-manager):
   # outputs.homeManagerModules.example
