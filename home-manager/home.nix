@@ -8,7 +8,8 @@
       map (file: dir + "/${file}") (attrNames (filterAttrs
         (file: type: (hasSuffix ".nix" file) || (type == "directory"))
         (builtins.readDir dir)));
-  in packages ./programs ++ packages ./window_manager;
+  in packages ./programs ++ packages ./window_manager
+  ++ [ inputs.nix-colors.homeManagerModules.default ];
   # imports = [
   # If you want to use modules your own flake exports (from modules/home-manager):
   # outputs.homeManagerModules.example
@@ -19,6 +20,8 @@
   # You can also split up your configuration and import pieces of it here:
   # ./nvim.nix
   # ];
+
+  colorScheme = inputs.nix-colors.colorSchemes.onedark;
 
   nixpkgs = {
     # You can add overlays here
