@@ -2,7 +2,7 @@
   programs.mpv = {
     enable = true;
     config = {
-      profile = "gpu-hq";
+      # profile = "gpu-hq";
       ytdl-format = "bestvideo+bestaudio";
       # cache-default = 4000000;
     };

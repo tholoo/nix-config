@@ -102,6 +102,7 @@
       dust # a better du
       duf # a better df
       gping # ping but with a graph
+      trashy # for deleting things to trash
 
       grc # command colorizer
 
