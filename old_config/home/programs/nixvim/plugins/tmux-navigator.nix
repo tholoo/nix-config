@@ -1,1 +1,0 @@
-{ tmux-navigator = { enable = true; }; }
