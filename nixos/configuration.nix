@@ -225,9 +225,6 @@
   sound.enable = true;
   hardware = {
     logitech = {
-      enable = true;
-      # adds things like solaar
-      enableGraphical = true;
       wireless = {
         enable = true;
         enableGraphical = true;
