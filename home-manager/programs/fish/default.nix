@@ -160,11 +160,33 @@
         body = ''
           set cmd "nix run \"nixpkgs#$package\""
 
-          if test -n "$command"
-              set cmd "$cmd -- \"$command\""
+          set -e argv[1]
+          if count $argv > /dev/null
+              set cmd "$cmd -- $argv"
           end
+          # if test -n "$command"
+          #     set cmd "$cmd -- \"$command\""
+          # end
 
           eval "$cmd"
+        '';
+      };
+
+      fish_command_not_found = {
+        description =
+          "Run this function when a command isn't found. Try to run a command with nix if it doesn't exist";
+        argumentNames = [ "command" ];
+        body = ''
+          trye $command; or command-not-found $command
+        '';
+      };
+
+      dev = {
+        description = "Create a dev template for direnv";
+        argumentNames = [ "template" ];
+        body = ''
+          nix flake init -t "github:the-nix-way/dev-templates#$template"
+          direnv allow
         '';
       };
       # trye = {
