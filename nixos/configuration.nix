@@ -121,7 +121,7 @@
               # https://github.com/rvaiya/keyd/blob/2338f11b1ddd81eaddd957de720a3b4279222da0/t/keys.py
               capslock = "esc";
               leftbrace = "overload(meta, leftbrace)";
-              meta = "oneshot(meta)";
+              # meta = "oneshot(meta)";
               # rightalt = "overload(meta, rightalt)";
               rightalt = "layer(nav)";
               # backtick = "layer(layout_switch)";
@@ -142,10 +142,10 @@
       };
     };
     v2raya.enable = true;
-    xserver = {
-      # Load nvidia driver for Xorg and Wayland
-      videoDrivers = [ "nvidiaLegacy470" ];
-    };
+    # xserver = {
+    # Load nvidia driver for Xorg and Wayland
+    #   videoDrivers = [ "nvidiaLegacy470" ];
+    # };
     #     enable = true;
     #     xkb = {
     #       variant = "";
@@ -178,6 +178,11 @@
     pipewire = {
       enable = true;
       audio.enable = true;
+      extraConfig.pipewire = {
+        "99-silent-bell.conf" = {
+          "context.properties" = { "module.x11.bell" = false; };
+        };
+      };
       wireplumber = {
         enable = true;
         # Higher quality for bluetooth
@@ -231,33 +236,33 @@
       };
     };
     # gt 710
-    nvidia = {
-      package = config.boot.kernelPackages.nvidiaPackages.legacy_470;
-      # Modesetting is required.
-      modesetting.enable = true;
-      # Nvidia power management. Experimental, and can cause sleep/suspend to fail.
-      # Enable this if you have graphical corruption issues or application crashes after waking
-      # up from sleep. This fixes it by saving the entire VRAM memory to /tmp/ instead
-      # of just the bare essentials.
-      powerManagement.enable = false;
-
-      # Fine-grained power management. Turns off GPU when not in use.
-      # Experimental and only works on modern Nvidia GPUs (Turing or newer).
-      powerManagement.finegrained = false;
-
-      # Use the NVidia open source kernel module (not to be confused with the
-      # independent third-party "nouveau" open source driver).
-      # Support is limited to the Turing and later architectures. Full list of
-      # supported GPUs is at:
-      # https://github.com/NVIDIA/open-gpu-kernel-modules#compatible-gpus
-      # Only available from driver 515.43.04+
-      # Currently alpha-quality/buggy, so false is currently the recommended setting.
-      open = false;
-
-      # Enable the Nvidia settings menu,
-      # accessible via `nvidia-settings`.
-      nvidiaSettings = true;
-    };
+    # nvidia = {
+    #   package = config.boot.kernelPackages.nvidiaPackages.legacy_470;
+    #   # Modesetting is required.
+    #   modesetting.enable = true;
+    #   # Nvidia power management. Experimental, and can cause sleep/suspend to fail.
+    #   # Enable this if you have graphical corruption issues or application crashes after waking
+    #   # up from sleep. This fixes it by saving the entire VRAM memory to /tmp/ instead
+    #   # of just the bare essentials.
+    #   powerManagement.enable = false;
+    #
+    #   # Fine-grained power management. Turns off GPU when not in use.
+    #   # Experimental and only works on modern Nvidia GPUs (Turing or newer).
+    #   powerManagement.finegrained = false;
+    #
+    #   # Use the NVidia open source kernel module (not to be confused with the
+    #   # independent third-party "nouveau" open source driver).
+    #   # Support is limited to the Turing and later architectures. Full list of
+    #   # supported GPUs is at:
+    #   # https://github.com/NVIDIA/open-gpu-kernel-modules#compatible-gpus
+    #   # Only available from driver 515.43.04+
+    #   # Currently alpha-quality/buggy, so false is currently the recommended setting.
+    #   open = false;
+    #
+    #   # Enable the Nvidia settings menu,
+    #   # accessible via `nvidia-settings`.
+    #   nvidiaSettings = true;
+    # };
     opengl = {
       enable = true;
       driSupport = true;
@@ -304,6 +309,8 @@
   boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.grub.configurationLimit = 30;
 
+  boot.binfmt.emulatedSystems = [ "x86_64-windows" ];
+
   virtualisation = {
     docker.enable = true;
     libvirtd.enable = true;
@@ -325,8 +332,11 @@
       extraGroups = [ "wheel" "networkmanager" "audio" "docker" "video" ];
     };
   };
-  programs.light.enable = true;
-  programs.hyprland.enable = true;
+  programs = {
+    light.enable = true;
+    # hyprland.enable = true;
+    virt-manager.enable = true;
+  };
   # for sway
   systemd.user.services.kanshi = {
     description = "kanshi daemon";
@@ -347,6 +357,7 @@
     neovim
     wget
     curl
+    qemu
   ];
   environment.variables.EDITOR = "nvim";
 
