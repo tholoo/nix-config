@@ -1,4 +1,4 @@
-{
+{ ... }: {
   comment-nvim = {
     enable = true;
 

@@ -90,7 +90,13 @@
         "tholo" = home-manager.lib.homeManagerConfiguration {
           # Home-manager requires 'pkgs' instance
           pkgs = nixpkgs.legacyPackages.x86_64-linux;
-          extraSpecialArgs = { inherit inputs outputs; };
+          extraSpecialArgs = let
+            getNixFiles = dir:
+              with nixpkgs.lib;
+              map (file: dir + "/${file}") (attrNames (filterAttrs
+                (file: type: (hasSuffix ".nix" file) || (type == "directory"))
+                (builtins.readDir dir)));
+          in { inherit inputs outputs getNixFiles; };
           modules = [
             # > Our main home-manager configuration file <
             inputs.nixvim.homeManagerModules.nixvim

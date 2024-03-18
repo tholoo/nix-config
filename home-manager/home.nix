@@ -1,15 +1,10 @@
 # This is your home-manager configuration file
 # Use this to configure your home environment (it replaces ~/.config/nixpkgs/home.nix)
-{ inputs, outputs, lib, config, pkgs, ... }: {
+{ inputs, outputs, getNixFiles, lib, pkgs, ... }: {
   # You can import other home-manager modules here
-  imports = let
-    packages = dir:
-      with lib;
-      map (file: dir + "/${file}") (attrNames (filterAttrs
-        (file: type: (hasSuffix ".nix" file) || (type == "directory"))
-        (builtins.readDir dir)));
-  in packages ./programs ++ packages ./window_manager
-  ++ [ inputs.nix-colors.homeManagerModules.default ];
+
+  imports = getNixFiles ./programs ++ getNixFiles ./window_manager
+    ++ [ inputs.nix-colors.homeManagerModules.default ];
   # imports = [
   # If you want to use modules your own flake exports (from modules/home-manager):
   # outputs.homeManagerModules.example

@@ -1,4 +1,4 @@
-{
+{ ... }: {
   lsp = {
     enable = true;
     keymaps = {

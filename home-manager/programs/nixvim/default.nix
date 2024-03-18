@@ -1,11 +1,29 @@
-{ pkgs, lib, ... }: {
+{ pkgs, lib, getNixFiles, options, config, ... }: {
   # imports = lib.concatMap import [
   # ./plugins
   # ];
-  imports = [ ./plugins ];
+  imports = let
+    addNixvim = file:
+      let importedFile = import file { inherit pkgs lib options config; };
+      in {
+        programs.nixvim = if lib.hasAttr "plugins" importedFile then
+          importedFile
+        else {
+          plugins = importedFile;
+        };
+      };
+    # in if lib.hasAttr "plugins" importedFile then {
+    #   programs.nixvim = importedFile;
+    # } else {
+    #   programs.nixvim.plugins = importedFile;
+    # };
+
+  in map addNixvim (getNixFiles ./plugins);
   programs.nixvim = {
     enable = true;
     defaultEditor = true;
+
+    colorschemes = { ayu.enable = true; };
 
     # extraPackages = with pkgs; [
     # ];
@@ -38,10 +56,24 @@
       updatetime = 50;
       # foldlevelstart = 99;
     };
-
-    plugins = {
-      lualine.enable = true;
-      luasnip.enable = true;
-    };
+    keymaps = [
+      {
+        key = "<esc>";
+        action = ":noh<CR>";
+        mode = "n";
+        options = {
+          silent = true;
+          noremap = true;
+        };
+      }
+      {
+        key = "<leader>w";
+        action = "<CMD>update<CR>";
+        options = {
+          silent = true;
+          noremap = true;
+        };
+      }
+    ];
   };
 }
