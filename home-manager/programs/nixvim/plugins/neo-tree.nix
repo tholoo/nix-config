@@ -1,1 +1,1 @@
-{ ... }: { none-ls = { enable = true; }; }
+{ neo-tree = { enable = true; }; }

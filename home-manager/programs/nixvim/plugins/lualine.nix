@@ -1,1 +1,1 @@
-{ ... }: { lualine.enable = true; }
+{ lualine.enable = true; }

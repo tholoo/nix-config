@@ -1,1 +1,1 @@
-{ ... }: { luasnip.enable = true; }
+{ luasnip.enable = true; }

@@ -1,4 +1,4 @@
-{ ... }: {
+{
   gitsigns = {
     enable = true;
     signs = {

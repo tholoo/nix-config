@@ -1,1 +1,1 @@
-{ ... }: { surround.enable = true; }
+{ surround.enable = true; }

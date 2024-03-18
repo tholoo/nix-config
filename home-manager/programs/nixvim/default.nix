@@ -4,12 +4,17 @@
   # ];
   imports = let
     addNixvim = file:
-      let importedFile = import file { inherit pkgs lib options config; };
+      let
+        importedFile = import file;
+        pluginSet = if builtins.isFunction importedFile then
+          importedFile { inherit pkgs lib options config; }
+        else
+          importedFile;
       in {
-        programs.nixvim = if lib.hasAttr "plugins" importedFile then
-          importedFile
+        programs.nixvim = if lib.hasAttr "plugins" pluginSet then
+          pluginSet
         else {
-          plugins = importedFile;
+          plugins = pluginSet;
         };
       };
     # in if lib.hasAttr "plugins" importedFile then {

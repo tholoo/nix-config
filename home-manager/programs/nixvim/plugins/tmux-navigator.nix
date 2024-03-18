@@ -1,1 +1,1 @@
-{ ... }: { tmux-navigator = { enable = true; }; }
+{ tmux-navigator = { enable = true; }; }
