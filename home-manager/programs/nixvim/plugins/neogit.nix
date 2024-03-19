@@ -1,0 +1,1 @@
+{ neogit.enable = true; }

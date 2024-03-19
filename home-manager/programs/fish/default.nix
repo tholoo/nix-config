@@ -238,12 +238,11 @@
       # get error messages from journalctl
       jctl = "journalctl -p 3 -xb";
 
-      # FIXME: doesn't seem to work with home-manager stable
-      # "-C" = {
-      # regex = "^\\.\\.+$";
-      # position = "anywhere";
-      # function = "multicd";
-      # };
+      "-C" = {
+        regex = "^\\.\\.+$";
+        position = "anywhere";
+        function = "multicd";
+      };
 
       # reload = ''source ~/.config/fish/config.fish'';
       # fishr = ''source ~/.config/fish/config.fish'';
@@ -255,21 +254,23 @@
         "git log --oneline --graph --decorate --all --abbrev-commit --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset'";
       gcb = "git checkout -b";
     };
+
     shellAliases = {
-      ls = "${pkgs.eza}/bin/eza --color=always --group-directories-first --git";
+      e = "$EDITOR";
+      ls = "${pkgs.eza}/bin/eza --color=auto --group-directories-first --git";
       la =
-        "${pkgs.eza}/bin/eza -la --color=always --group-directories-first --git --git-ignore -I .venv -I __pycache__ -I .git";
-      laa = "${pkgs.eza}/bin/eza -la --color=always --group-directories-first";
+        "${pkgs.eza}/bin/eza -la --color=auto --group-directories-first --git --git-ignore -I .venv -I __pycache__ -I .git";
+      laa = "${pkgs.eza}/bin/eza -la --color=auto --group-directories-first";
       ll =
-        "${pkgs.eza}/bin/eza -l --color=always --group-directories-first --git -I .venv -I __pycache__ -I .git";
+        "${pkgs.eza}/bin/eza -l --color=auto --group-directories-first --git -I .venv -I __pycache__ -I .git";
       lt =
-        "${pkgs.eza}/bin/eza -l --tree --level=2 --color=always --group-directories-first -I .venv -I __pycache__ -I .git";
+        "${pkgs.eza}/bin/eza -l --tree --level=2 --color=auto --group-directories-first -I .venv -I __pycache__ -I .git";
       ltt =
-        "${pkgs.eza}/bin/eza -l --tree --color=always --group-directories-first -I .venv -I __pycache__ -I .git";
+        "${pkgs.eza}/bin/eza -l --tree --color=auto --group-directories-first -I .venv -I __pycache__ -I .git";
       lat =
-        "${pkgs.eza}/bin/eza -la --tree --level=2 --color=always --group-directories-first -I .venv -I __pycache__ -I .git";
+        "${pkgs.eza}/bin/eza -la --tree --level=2 --color=auto --group-directories-first -I .venv -I __pycache__ -I .git";
       latt =
-        "${pkgs.eza}/bin/eza -la --tree --color=always --group-directories-first -I .venv -I __pycache__ -I .git";
+        "${pkgs.eza}/bin/eza -la --tree --color=auto --group-directories-first -I .venv -I __pycache__ -I .git";
       "l." = ''${pkgs.eza}/bin/eza -la | egrep "^\."'';
 
       grep = "grep --color=auto";

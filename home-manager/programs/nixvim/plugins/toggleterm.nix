@@ -1,0 +1,1 @@
+{ toggleterm.enable = true; }

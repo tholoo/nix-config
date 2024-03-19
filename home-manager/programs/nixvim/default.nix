@@ -28,7 +28,7 @@
     enable = true;
     defaultEditor = true;
 
-    colorschemes = { ayu.enable = true; };
+    colorschemes.ayu.enable = true;
 
     # extraPackages = with pkgs; [
     # ];
@@ -37,7 +37,7 @@
     clipboard.providers = { xsel.enable = true; };
 
     # Highlight and remove extra white spaces
-    highlight.ExtraWhitespace.bg = "red";
+    # highlight.ExtraWhitespace.bg = "red";
     match.ExtraWhitespace = "\\s\\+$";
 
     globals.mapleader = " ";

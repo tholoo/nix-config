@@ -24,14 +24,19 @@
 
       ruff-lsp.enable = true;
       pyright.enable = true;
-      # pylyzer.enable = true;
+      pylyzer.enable = true;
       # pylsp.enable = true;
 
       nil_ls.enable = true;
+      nixd.enable = true;
 
       html.enable = true;
+
+      jsonls.enable = true;
     };
   };
 
   lsp-format = { enable = true; };
+  lspkind.enable = true;
+  lsp-lines.enable = true;
 }
