@@ -1,15 +1,14 @@
 { pkgs, lib, getNixFiles, options, config, ... }: {
-  # imports = lib.concatMap import [
-  # ./plugins
-  # ];
   imports = let
+    getPlugin = file:
+      let importedFile = import file;
+      in if builtins.isFunction importedFile then
+        importedFile { inherit pkgs lib options config getNixFiles getPlugin; }
+      else
+        importedFile;
+
     addNixvim = file:
-      let
-        importedFile = import file;
-        pluginSet = if builtins.isFunction importedFile then
-          importedFile { inherit pkgs lib options config; }
-        else
-          importedFile;
+      let pluginSet = getPlugin file;
       in {
         programs.nixvim = if lib.hasAttr "plugins" pluginSet then
           pluginSet
@@ -17,13 +16,9 @@
           plugins = pluginSet;
         };
       };
-    # in if lib.hasAttr "plugins" importedFile then {
-    #   programs.nixvim = importedFile;
-    # } else {
-    #   programs.nixvim.plugins = importedFile;
-    # };
 
   in map addNixvim (getNixFiles ./plugins);
+
   programs.nixvim = {
     enable = true;
     defaultEditor = true;
