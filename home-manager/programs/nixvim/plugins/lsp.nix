@@ -24,11 +24,12 @@
 
       ruff-lsp.enable = true;
       pyright.enable = true;
-      pylyzer.enable = true;
+      # NOTE: Broken because of rust version
+      # pylyzer.enable = true;
       # pylsp.enable = true;
 
       nil_ls.enable = true;
-      nixd.enable = true;
+      # nixd.enable = true;
 
       html.enable = true;
 

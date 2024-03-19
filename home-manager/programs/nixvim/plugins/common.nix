@@ -1,9 +1,9 @@
 {
   wilder.enable = true;
   undotree.enable = true;
-  trouble.enable = true;
   transparent.enable = true;
   todo-comments.enable = true;
-  inc-rename = true;
-  indent-blankline = true;
+  inc-rename.enable = true;
+  indent-blankline.enable = true;
+  wtf.enable = true;
 }
