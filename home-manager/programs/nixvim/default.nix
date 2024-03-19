@@ -75,6 +75,47 @@
           noremap = true;
         };
       }
+      {
+        key = "<C-d>";
+        action = "<C-d>zz";
+        mode = "n";
+        options = {
+          silent = true;
+          noremap = true;
+        };
+      }
+      {
+        key = "<C-u>";
+        action = "<C-u>zz";
+        mode = "n";
+        options = {
+          silent = true;
+          noremap = true;
+        };
+      }
+      {
+        key = "]<Space>";
+        action =
+          '':<C-u>put =repeat(nr2char(10),v:count)<Bar>execute "\'[-1"<CR>'';
+        mode = "n";
+        options = {
+          silent = true;
+          noremap = true;
+        };
+      }
+      {
+        key = "[<Space>";
+        action =
+          '':<C-u>put!=repeat(nr2char(10),v:count)<Bar>execute "\']+1"<CR>'';
+        mode = "n";
+        options = {
+          silent = true;
+          noremap = true;
+        };
+      }
     ];
+    extraConfigLua = ''
+      vim.api.nvim_set_hl(0, "WinSeparator", {guibg=False})
+    '';
   };
 }
