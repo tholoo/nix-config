@@ -35,13 +35,14 @@
     # highlight.ExtraWhitespace.bg = "red";
     match.ExtraWhitespace = "\\s\\+$";
 
-    globals.mapleader = " ";
+    globals = { mapleader = " "; };
 
     options = {
       number = true;
+      showmode = false; # don't show current mode of cursor in bar
       relativenumber = true;
-      shiftwidth = 2;
-      tabstop = 2;
+      shiftwidth = 4;
+      tabstop = 4;
       clipboard = [ "unnamedplus" ];
       smartindent = true;
       expandtab = true;
