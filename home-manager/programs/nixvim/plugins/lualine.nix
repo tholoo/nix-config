@@ -1,7 +1,7 @@
 {
   lualine = {
     enable = true;
-    extensions = [ "fzf" "oil" "quickfix" "trouble" ];
+    extensions = [ "fzf" "oil" "quickfix" "trouble" "man" "fugitive" ];
     globalstatus = true;
     theme = {
       __raw = ''
