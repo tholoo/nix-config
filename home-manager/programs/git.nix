@@ -1,10 +1,10 @@
-{ pkgs, options, ... }: {
+{ pkgs, ... }: {
   # home.packages = options.home.packages.default ++ (with pkgs; [ lazygit ]);
   programs = {
     lazygit = { enable = true; };
     gh = {
       enable = true;
-      extensions = [ ];
+      extensions = with pkgs; [ gh-copilot ];
       # git_protocol = "ssh";
     };
     gh-dash.enable = true;

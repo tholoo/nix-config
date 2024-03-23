@@ -39,5 +39,5 @@
 
   lsp-format = { enable = true; };
   lspkind.enable = true;
-  lsp-lines.enable = true;
+  # lsp-lines.enable = true;
 }
