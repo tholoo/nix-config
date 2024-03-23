@@ -1,17 +1,5 @@
 { pkgs, ... }: {
-  programs.tmux = let
-    tmux-session-wizard = pkgs.tmuxPlugins.mkTmuxPlugin {
-      pluginName = "tmux-session-wizard";
-      rtpFilePath = "session-wizard.tmux";
-      version = "1.0";
-      src = pkgs.fetchFromGitHub {
-        owner = "27medkamal";
-        repo = "tmux-session-wizard";
-        rev = "e13c4c47c72039b3bcf2706ecf428b099c00b215";
-        sha256 = "sha256-Nz1vfl4owkQG3l2laao9Z6IW1w0nlhYuwHTuag1ajwM=";
-      };
-    };
-  in {
+  programs.tmux = {
     enable = true;
     baseIndex = 1;
     clock24 = true;
@@ -102,20 +90,19 @@
       # unsupported plugins
       # 'omerxx/tmux-sessionx'
       {
-        plugin = tmux-session-wizard;
+        plugin = session-wizard;
         extraConfig = ''
           set -g @session-wizard 't'
           set -g @session-wizard-height 80
           set -g @session-wizard-width 80
         '';
       }
-      # '27medkamal/tmux-session-wizard'
+      copy-toolkit
 
       # fzf
       # fzf-url
-      # yank
+      yank
       # vim-tmux-navigator
-      # yank
       # {
       # plugin = resurrect;
       # extraConfig = "set -g @resurrect-strategy-nvim 'session'";
