@@ -65,10 +65,10 @@
         # "Print+Shift+Control" = "exec ${pkgs.shotman}/bin/shotman -c window";
         # "Print" = ''exec --no-startup-id "${pkgs.flameshot}/bin/flameshot"'';
         "Print" = ''
-          exec ${pkgs.wayshot}/bin/wayshot -s "$(${pkgs.slurp}/bin/slurp)" --stdout | ${pkgs.satty}/bin/satty --filename -'';
+          exec ${pkgs.wayshot}/bin/wayshot -s "$(${pkgs.slurp}/bin/slurp -o -c '#ff0000ff')" --stdout | ${pkgs.satty}/bin/satty --filename - --fullscreen --initial-tool line'';
 
         "Insert" =
-          "exec ${pkgs.wayshot}/bin/wayshot --stdout | ${pkgs.satty}/bin/satty --filename - --fullscreen";
+          "exec ${pkgs.wayshot}/bin/wayshot --stdout | ${pkgs.satty}/bin/satty --filename - --fullscreen --initial-tool brush";
 
         "${modifier}+period" =
           "exec ${pkgs.swaynotificationcenter}/bin/swaync-client --hide-latest";
