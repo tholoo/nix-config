@@ -85,6 +85,7 @@
       # with more detailed log output
       nix-output-monitor
       nix-prefetch-github
+      devenv
 
       # utils
       ripgrep # recursively searches directories for a regex pattern
