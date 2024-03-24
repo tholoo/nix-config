@@ -1,4 +1,4 @@
-{
+{ lib, ... }: {
   lsp = {
     enable = true;
     keymaps = {
@@ -21,39 +21,39 @@
         "<leader>ch" = "signature_help";
       };
     };
-    servers = {
-      tsserver.enable = true;
+    servers = lib.fold (name: c: { "${name}".enable = true; } // c) { } [
+      "tsserver"
 
-      lua-ls.enable = true;
+      "lua-ls"
 
-      ruff-lsp.enable = true;
-      pyright.enable = true;
+      "ruff-lsp"
+      "pyright"
       # NOTE: Broken because of rust version
-      # pylyzer.enable = true;
-      # pylsp.enable = true;
+      # "pylyzer"
+      # "pylsp"
 
-      nil_ls.enable = true;
-      # nixd.enable = true;
+      "nil_ls"
+      # "nixd"
 
-      html.enable = true;
-      htmx.enable = true;
+      "html"
+      "htmx"
 
-      jsonls.enable = true;
-      yamlls.enable = true;
+      "jsonls"
+      "yamlls"
 
-      dockerls.enable = true;
+      "dockerls"
 
-      eslint.enable = true;
+      "eslint"
 
-      gopls.enable = true;
+      "gopls"
 
       # NOTE: Broken
-      # graphql.enable = true;
+      # "graphql"
 
-      typos-lsp.enable = true;
+      "typos-lsp"
 
-      typst-lsp.enable = true;
-    };
+      "typst-lsp"
+    ];
 
     onAttach = ''
       if client.server_capabilities.inlayHintProvider and vim.lsp.inlay_hint then
