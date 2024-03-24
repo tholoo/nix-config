@@ -17,6 +17,11 @@
     ./hardware-configuration.nix
   ];
 
+  # stylix = {
+  #   image = ../resources/wallpapers/wallhaven-fields-858z32.png;
+  #   polarity = "dark";
+  # };
+
   nixpkgs = {
     # You can add overlays here
     overlays = [

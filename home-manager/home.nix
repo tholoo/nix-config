@@ -15,6 +15,32 @@
   # You can also split up your configuration and import pieces of it here:
   # ./nvim.nix
   # ];
+  # stylix = {
+  #   image = ../resources/wallpapers/wallhaven-fields-858z32.png;
+  #   polarity = "dark";
+  #
+  #   fonts = with pkgs; rec {
+  #     monospace = {
+  #       name = "Fira Code";
+  #       package = fira-code;
+  #     };
+  #     sansSerif = {
+  #       name = "Cantarell";
+  #       package = cantarell-fonts;
+  #     };
+  #     serif = sansSerif;
+  #   };
+  #
+  #   cursor = {
+  #     package = pkgs.qogir-icon-theme;
+  #     name = "Qogir";
+  #   };
+  #
+  #   targets = {
+  #     waybar.enableLeftBackColors = true;
+  #     waybar.enableRightBackColors = true;
+  #   };
+  # };
 
   colorScheme = inputs.nix-colors.colorSchemes.onedark;
 

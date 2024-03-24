@@ -34,6 +34,7 @@
     nix-colors.url = "github:misterio77/nix-colors";
 
     # nur.url = "github:nix-community/NUR";
+    stylix.url = "github:danth/stylix";
   };
 
   outputs = { self, nixpkgs, home-manager, ... }@inputs:
@@ -51,6 +52,11 @@
       # pass to it, with each system as an argument
       forAllSystems = nixpkgs.lib.genAttrs systems;
     in {
+      # inputs.stylix = {
+      #   image = ./resources/wallpapers/wallhaven-8586my_1920x1080.png;
+      #   polarity = "dark";
+      # };
+
       # Your custom packages
       # Accessible through 'nix build', 'nix shell', etc
       packages =
@@ -76,6 +82,7 @@
         "homepc" = nixpkgs.lib.nixosSystem {
           specialArgs = { inherit inputs outputs; };
           modules = [
+            # inputs.stylix.nixosModules.stylix
             # > Our main nixos configuration file <
             ./nixos/configuration.nix
           ];
@@ -97,6 +104,7 @@
                 (builtins.readDir dir)));
           in { inherit inputs outputs getNixFiles; };
           modules = [
+            # inputs.stylix.homeManagerModules.stylix
             # > Our main home-manager configuration file <
             inputs.nixvim.homeManagerModules.nixvim
             ./home-manager/home.nix
