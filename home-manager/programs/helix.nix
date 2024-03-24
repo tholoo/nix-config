@@ -21,8 +21,12 @@
     settings = {
       # theme = "base16";
       editor = {
+        auto-save = true;
         line-number = "relative";
-        lsp.display-messages = true;
+        lsp = {
+          display-messages = true;
+          display-inlay-hints = true;
+        };
       };
       keys.normal = {
         space.space = "file_picker";
