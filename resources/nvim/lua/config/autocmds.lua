@@ -1,0 +1,16 @@
+-- Keymaps are automatically loaded on the VeryLazy event
+-- Default keymaps that are always set: https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/config/keymaps.lua
+-- Add any additional keymaps here
+-- local map = vim.keymap.set
+--
+-- map("n", "<C-d>", "<C-d>zz<CR>", { desc = "Go down", noremap = true, silent = true })
+-- map("n", "<C-u>", "<C-u>zz<CR>", { desc = "Go up", noremap = true, silent = true })
+--
+-- map("n", "<C-f>", "<C-f>zz<CR>", { desc = "Go down", noremap = true, silent = true })
+-- map("n", "<C-b>", "<C-b>zz<CR>", { desc = "Go up", noremap = true, silent = true })
+--
+-- -- lazy
+-- map("n", "<leader>L", "<cmd>Lazy<cr>", { desc = "Lazy" })
+-- vim.keymap.set("n", "<leader>l", function()
+--   require("harpoon"):list():select(3)
+-- end, { desc = "Third Harpoon" })

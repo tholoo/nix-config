@@ -7,6 +7,7 @@
         # Navigate in diagnostics
         "[d" = "goto_prev";
         "]d" = "goto_next";
+        "<leader>cd" = "open_float";
       };
       lspBuf = {
         gd = "definition";
@@ -15,6 +16,9 @@
         gi = "implementation";
         K = "hover";
         "<leader>cr" = "rename";
+        "<leader>fs" = "workspace_symbol";
+        "<leader>ca" = "code_action";
+        "<leader>ch" = "signature_help";
       };
     };
     servers = {
@@ -32,9 +36,30 @@
       # nixd.enable = true;
 
       html.enable = true;
+      htmx.enable = true;
 
       jsonls.enable = true;
+      yamlls.enable = true;
+
+      dockerls.enable = true;
+
+      eslint.enable = true;
+
+      gopls.enable = true;
+
+      # NOTE: Broken
+      # graphql.enable = true;
+
+      typos-lsp.enable = true;
+
+      typst-lsp.enable = true;
     };
+
+    onAttach = ''
+      if client.server_capabilities.inlayHintProvider and vim.lsp.inlay_hint then
+          vim.lsp.inlay_hint.enable(bufnr, true)
+      end
+    '';
   };
 
   lsp-format = { enable = true; };
