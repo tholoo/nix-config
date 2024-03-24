@@ -1,9 +1,9 @@
-{
+{ lib, ... }: {
   lualine = {
     enable = true;
     extensions = [ "fzf" "oil" "quickfix" "trouble" "man" "fugitive" ];
     globalstatus = true;
-    theme = {
+    theme = lib.mkForce {
       __raw = ''
         function()
           local colors = {
