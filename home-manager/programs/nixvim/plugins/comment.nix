@@ -1,5 +1,5 @@
 {
-  comment-nvim = {
+  comment = {
     enable = true;
 
     # opleader = {line = "<C-b>";};
