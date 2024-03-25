@@ -172,14 +172,14 @@
         '';
       };
 
-      fish_command_not_found = {
-        description =
-          "Run this function when a command isn't found. Try to run a command with nix if it doesn't exist";
-        argumentNames = [ "command" ];
-        body = ''
-          trye $command; or command-not-found $command
-        '';
-      };
+      # fish_command_not_found = {
+      #   description =
+      #     "Run this function when a command isn't found. Try to run a command with nix if it doesn't exist";
+      #   argumentNames = [ "command" ];
+      #   body = ''
+      #     trye $command; or command-not-found $command
+      #   '';
+      # };
 
       dev = {
         description = "Create a dev template for direnv";
@@ -234,6 +234,9 @@
       gtag = "git tag";
       gnewtag = "git tag -a";
       gss = "git status -s";
+      glog =
+        "git log --oneline --graph --decorate --all --abbrev-commit --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset'";
+      gcb = "git checkout -b";
 
       # get error messages from journalctl
       jctl = "journalctl -p 3 -xb";
@@ -249,10 +252,6 @@
       # fishc = ''vim ~/.config/fish/config.fish'';
 
       # restow = ''stow --restow --verbose --target ~'';
-
-      glog =
-        "git log --oneline --graph --decorate --all --abbrev-commit --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset'";
-      gcb = "git checkout -b";
     };
 
     shellAliases = {
