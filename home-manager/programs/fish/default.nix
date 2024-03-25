@@ -138,6 +138,26 @@
         and cd $argv
       '';
 
+      backup = {
+        description = "backup files";
+        wraps = "cp";
+        body = ''
+          for arg in $argv
+              cp "$arg"{,.bak}
+          end
+        '';
+      };
+
+      unback = {
+        description = "unbackup files";
+        wraps = "cp";
+        body = ''
+          for arg in $argv
+              cp "$arg"{.bak,}
+          end
+        '';
+      };
+
       # try out packages
       try = {
         description =
@@ -234,9 +254,6 @@
       gtag = "git tag";
       gnewtag = "git tag -a";
       gss = "git status -s";
-      glog =
-        "git log --oneline --graph --decorate --all --abbrev-commit --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset'";
-      gcb = "git checkout -b";
 
       # get error messages from journalctl
       jctl = "journalctl -p 3 -xb";
@@ -252,11 +269,16 @@
       # fishc = ''vim ~/.config/fish/config.fish'';
 
       # restow = ''stow --restow --verbose --target ~'';
+
+      glog =
+        "git log --oneline --graph --decorate --all --abbrev-commit --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset'";
+      gcb = "git checkout -b";
     };
 
     shellAliases = {
       e = "$EDITOR";
-      ls = "${pkgs.eza}/bin/eza --color=auto --group-directories-first --git";
+      ls =
+        "${pkgs.eza}/bin/eza -la --color=auto --group-directories-first --git";
       la =
         "${pkgs.eza}/bin/eza -la --color=auto --group-directories-first --git --git-ignore -I .venv -I __pycache__ -I .git";
       laa = "${pkgs.eza}/bin/eza -la --color=auto --group-directories-first";
