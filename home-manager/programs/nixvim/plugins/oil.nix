@@ -1,10 +1,12 @@
 { lib, ... }: {
   plugins.oil = {
     enable = true;
-    deleteToTrash = true;
     # keymaps = { "<leader>i" = "actions.open_cwd"; };
     # keymaps = { callback = "function() require('oil').open_cwd() end", desc = “”, nowait = true })
-    skipConfirmForSimpleEdits = true;
+    settings = {
+      delete_to_trash = true;
+      skip_confirm_for_simple_edits = true;
+    };
   };
   keymaps = lib.mkAfter [{
     key = "<leader>i";
