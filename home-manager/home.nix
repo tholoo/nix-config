@@ -125,6 +125,7 @@
       duf # a better df
       gping # ping but with a graph
       trashy # for deleting things to trash
+      usql # universal sql cli tool
 
       grc # command colorizer
 
