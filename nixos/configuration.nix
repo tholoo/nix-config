@@ -125,7 +125,7 @@
             main = {
               # https://github.com/rvaiya/keyd/blob/2338f11b1ddd81eaddd957de720a3b4279222da0/t/keys.py
               capslock = "esc";
-              leftbrace = "overload(meta, leftbrace)";
+              leftbrace = "lettermod(meta, leftbrace, 100, 150)";
               # meta = "oneshot(meta)";
               # rightalt = "overload(meta, rightalt)";
               rightalt = "layer(nav)";
