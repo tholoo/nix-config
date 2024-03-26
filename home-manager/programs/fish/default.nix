@@ -314,6 +314,10 @@
         name = "puffer";
         src = puffer.src;
       }
+      {
+        name = "fzf";
+        src = fzf.src;
+      }
 
       # Manually packaging and enable a plugin
       # {
