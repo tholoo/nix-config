@@ -1,13 +1,18 @@
-{ pkgs, ... }: {
-  programs.fzf = {
+{ pkgs, lib, ... }: {
+  programs.fzf = let
+    excludes = lib.fold (el: c: "${c} --exclude ${el}" ) "" ["__pycache__"];
+    tre_cmd = "${pkgs.tre-command}/bin/tre --color always {} --limit 5 --all";
+    bat_cmd = "${pkgs.bat}/bin/bat --color always {}";
+  in
+  {
     enable = true;
     defaultCommand = "${pkgs.fd}/bin/fd --type f --hidden";
 
-    changeDirWidgetCommand = "${pkgs.fd}/bin/fd --type d --hidden --exclude __pycache__";
-    changeDirWidgetOptions = [ "--preview '${pkgs.tre-command}/bin/tre -C {} | head -200'" ];
+    changeDirWidgetCommand = "${pkgs.fd}/bin/fd --type d --hidden ${excludes}";
+    changeDirWidgetOptions = [ "--preview '${tre_cmd} | head -100'" ];
 
-    fileWidgetCommand = "${pkgs.fd}/bin/fd --hidden --exclude __pycache__";
-    fileWidgetOptions = [ "--preview '${pkgs.bat}/bin/bat --color always {} 2> /dev/null || ${pkgs.tre-command}/bin/tre -C {}'" ];
+    fileWidgetCommand = "${pkgs.fd}/bin/fd --hidden ${excludes}";
+    fileWidgetOptions = [ "--preview '${bat_cmd} 2> /dev/null || ${tre_cmd} | head -100'" ];
 
     historyWidgetOptions = [ "--reverse" ];
 
