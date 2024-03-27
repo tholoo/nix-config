@@ -3,14 +3,15 @@
     enable = true;
     systemd.enable = false;
 
-    style = ''
-      ${builtins.readFile "${pkgs.waybar}/etc/xdg/waybar/style.css"}
-
-      window#waybar {
-        background: transparent;
-        border-bottom: none;
-      }
-    '';
+    # style = ''
+    #   ${builtins.readFile "${pkgs.waybar}/etc/xdg/waybar/style.css"}
+    #
+    #   window#waybar {
+    #     background: transparent;
+    #     border-bottom: none;
+    #   }
+    # '';
+    style = builtins.readFile ./style.css;
     settings = [{
       # height = 30;
       # layer = "top";
@@ -21,7 +22,7 @@
       modules-right = [
         "privacy"
         "sway/language"
-        "network"
+        # "network"
         "cpu"
         "memory"
         "wireplumber"
