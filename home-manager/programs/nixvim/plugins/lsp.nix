@@ -11,12 +11,13 @@
       };
       lspBuf = {
         gd = "definition";
-        gD = "references";
+        gr = "references";
         gt = "type_definition";
-        gi = "implementation";
+        gD = "implementation";
         K = "hover";
         "<leader>cr" = "rename";
         "<leader>fs" = "workspace_symbol";
+        "<Ctrl-s>" = "workspace_symbol";
         "<leader>ca" = "code_action";
         "<leader>ch" = "signature_help";
       };
@@ -64,5 +65,6 @@
 
   lsp-format = { enable = true; };
   lspkind.enable = true;
+  lspsaga.enable = true;
   # lsp-lines.enable = true;
 }
