@@ -71,7 +71,8 @@
     };
   };
 
-  # TODO: Set your username
+  fonts.fontconfig.enable = true;
+
   home = {
     username = "tholo";
     homeDirectory = "/home/tholo";
