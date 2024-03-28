@@ -10,7 +10,7 @@
       "<leader>fh" = "help_tags";
       "<leader>fd" = "diagnostics";
 
-      "<leader>fp" = "find_files";
+      "<leader>ff" = "find_files";
 
       # find recent
       "<leader>fr" = "oldfiles";
