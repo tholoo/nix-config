@@ -4,7 +4,16 @@
     snippetEngine = "luasnip";
   };
 
-  # keymaps = lib.mkAfter [
+  keymaps = lib.mkAfter [{
+    key = "<leader>cd";
+    action = "function() require('neogen').generate() end";
+    lua = true;
+    mode = [ "n" ];
+    options = {
+      silent = true;
+      noremap = true;
+    };
+  }
   #   {
   #     key = "<C-l>";
   #     action = "function() require('neogen').jump_next end";
@@ -25,5 +34,5 @@
   #       noremap = true;
   #     };
   #   }
-  # ];
+    ];
 }
