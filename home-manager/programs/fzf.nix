@@ -5,6 +5,7 @@
       ".venv"
       "venv"
       ".git"
+      ".direnv"
     ];
     tre_cmd =
       "${pkgs.tre-command}/bin/tre --color always {} --limit 5 --all ${excludes}";
