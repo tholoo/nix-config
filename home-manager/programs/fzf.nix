@@ -1,10 +1,15 @@
 { pkgs, lib, ... }: {
   programs.fzf = let
-    excludes = lib.fold (el: c: "${c} --exclude ${el}") "" [ "__pycache__" ];
+    excludes = lib.fold (el: c: "${c} --exclude ${el}") "" [
+      "__pycache__"
+      ".venv"
+      "venv"
+      ".git"
+    ];
     tre_cmd =
       "${pkgs.tre-command}/bin/tre --color always {} --limit 5 --all ${excludes}";
     bat_cmd = "${pkgs.bat}/bin/bat --color always {}";
-    fd_cmd = "${pkgs.fd}/bin/fd --hidden --no-ignore ${excludes}";
+    fd_cmd = "${pkgs.fd}/bin/fd --hidden --follow ${excludes}";
   in {
     enable = true;
     defaultCommand = "${fd_cmd} --type f";
