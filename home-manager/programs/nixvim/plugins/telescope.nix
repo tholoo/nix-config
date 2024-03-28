@@ -4,14 +4,14 @@
 
     keymaps = {
       # Find files using Telescope command-line sugar.
-      "<leader><leader>" = "find_files";
+      "<leader><leader>" = "git_files";
       "<leader>fg" = "live_grep";
       "<leader>fb" = "buffers";
       "<leader>fh" = "help_tags";
       "<leader>fd" = "diagnostics";
 
-      # find project files
-      "<leader>fp" = "git_files";
+      "<leader>fp" = "find_files";
+
       # find recent
       "<leader>fr" = "oldfiles";
       "<C-f>" = "live_grep";
