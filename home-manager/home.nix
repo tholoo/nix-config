@@ -127,6 +127,7 @@
       gping # ping but with a graph
       trashy # for deleting things to trash
       usql # universal sql cli tool
+      gg # for proxying commands
 
       grc # command colorizer
 

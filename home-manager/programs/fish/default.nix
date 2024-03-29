@@ -242,6 +242,7 @@
       merge = "xrdb -merge ~/.Xresources";
 
       # git
+      lg = "${pkgs.lazygit}/bin/lazygit";
       ga = "git add";
       gaa = "git add .";
       gb = "git branch";
