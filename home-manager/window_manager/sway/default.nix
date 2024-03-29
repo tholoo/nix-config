@@ -24,7 +24,7 @@
       terminal = "wezterm";
       workspaceAutoBackAndForth = true;
       defaultWorkspace = "1";
-      menu = "${pkgs.wofi}/bin/wofi --show run";
+      menu = "${pkgs.wofi}/bin/wofi --show drun,run";
       gaps = {
         smartGaps = true;
         smartBorders = "on";
