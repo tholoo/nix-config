@@ -128,6 +128,7 @@
       trashy # for deleting things to trash
       usql # universal sql cli tool
       gg # for proxying commands
+      xh # faster httpie
 
       grc # command colorizer
 
