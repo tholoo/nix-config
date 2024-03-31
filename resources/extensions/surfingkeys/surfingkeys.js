@@ -1,28 +1,28 @@
 // Compatibility Prefix
 const {
-  Clipboard,
-  Front,
-  Hints,
-  Normal,
-  RUNTIME,
-  Visual,
-  aceVimMap,
-  addSearchAlias,
-  cmap,
-  getClickableElements,
-  imap,
-  imapkey,
-  iunmap,
-  map,
-  mapkey,
-  readText,
-  removeSearchAlias,
-  tabOpenLink,
-  unmap,
-  unmapAllExcept,
-  vmapkey,
-  vunmap,
-  isElementPartiallyInViewport,
+    Clipboard,
+    Front,
+    Hints,
+    Normal,
+    RUNTIME,
+    Visual,
+    aceVimMap,
+    addSearchAlias,
+    cmap,
+    getClickableElements,
+    imap,
+    imapkey,
+    iunmap,
+    map,
+    mapkey,
+    readText,
+    removeSearchAlias,
+    tabOpenLink,
+    unmap,
+    unmapAllExcept,
+    vmapkey,
+    vunmap,
+    isElementPartiallyInViewport,
 } = api;
 
 settings.hintAlign = "left";
@@ -77,6 +77,10 @@ unmap("gxt");
 unmap("gxT");
 unmap("gx$");
 unmap("gxx");
+unmap("X")
+
+// Open tab
+unmap("on")
 
 // Unused features
 unmap("g0");
@@ -117,9 +121,9 @@ map("<", "<<");
 
 // Open Clipboard URL in current tab
 mapkey("p", "Open the clipboard's URL in the current tab", () => {
-  Clipboard.read(function(response) {
-    window.location.href = response.data;
-  });
+    Clipboard.read(function(response) {
+        window.location.href = response.data;
+    });
 });
 
 // Open Clipboard URL in new tab
@@ -149,10 +153,10 @@ unmap("X");
 // Scroll Page Down/Up
 map("u", "e");
 mapkey("<Ctrl-d>", "scroll full page down", function() {
-  Normal.scroll("fullPageDown");
+    Normal.scroll("fullPageDown");
 });
 mapkey("<Ctrl-u>", "scroll full page up", function() {
-  Normal.scroll("fullPageUp");
+    Normal.scroll("fullPageUp");
 });
 
 // Next/Prev Page
@@ -181,61 +185,73 @@ imap("<Ctrl-[>", "<Esc>");
 // --- Sites ---
 // open notifications with n
 mapkey(
-  "n",
-  "Open notifications",
-  function() {
-    document.querySelector('button[aria-label="Notifications"]').click();
-  },
-  { domain: /youtube.com/i },
+    "n",
+    "Open notifications",
+    function() {
+        document.querySelector('button[aria-label="Notifications"]').click();
+    },
+    { domain: /youtube.com/i },
 );
 
 mapkey(
-  "<Space>",
-  "pause/resume on youtube",
-  function() {
-    var btn =
-      document.querySelector("button.ytp-ad-overlay-close-button") ||
-      document.querySelector("button.ytp-ad-skip-button") ||
-      document.querySelector("ytd-watch-flexy button.ytp-play-button");
-    btn.click();
-  },
-  { domain: /youtube.com/i },
+    "<Space>",
+    "pause/resume on youtube",
+    function() {
+        var btn =
+            document.querySelector("button.ytp-ad-overlay-close-button") ||
+            document.querySelector("button.ytp-ad-skip-button") ||
+            document.querySelector("ytd-watch-flexy button.ytp-play-button");
+        btn.click();
+    },
+    { domain: /youtube.com/i },
 );
 
 // use h and l as arrow keys in youtube
 mapkey(
-  "l",
-  "seek forward 5 seconds on youtube",
-  function() {
-    var video = document.querySelector("video");
-    video.currentTime += 5;
-  },
-  { domain: /youtube.com/i },
+    "l",
+    "seek forward 5 seconds on youtube",
+    function() {
+        var video = document.querySelector("video");
+        video.currentTime += 5;
+    },
+    { domain: /youtube.com/i },
 );
 
 mapkey(
-  "h",
-  "seek backward 5 seconds on youtube",
-  function() {
-    var video = document.querySelector("video");
-    video.currentTime -= 5;
-  },
-  { domain: /youtube.com/i },
+    "h",
+    "seek backward 5 seconds on youtube",
+    function() {
+        var video = document.querySelector("video");
+        video.currentTime -= 5;
+    },
+    { domain: /youtube.com/i },
 );
 
 // Increase volume with 'K' in fullscreen
 mapkey(
-  "K",
-  "increase volume on youtube in fullscreen",
-  function() {
-    var video = document.querySelector("video");
-    if (video) {
-      video.volume = Math.min(1, video.volume + 0.05); // increase volume by 5%
-    }
-  },
-  { domain: /youtube.com/i },
+    "K",
+    "increase volume on youtube in fullscreen",
+    function() {
+        var video = document.querySelector("video");
+        if (video) {
+            video.volume = Math.min(1, video.volume + 0.05); // increase volume by 5%
+        }
+    },
+    { domain: /youtube.com/i },
 );
 
+// Toggle fullscreen with q
+mapkey(
+    "q",
+    "Toggle fullscreen in youtube",
+    function() {
+        var btn = document.querySelector("button.ytp-fullscreen-button.ytp-button");
+        if (btn) {
+            btn.click()
+        }
+    },
+    { domain: /youtube.com/i },
+);
 // toggle fullscreen with m
 // unmap("m", /youtube.com/i);
 // map("m", "gF");
@@ -283,64 +299,64 @@ map("m", "gF", /youtube.com/i);
 // NOTE: best script ever written
 
 function getSearchResult(index) {
-  // Select the #search div
-  var searchDiv = document.querySelector("#search");
+    // Select the #search div
+    var searchDiv = document.querySelector("#search");
 
-  if (!searchDiv) {
-    console.error("Search div not found");
-    return null;
-  }
-
-  // Get all links within the searchDiv
-  var links = searchDiv.querySelectorAll("a[jsname]");
-
-  if (index === NaN) {
-    return;
-  }
-
-  // Adjust the index to be zero-based
-  var adjustedIndex = index - 1;
-  // Adjust index so that 1 is first visible link
-  for (var i = 0; i < links.length; i++) {
-    if (!isElementPartiallyInViewport(links[i], true)) {
-      adjustedIndex++;
-    } else {
-      break;
+    if (!searchDiv) {
+        console.error("Search div not found");
+        return null;
     }
-  }
 
-  // Check if the requested index is within the range of available links
-  if (adjustedIndex < 0 || adjustedIndex >= links.length) {
-    console.error("Index out of range");
-    return null;
-  }
+    // Get all links within the searchDiv
+    var links = searchDiv.querySelectorAll("a[jsname]");
 
-  return links[adjustedIndex].href;
+    if (index === NaN) {
+        return;
+    }
+
+    // Adjust the index to be zero-based
+    var adjustedIndex = index - 1;
+    // Adjust index so that 1 is first visible link
+    for (var i = 0; i < links.length; i++) {
+        if (!isElementPartiallyInViewport(links[i], true)) {
+            adjustedIndex++;
+        } else {
+            break;
+        }
+    }
+
+    // Check if the requested index is within the range of available links
+    if (adjustedIndex < 0 || adjustedIndex >= links.length) {
+        console.error("Index out of range");
+        return null;
+    }
+
+    return links[adjustedIndex].href;
 }
 
 function addNumberToSearch(links) {
-  let visibleLinks = 0;
+    let visibleLinks = 0;
 
-  const goldenRatio = 137.508; // Golden ratio in degrees for color generation
+    const goldenRatio = 137.508; // Golden ratio in degrees for color generation
 
-  // Add numbers next to each link
-  links.forEach((link, i) => {
-    // if (!link.previousSibling && isElementPartiallyInViewport(link, true)) {
-    if (isElementPartiallyInViewport(link, true)) {
-      visibleLinks++;
+    // Add numbers next to each link
+    links.forEach((link, i) => {
+        // if (!link.previousSibling && isElementPartiallyInViewport(link, true)) {
+        if (isElementPartiallyInViewport(link, true)) {
+            visibleLinks++;
 
-      var numberSpan = document.createElement("span");
-      numberSpan.className = "result-number";
-      // numberSpan.textContent = ` ${i + 1} `;
-      numberSpan.textContent = ` ${visibleLinks} `;
+            var numberSpan = document.createElement("span");
+            numberSpan.className = "result-number";
+            // numberSpan.textContent = ` ${i + 1} `;
+            numberSpan.textContent = ` ${visibleLinks} `;
 
-      // Calculate color based on golden ratio
-      let hue = (visibleLinks * 10 * goldenRatio) % 360;
-      let color = `hsl(${hue}, 60%, 70%)`; // Using HSL color model
+            // Calculate color based on golden ratio
+            let hue = (visibleLinks * 10 * goldenRatio) % 360;
+            let color = `hsl(${hue}, 60%, 70%)`; // Using HSL color model
 
-      // background-color: #E6E6FA; /* Light background for contrast */
+            // background-color: #E6E6FA; /* Light background for contrast */
 
-      numberSpan.style.cssText = `
+            numberSpan.style.cssText = `
   display: inline-block;
   margin-right: 8px;
   color: #0000EE; /* Typical color for a hyperlink */
@@ -355,162 +371,162 @@ function addNumberToSearch(links) {
   position: relative; /* Required for z-index to work */
 `;
 
-      link.parentNode.insertBefore(numberSpan, link.nextSibling);
-    }
-  });
+            link.parentNode.insertBefore(numberSpan, link.nextSibling);
+        }
+    });
 }
 
 function addNumberToSearchGoogle() {
-  // Select the #search div
-  var searchDiv = document.querySelector("#search");
+    // Select the #search div
+    var searchDiv = document.querySelector("#search");
 
-  if (!searchDiv) {
-    return;
-  }
-  // Remove existing spans
-  var existingSpans = searchDiv.querySelectorAll(".result-number");
-  existingSpans.forEach(function(span) {
-    span.parentNode.removeChild(span);
-  });
+    if (!searchDiv) {
+        return;
+    }
+    // Remove existing spans
+    var existingSpans = searchDiv.querySelectorAll(".result-number");
+    existingSpans.forEach(function(span) {
+        span.parentNode.removeChild(span);
+    });
 
-  // Get all links within the searchDiv
-  var links = searchDiv.querySelectorAll("a[jsname]");
+    // Get all links within the searchDiv
+    var links = searchDiv.querySelectorAll("a[jsname]");
 
-  addNumberToSearch(links);
+    addNumberToSearch(links);
 }
 
 if (window.location.hostname == "www.google.com") {
-  document.addEventListener("DOMContentLoaded", function() {
-    addNumberToSearchGoogle();
-  });
-  // update on scroll
-  document.addEventListener("scroll", function() {
-    addNumberToSearchGoogle();
-  });
+    document.addEventListener("DOMContentLoaded", function() {
+        addNumberToSearchGoogle();
+    });
+    // update on scroll
+    document.addEventListener("scroll", function() {
+        addNumberToSearchGoogle();
+    });
 }
 
 // map 1 to 9 to search results: e.g. 1 = !, 2 = @, 3 = #, etc.
 mapping = {
-  1: "!",
-  2: "@",
-  3: "#",
-  4: "$",
-  5: "%",
-  6: "^",
-  7: "&",
-  8: "*",
-  9: "(",
+    1: "!",
+    2: "@",
+    3: "#",
+    4: "$",
+    5: "%",
+    6: "^",
+    7: "&",
+    8: "*",
+    9: "(",
 };
 
 for (let i = 1; i <= 9; i++) {
-  // open in a non-active new tab
-  mapkey(
-    mapping[i],
-    `Open the ${i}th search result in a non-active new tab`,
-    function() {
-      let url = getSearchResult(i);
-      RUNTIME("openLink", {
-        tab: {
-          tabbed: true,
-          active: false,
+    // open in a non-active new tab
+    mapkey(
+        mapping[i],
+        `Open the ${i}th search result in a non-active new tab`,
+        function() {
+            let url = getSearchResult(i);
+            RUNTIME("openLink", {
+                tab: {
+                    tabbed: true,
+                    active: false,
+                },
+                url: url,
+            });
         },
-        url: url,
-      });
-    },
-    { domain: /google.com/i },
-  );
+        { domain: /google.com/i },
+    );
 
-  // open in an active new tab
-  mapkey(
-    `<Ctrl-${mapping[i]}>`,
-    `Open the ${i}th search result in an active new tab`,
-    function() {
-      let url = getSearchResult(i);
-      RUNTIME("openLink", {
-        tab: {
-          tabbed: true,
-          active: true,
+    // open in an active new tab
+    mapkey(
+        `<Ctrl-${mapping[i]}>`,
+        `Open the ${i}th search result in an active new tab`,
+        function() {
+            let url = getSearchResult(i);
+            RUNTIME("openLink", {
+                tab: {
+                    tabbed: true,
+                    active: true,
+                },
+                url: url,
+            });
         },
-        url: url,
-      });
-    },
-    { domain: /google.com/i },
-  );
+        { domain: /google.com/i },
+    );
 
-  // open in the current tab
-  mapkey(
-    `<Ctrl-${i}>`,
-    `Open the ${i}th search result in the current tab`,
-    function() {
-      let url = getSearchResult(i);
-      RUNTIME("openLink", {
-        tab: {
-          tabbed: false,
+    // open in the current tab
+    mapkey(
+        `<Ctrl-${i}>`,
+        `Open the ${i}th search result in the current tab`,
+        function() {
+            let url = getSearchResult(i);
+            RUNTIME("openLink", {
+                tab: {
+                    tabbed: false,
+                },
+                url: url,
+            });
         },
-        url: url,
-      });
-    },
-    { domain: /google.com/i },
-  );
+        { domain: /google.com/i },
+    );
 }
 
 // github
 openGithubPagesRepo = () => {
-  const user = window.location.pathname.split("/")[1] ?? "";
-  const repo = window.location.pathname.split("/")[2] ?? "";
-  Clipboard.write(`${user}/${repo}`);
+    const user = window.location.pathname.split("/")[1] ?? "";
+    const repo = window.location.pathname.split("/")[2] ?? "";
+    Clipboard.write(`${user}/${repo}`);
 };
 
 mapkey("Y", "copy repo url", openGithubPagesRepo, { domain: /github.com/i });
 
 // Decrease volume with 'J' in fullscreen
 mapkey(
-  "J",
-  "decrease volume on youtube in fullscreen",
-  function() {
-    var video = document.querySelector("video");
-    if (video) {
-      video.volume = Math.max(0, video.volume - 0.05); // decrease volume by 5%
-    }
-  },
-  { domain: /youtube.com/i },
+    "J",
+    "decrease volume on youtube in fullscreen",
+    function() {
+        var video = document.querySelector("video");
+        if (video) {
+            video.volume = Math.max(0, video.volume - 0.05); // decrease volume by 5%
+        }
+    },
+    { domain: /youtube.com/i },
 );
 
 function addNumberToSearchYoutube() {
-  var searchDiv = document.querySelectorAll("#metadata");
+    var searchDiv = document.querySelectorAll("#metadata");
 
-  if (!searchDiv) {
-    return;
-  }
-  // Remove existing spans
-  var existingSpans = document.querySelectorAll(".result-number");
-  existingSpans.forEach(function(span) {
-    span.parentNode.removeChild(span);
-  });
+    if (!searchDiv) {
+        return;
+    }
+    // Remove existing spans
+    var existingSpans = document.querySelectorAll(".result-number");
+    existingSpans.forEach(function(span) {
+        span.parentNode.removeChild(span);
+    });
 
-  addNumberToSearch(searchDiv);
+    addNumberToSearch(searchDiv);
 }
 
 if (window.location.hostname == "www.youtube.com") {
-  document.addEventListener("load", function() {
-    addNumberToSearchYoutube();
-  });
-  document.addEventListener("DOMContentLoaded", function() {
-    addNumberToSearchYoutube();
-  });
-  // update on scroll
-  document.addEventListener("scroll", function() {
-    addNumberToSearchYoutube();
-  });
+    document.addEventListener("load", function() {
+        addNumberToSearchYoutube();
+    });
+    document.addEventListener("DOMContentLoaded", function() {
+        addNumberToSearchYoutube();
+    });
+    // update on scroll
+    document.addEventListener("scroll", function() {
+        addNumberToSearchYoutube();
+    });
 }
 
 // open google search results with shift+number
 // Define a mapping from shift numbers to keys
 const shiftNumberMap = {
-  "!": 1,
-  "@": 2,
-  "#": 3,
-  $: 4,
+    "!": 1,
+    "@": 2,
+    "#": 3,
+    $: 4,
 };
 
 // Loop over the keys in the map
@@ -544,23 +560,36 @@ addSearchAlias("h", "github", "https://github.com/search?q=", "s");
 // addSearchAlias('r', 'reddit', 'https://libreddit.spike.codes/r/', 's');
 // addSearchAlias('st', 'steam', 'https://store.steampowered.com/search/?term=', 's');
 addSearchAlias(
-  "wp",
-  "wikipedia",
-  "https://en.wikipedia.org/wiki/Special:Search/",
-  "s",
+    "wp",
+    "wikipedia",
+    "https://en.wikipedia.org/wiki/Special:Search/",
+    "s",
 );
 addSearchAlias(
-  "tf",
-  "tutflix",
-  "https://tutflix.org/search/?q={0}&o=date",
-  "s",
+    "tf",
+    "tutflix",
+    "https://tutflix.org/search/?q={0}&o=date",
+    "s",
 );
 addSearchAlias(
-  "y",
-  "youtube",
-  "https://www.youtube.com/results?search_query=",
-  "s",
+    "y",
+    "youtube",
+    "https://www.youtube.com/results?search_query=",
+    "s",
 );
+addSearchAlias(
+    "np",
+    "nix packages",
+    "https://search.nixos.org/packages?channel=unstable&sort=relevance&type=packages&query=",
+    "s",
+);
+addSearchAlias(
+    "no",
+    "nix options",
+    "https://search.nixos.org/options?channel=unstable&from=0&size=50&sort=relevance&type=packages&query=",
+    "s",
+);
+
 // --- Theme ---
 // ---- Hints ----
 // Hints have to be defined separately
