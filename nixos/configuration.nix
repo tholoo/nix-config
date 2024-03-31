@@ -75,7 +75,6 @@
     auto-optimise-store = true;
   };
 
-  # FIXME: Add the rest of your current configuration
   security = {
     polkit.enable = true;
     rtkit.enable = true;
@@ -354,6 +353,7 @@
     light.enable = true;
     # hyprland.enable = true;
     virt-manager.enable = true;
+    kdeconnect.enable = true;
   };
   # for sway
   systemd.user.services.kanshi = {
