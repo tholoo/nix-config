@@ -35,7 +35,11 @@
         # "<CR>" = "cmp.mapping.confirm({ select = true })";
       };
 
-      snippet = { expand = "luasnip"; };
+      snippet.expand = ''
+        function(args)
+          require('luasnip').lsp_expand(args.body)
+        end
+      '';
       # sources = [{ name = "nvim-lsp"; }];
       sources = map (name: { inherit name; }) [
         "luasnip"
