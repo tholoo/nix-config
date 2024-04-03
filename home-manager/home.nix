@@ -87,7 +87,7 @@
 
       # neovim
       # nerdfonts
-      (nerdfonts.override { fonts = [ "FiraCode" "FiraCodeMono" "JetBrainsMono"]; })
+      (nerdfonts.override { fonts = [ "FiraCode" "FiraMono" "JetBrainsMono"]; })
 
       vazir-fonts # persian font
       codespell
