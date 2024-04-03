@@ -1,3 +1,4 @@
+# Check size with: nix-shell -p nix-tree.out --run nix-tree
 # This is your home-manager configuration file
 # Use this to configure your home environment (it replaces ~/.config/nixpkgs/home.nix)
 { inputs, outputs, getNixFiles, lib, pkgs, ... }: {
@@ -85,8 +86,8 @@
       clang
 
       # neovim
-      nerdfonts
-      # (nerdfonts.override { fonts = [ "FiraCode" "FiraCodeMono" "JetBrainsMono"]; })
+      # nerdfonts
+      (nerdfonts.override { fonts = [ "FiraCode" "FiraCodeMono" "JetBrainsMono"]; })
 
       vazir-fonts # persian font
       codespell
