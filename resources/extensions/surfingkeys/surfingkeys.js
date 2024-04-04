@@ -578,13 +578,13 @@ addSearchAlias(
     "s",
 );
 addSearchAlias(
-    "np",
+    "n",
     "nix packages",
     "https://search.nixos.org/packages?channel=unstable&sort=relevance&type=packages&query=",
     "s",
 );
 addSearchAlias(
-    "no",
+    "N",
     "nix options",
     "https://search.nixos.org/options?channel=unstable&from=0&size=50&sort=relevance&type=packages&query=",
     "s",
