@@ -14,8 +14,9 @@
       userEmail = "ali.mohamadza@gmail.com";
       # Install git with all the optional extras
       package = pkgs.gitAndTools.gitFull;
-      # aliases = {
-      # }
+      aliases = {
+        clone-bare = "!sh ${./git-clone-bare.sh}";
+      };
       delta.enable = true;
       # diff-so-fancy.enable = true;
       extraConfig = {
