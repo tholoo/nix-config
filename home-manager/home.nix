@@ -1,9 +1,5 @@
-# Check size with: nix-shell -p nix-tree.out --run nix-tree
-# This is your home-manager configuration file
-# Use this to configure your home environment (it replaces ~/.config/nixpkgs/home.nix)
+# Check the size with: nix-shell -p nix-tree.out --run nix-tree
 { inputs, outputs, getNixFiles, lib, pkgs, ... }: {
-  # You can import other home-manager modules here
-
   imports = getNixFiles ./programs ++ getNixFiles ./window_manager
     ++ [ inputs.nix-colors.homeManagerModules.default ];
   # imports = [
@@ -46,7 +42,6 @@
   colorScheme = inputs.nix-colors.colorSchemes.onedark;
 
   nixpkgs = {
-    # You can add overlays here
     overlays = [
       # Add overlays your own flake exports (from overlays and pkgs dir):
       outputs.overlays.additions
@@ -65,7 +60,6 @@
     ];
     # Configure your nixpkgs instance
     config = {
-      # Disable if you don't want unfree packages
       allowUnfree = true;
       # Workaround for https://github.com/nix-community/home-manager/issues/2942
       allowUnfreePredicate = _: true;
@@ -87,18 +81,14 @@
 
       # neovim
       # nerdfonts
-      (nerdfonts.override { fonts = [ "FiraCode" "FiraMono" "JetBrainsMono"]; })
+      (nerdfonts.override {
+        fonts = [ "FiraCode" "FiraMono" "JetBrainsMono" ];
+      })
 
       vazir-fonts # persian font
       codespell
 
       proxychains
-
-      # # It is sometimes useful to fine-tune packages, for example, by applying
-      # # overrides. You can do that directly here, just don't forget the
-      # # parentheses. Maybe you want to install Nerd Fonts with a limited number of
-      # # fonts?
-      # (pkgs.nerdfonts.override { fonts = [ "FantasqueSansMono" ]; })
 
       # # You can also create simple shell scripts directly inside your
       # # configuration. For example, this adds a command 'my-hello' to your
@@ -139,7 +129,6 @@
 
       # archives
       zip
-      xz
       unzip
       p7zip
 
@@ -216,9 +205,6 @@
   #     xxx
   # '';
 
-  # Home Manager is pretty good at managing dotfiles. The primary way to manage
-  # plain files is through 'home.file'.
-  # FIXME: temporary solution, should switch to nixvim
   home.file = {
     # ".config/nvim" = {
     # source = /home/tholo/dotfiles/nvim/.config/nvim;
@@ -236,21 +222,14 @@
     # '';
   };
 
-  # Home Manager can also manage your environment variables through
-  # 'home.sessionVariables'. If you don't want to manage your shell through Home
+  # If you don't want to manage your shell through Home
   # Manager then you have to manually source 'hm-session-vars.sh' located at
   # either
-  #
   #  ~/.nix-profile/etc/profile.d/hm-session-vars.sh
-  #
   # or
-  #
   #  ~/.local/state/nix/profiles/profile/etc/profile.d/hm-session-vars.sh
-  #
   # or
-  #
   #  /etc/profiles/per-user/tholo/etc/profile.d/hm-session-vars.sh
-  #
   home.sessionVariables = {
     EDITOR = "nvim";
     SUDO_EDITOR = "nvim";
@@ -282,11 +261,7 @@
     # XDG_PICTURES_DIR = "$HOME/Pictures"
     # XDG_VIDEOS_DIR = "$HOME/Videos"
   };
-  # Add stuff for your user as you see fit:
-  # programs.neovim.enable = true;
-  # home.packages = with pkgs; [ steam ];
 
-  # Enable home-manager
   programs.home-manager.enable = true;
 
   services = {
