@@ -37,7 +37,7 @@
 
     globals = { mapleader = " "; };
 
-    options = {
+    opts = {
       number = true;
       showmode = false; # don't show current mode of cursor in bar
       relativenumber = true;
