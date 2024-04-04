@@ -77,7 +77,6 @@ unmap("gxt");
 unmap("gxT");
 unmap("gx$");
 unmap("gxx");
-unmap("X")
 
 // Open tab
 unmap("on")
