@@ -265,6 +265,51 @@
   programs.home-manager.enable = true;
 
   services = {
+    espanso = {
+      enable = true;
+      package = pkgs.espanso-wayland;
+      configs = {
+        default = {
+          show_notification = false;
+          search_shortcut = "ALT+SPACE";
+          search_trigger = ";srch";
+          # show_icon = false;
+          keyboard_layout = { layout = "us"; };
+        };
+      };
+      matches = {
+        base = {
+          matches = [
+            {
+              trigger = ";now";
+              replace = "{{currentdate}} {{currenttime}}";
+            }
+            {
+              trigger = ";date";
+              replace = "{{currentdate}}";
+            }
+            {
+              trigger = ";time";
+              replace = "{{currenttime}}";
+            }
+          ];
+        };
+        global_vars = {
+          global_vars = [
+            {
+              name = "currentdate";
+              type = "date";
+              params = { format = "%Y/%m/%d"; };
+            }
+            {
+              name = "currenttime";
+              type = "date";
+              params = { format = "%R"; };
+            }
+          ];
+        };
+      };
+    };
     # use headphone buttons to control volume
     mpris-proxy.enable = true;
     kanshi.enable = true;
