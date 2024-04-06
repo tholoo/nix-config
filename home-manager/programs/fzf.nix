@@ -1,4 +1,5 @@
 { pkgs, lib, ... }: {
+  # TODO: see ~/.config/fish/config.fish 
   programs.fzf = let
     excludes = lib.fold (el: c: "${c} --exclude ${el}") "" [
       "__pycache__"
@@ -16,13 +17,13 @@
     defaultCommand = "${fd_cmd} --type f";
 
     changeDirWidgetCommand = "${fd_cmd} --type d";
-    changeDirWidgetOptions = [ "--preview '${tre_cmd} | head -100'" ];
-
+    # changeDirWidgetOptions = [ "--preview '${tre_cmd} | head -100'" ];
+    #
     fileWidgetCommand = fd_cmd;
-    fileWidgetOptions =
-      [ "--preview '${bat_cmd} 2> /dev/null || ${tre_cmd} | head -100'" ];
-
-    historyWidgetOptions = [ "--reverse" ];
+    # fileWidgetOptions =
+    #   [ "--preview '${bat_cmd} 2> /dev/null || ${tre_cmd} | head -100'" ];
+    #
+    # historyWidgetOptions = [ "--reverse" ];
 
     tmux.enableShellIntegration = false;
   };
