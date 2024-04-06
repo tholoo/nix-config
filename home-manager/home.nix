@@ -135,6 +135,7 @@
       # learning
       tldr
       cht-sh
+      obsidian
 
       # productivity
       # hugo # static site generator
@@ -274,7 +275,7 @@
           search_shortcut = "ALT+SPACE";
           search_trigger = ";srch";
           # show_icon = false;
-          keyboard_layout = { layout = "us"; };
+          keyboard_layout = { layout = "us,ir"; };
         };
       };
       matches = {
