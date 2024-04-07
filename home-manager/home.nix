@@ -41,6 +41,10 @@
 
   colorScheme = inputs.nix-colors.colorSchemes.onedark;
 
+  nix = {
+    package = pkgs.nix;
+    settings = { trusted-users = [ "root" "tholo" ]; };
+  };
   nixpkgs = {
     overlays = [
       # Add overlays your own flake exports (from overlays and pkgs dir):

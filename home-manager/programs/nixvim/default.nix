@@ -16,11 +16,10 @@
           plugins = pluginSet;
         };
       };
-
   in map addNixvim (getNixFiles ./plugins);
 
   programs.nixvim = {
-    enable = true;
+    enable = false;
     defaultEditor = true;
 
     colorschemes.ayu.enable = true;
@@ -117,5 +116,6 @@
     extraConfigLua = ''
       vim.api.nvim_set_hl(0, "WinSeparator", {guibg=False})
     '';
+    extraPlugins = with pkgs.vimPlugins; [ LazyVim ];
   };
 }
