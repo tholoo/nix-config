@@ -13,6 +13,7 @@ map({ "n" }, "<C-u>", "<C-u>zz", { silent = true })
 
 map({ "n" }, "]<Space>", ':<C-u>put =repeat(nr2char(10),v:count)<Bar>execute "\'[-1"<CR>', { silent = true })
 map({ "n" }, "[<Space>", ':<C-u>put!=repeat(nr2char(10),v:count)<Bar>execute "\']+1"<CR>', { silent = true })
+map({ "n" }, "<leader>w", "<CMD>update<CR>", { silent = true })
 
 -- vim.keymap.del("n", "s")
 

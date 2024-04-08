@@ -11,7 +11,18 @@
       withNodeJs = true;
       defaultEditor = true;
       extraPython3Packages = ps: with ps; [ pip pynvim python-lsp-ruff mypy ];
-      extraPackages = with pkgs; [ mypy ruff ruff-lsp gitlint commitlint djlint sqlfluff dotenv-linter ];
+      extraPackages = with pkgs; [
+        mypy
+        ruff
+        ruff-lsp
+        gitlint
+        commitlint
+        djlint
+        sqlfluff
+        dotenv-linter
+        fzf
+        nodePackages.pyright
+      ];
       plugins = with pkgs.vimPlugins; [ LazyVim semshi ];
     };
     xdg.configFile.nvim = {
