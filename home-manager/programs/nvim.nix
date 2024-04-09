@@ -22,12 +22,16 @@
         dotenv-linter
         fzf
         nodePackages.pyright
+        nodePackages.typescript-language-server
+        vscode-langservers-extracted
+        marksman
+        markdownlint-cli
+        markdownlint-cli2
       ];
       plugins = with pkgs.vimPlugins; [ LazyVim semshi ];
     };
     xdg.configFile.nvim = {
-      source = config.lib.file.mkOutOfStoreSymlink
-        "/home/tholo/nix-config/resources/nvim";
+      source = ../../resources/nvim;
       recursive = true;
     };
 
