@@ -15,6 +15,9 @@ vim.opt.spell = true
 vim.g.bufferline = false
 vim.opt.showtabline = 0
 
+-- disable lsp-zero warning
+vim.g.lsp_zero_extend_lspconfig = 0
+
 -- sync with system clipboard
 vim.o.clipboard = "unnamedplus"
 

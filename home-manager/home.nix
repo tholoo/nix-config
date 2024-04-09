@@ -71,6 +71,10 @@
   };
 
   fonts.fontconfig.enable = true;
+  i18n.glibcLocales = pkgs.glibcLocales.override {
+    allLocales = false;
+    locales = [ "en_US.UTF-8/UTF-8" ];
+  };
 
   home = {
     username = "tholo";
@@ -242,14 +246,14 @@
     DIFFPROG = "nvim -d";
     MANPAGER = "nvim +Man!";
 
-    http_proxy = "http://localhost:2081";
-    HTTP_PROXY = "http://localhost:2081";
+    # http_proxy = "http://localhost:2081";
+    # HTTP_PROXY = "http://localhost:2081";
 
-    https_proxy = "http://localhost:2081";
-    HTTPS_PROXY = "http://localhost:2081";
+    # https_proxy = "http://localhost:2081";
+    # HTTPS_PROXY = "http://localhost:2081";
 
-    socks_proxy = "socks://localhost:2080";
-    SOCKS_PROXY = "socks://localhost:2080";
+    # socks_proxy = "socks://localhost:2080";
+    # SOCKS_PROXY = "socks://localhost:2080";
 
     # System
     # XDG_DATA_DIRS = "/usr/share:/usr/local/share"
@@ -270,6 +274,26 @@
   programs.home-manager.enable = true;
 
   services = {
+    activitywatch = {
+      enable = true;
+      package = pkgs.aw-server-rust;
+      watchers = {
+        aw-watcher-afk = {
+          package = pkgs.aw-watcher-afk;
+          settings = {
+            timeout = 300;
+            poll_time = 2;
+          };
+        };
+        aw-watcher-window = {
+          package = pkgs.aw-watcher-window;
+          settings = {
+            poll_time = 1;
+            exclude_title = true;
+          };
+        };
+      };
+    };
     espanso = {
       enable = true;
       package = pkgs.espanso-wayland;

@@ -27,6 +27,8 @@
         marksman
         markdownlint-cli
         markdownlint-cli2
+        lua-language-server
+        stylua
       ];
       plugins = with pkgs.vimPlugins; [ LazyVim semshi ];
     };

@@ -31,9 +31,9 @@ return {
       null_ls.builtins.diagnostics.dotenv_linter,
 
       -- python
-      null_ls.builtins.diagnostics.ruff,
-      null_ls.builtins.formatting.ruff,
-      null_ls.builtins.formatting.ruff_format,
+      -- null_ls.builtins.diagnostics.ruff,
+      -- null_ls.builtins.formatting.ruff,
+      -- null_ls.builtins.formatting.ruff_format,
       null_ls.builtins.diagnostics.mypy,
       -- null_ls.builtins.diagnostics.mypy,
       -- null_ls.builtins.diagnostics.flake8,

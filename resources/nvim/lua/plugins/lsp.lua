@@ -1,17 +1,24 @@
 return {
-  {'williamboman/mason.nvim', enabled = false},
-  {'VonHeikemen/lsp-zero.nvim', branch = 'v3.x',
+  { "williamboman/mason.nvim", enabled = false },
+  {
+    "VonHeikemen/lsp-zero.nvim",
+    branch = "v3.x",
     config = function()
-      local lsp_zero = require('lsp-zero')
+      local lsp_zero = require("lsp-zero")
       lsp_zero.extend_lspconfig()
+      lsp_zero.set_preferences({
+        suggest_lsp_servers = true,
+        setup_servers_on_start = true,
+        call_servers = "global",
+      })
 
       lsp_zero.on_attach(function(client, bufnr)
         -- see :help lsp-zero-keybindings
         -- to learn the available actions
-        lsp_zero.default_keymaps({buffer = bufnr})
+        lsp_zero.default_keymaps({ buffer = bufnr })
       end)
 
-      lsp_zero.setup_servers({'tsserver', 'ruff', 'ruff_lsp'})
+      lsp_zero.setup_servers({ "tsserver", "ruff", "ruff_lsp" })
     end,
   },
   -- {'neovim/nvim-lspconfig'},
@@ -36,5 +43,5 @@ return {
         },
       },
     },
-  }
+  },
 }
