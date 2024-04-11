@@ -333,7 +333,12 @@
   };
 
   virtualisation = {
-    docker.enable = true;
+    docker = {
+      enable = true;
+      daemon.settings = {
+        registry-mirrors = ["https://registry.docker.ir"];
+      };
+    };
     libvirtd.enable = true;
   };
 
