@@ -5,11 +5,22 @@
 
     formattersByFt = {
       lua = [ "stylua" ];
-      nix = [ "alejandra" "nixfmt" ];
+      nix = [
+        "alejandra"
+        "nixfmt"
+      ];
       python = [ "ruff_format" ];
       # Use a sub-list to run only the first available formatter
-      javascript = [[ "prettierd" "prettier" ]];
-      typescript = [ "prettierd" "prettier" ];
+      javascript = [
+        [
+          "prettierd"
+          "prettier"
+        ]
+      ];
+      typescript = [
+        "prettierd"
+        "prettier"
+      ];
       typescriptreact = [ "prettier" ];
 
       # asm = ["asmfmt"];
@@ -33,6 +44,8 @@
       "_" = [ "trim_whitespace" ];
     };
 
-    formatOnSave = { lspFallback = true; };
+    formatOnSave = {
+      lspFallback = true;
+    };
   };
 }

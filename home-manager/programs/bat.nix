@@ -1,1 +1,6 @@
-{ pkgs, ... }: { programs.bat = { enable = true; }; }
+{ pkgs, ... }:
+{
+  programs.bat = {
+    enable = true;
+  };
+}

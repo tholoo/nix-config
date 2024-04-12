@@ -1,4 +1,10 @@
-{ config, pkgs, lib, ... }: {
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
+{
   wayland.windowManager.hyprland = {
     enable = true;
     systemd.enable = false;

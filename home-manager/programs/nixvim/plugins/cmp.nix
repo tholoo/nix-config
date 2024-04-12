@@ -1,11 +1,11 @@
-{ ... }: {
+{ ... }:
+{
   cmp = {
     enable = true;
     settings = {
       window = {
         completion = {
-          __raw = ''
-            require("cmp.config.window").bordered({ scrollbar = false, completeopt = 'menu,menuone,noinsert'})'';
+          __raw = ''require("cmp.config.window").bordered({ scrollbar = false, completeopt = 'menu,menuone,noinsert'})'';
           # border = "rounded";
           # scrollbar = false;
           # completeopt = "menu,menuone,noinsert";
@@ -16,8 +16,7 @@
         };
       };
       mapping = {
-        "<C-Space>" =
-          "cmp.mapping.confirm({ behavior = require('cmp').ConfirmBehavior.Insert, select = true })";
+        "<C-Space>" = "cmp.mapping.confirm({ behavior = require('cmp').ConfirmBehavior.Insert, select = true })";
         "<C-p>" = "cmp.mapping.select_prev_item(cmp_select)";
         "<C-n>" = ''
           function(_)

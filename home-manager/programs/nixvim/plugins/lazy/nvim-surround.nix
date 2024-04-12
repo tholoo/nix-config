@@ -1,4 +1,5 @@
-{ pkgs, ... }: {
+{ pkgs, ... }:
+{
   pkg = pkgs.vimPlugins.nvim-surround;
   enabled = true;
   event = "VeryLazy";

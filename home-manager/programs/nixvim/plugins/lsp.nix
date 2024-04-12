@@ -1,4 +1,5 @@
-{ lib, ... }: {
+{ lib, ... }:
+{
   lsp = {
     enable = true;
     keymaps = {
@@ -63,7 +64,9 @@
     '';
   };
 
-  lsp-format = { enable = true; };
+  lsp-format = {
+    enable = true;
+  };
   lspkind.enable = true;
   lspsaga.enable = true;
   # lsp-lines.enable = true;

@@ -1,4 +1,5 @@
-{ pkgs, ... }: {
+{ pkgs, ... }:
+{
   programs.fish = {
     enable = true;
     interactiveShellInit = ''
@@ -160,8 +161,7 @@
 
       # try out packages
       try = {
-        description =
-          "spawn a new shell with the specified packages to try them out";
+        description = "spawn a new shell with the specified packages to try them out";
         wraps = "nix-shell";
         body = ''
           set cmd "nix-shell --command $SHELL"
@@ -173,10 +173,12 @@
       };
       # try out package and execute it
       trye = {
-        description =
-          "run and execute the specified package. an optional second argument as the command to be run can be provided";
+        description = "run and execute the specified package. an optional second argument as the command to be run can be provided";
         wraps = "nix run";
-        argumentNames = [ "package" "command" ];
+        argumentNames = [
+          "package"
+          "command"
+        ];
         body = ''
           set cmd "nix run \"nixpkgs#$package\""
 
@@ -271,37 +273,27 @@
 
       # restow = ''stow --restow --verbose --target ~'';
 
-      glog =
-        "git log --oneline --graph --decorate --all --abbrev-commit --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset'";
+      glog = "git log --oneline --graph --decorate --all --abbrev-commit --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset'";
       gcb = "git checkout -b";
     };
 
     shellAliases = {
       e = "$EDITOR";
-      ls =
-        "${pkgs.eza}/bin/eza -la --color=auto --group-directories-first --git";
-      la =
-        "${pkgs.eza}/bin/eza -la --color=auto --group-directories-first --git --git-ignore -I .venv -I __pycache__ -I .git";
+      ls = "${pkgs.eza}/bin/eza -la --color=auto --group-directories-first --git";
+      la = "${pkgs.eza}/bin/eza -la --color=auto --group-directories-first --git --git-ignore -I .venv -I __pycache__ -I .git";
       laa = "${pkgs.eza}/bin/eza -la --color=auto --group-directories-first";
-      ll =
-        "${pkgs.eza}/bin/eza -l --color=auto --group-directories-first --git -I .venv -I __pycache__ -I .git";
-      lt =
-        "${pkgs.eza}/bin/eza -l --tree --level=2 --color=auto --group-directories-first -I .venv -I __pycache__ -I .git";
-      ltt =
-        "${pkgs.eza}/bin/eza -l --tree --color=auto --group-directories-first -I .venv -I __pycache__ -I .git";
-      lat =
-        "${pkgs.eza}/bin/eza -la --tree --level=2 --color=auto --group-directories-first -I .venv -I __pycache__ -I .git";
-      latt =
-        "${pkgs.eza}/bin/eza -la --tree --color=auto --group-directories-first -I .venv -I __pycache__ -I .git";
+      ll = "${pkgs.eza}/bin/eza -l --color=auto --group-directories-first --git -I .venv -I __pycache__ -I .git";
+      lt = "${pkgs.eza}/bin/eza -l --tree --level=2 --color=auto --group-directories-first -I .venv -I __pycache__ -I .git";
+      ltt = "${pkgs.eza}/bin/eza -l --tree --color=auto --group-directories-first -I .venv -I __pycache__ -I .git";
+      lat = "${pkgs.eza}/bin/eza -la --tree --level=2 --color=auto --group-directories-first -I .venv -I __pycache__ -I .git";
+      latt = "${pkgs.eza}/bin/eza -la --tree --color=auto --group-directories-first -I .venv -I __pycache__ -I .git";
       "l." = ''${pkgs.eza}/bin/eza -la | egrep "^\."'';
 
       grep = "grep --color=auto";
       egrep = "egrep --color=auto";
       fgrep = "fgrep --color=auto";
-
     };
     plugins = with pkgs.fishPlugins; [
-
       # Enable a plugin (here grc for colorized command output) from nixpkgs
       {
         name = "grc";

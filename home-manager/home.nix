@@ -1,6 +1,16 @@
 # Check the size with: nix-shell -p nix-tree.out --run nix-tree
-{ inputs, outputs, getNixFiles, lib, pkgs, ... }: {
-  imports = getNixFiles ./programs ++ getNixFiles ./window_manager
+{
+  inputs,
+  outputs,
+  getNixFiles,
+  lib,
+  pkgs,
+  ...
+}:
+{
+  imports =
+    getNixFiles ./programs
+    ++ getNixFiles ./window_manager
     ++ [ inputs.nix-colors.homeManagerModules.default ];
   # imports = [
   # If you want to use modules your own flake exports (from modules/home-manager):
@@ -43,7 +53,12 @@
 
   nix = {
     package = pkgs.nix;
-    settings = { trusted-users = [ "root" "tholo" ]; };
+    settings = {
+      trusted-users = [
+        "root"
+        "tholo"
+      ];
+    };
   };
   nixpkgs = {
     overlays = [
@@ -71,10 +86,10 @@
   };
 
   fonts.fontconfig.enable = true;
-  i18n.glibcLocales = pkgs.glibcLocales.override {
-    allLocales = false;
-    locales = [ "en_US.UTF-8/UTF-8" ];
-  };
+  # i18n.glibcLocales = pkgs.glibcLocales.override {
+  # allLocales = false;
+  # locales = [ "en_US.UTF-8/UTF-8" ];
+  # };
 
   home = {
     username = "tholo";
@@ -91,7 +106,12 @@
       # neovim
       # fonts
       (nerdfonts.override {
-        fonts = [ "FiraCode" "FiraMono" "JetBrainsMono" "Overpass" ];
+        fonts = [
+          "FiraCode"
+          "FiraMono"
+          "JetBrainsMono"
+          "Overpass"
+        ];
       })
       ubuntu_font_family
 
@@ -99,6 +119,8 @@
       codespell
 
       proxychains
+
+      distrobox
 
       # # You can also create simple shell scripts directly inside your
       # # configuration. For example, this adds a command 'my-hello' to your
@@ -308,7 +330,9 @@
           search_shortcut = "ALT+SPACE";
           search_trigger = ";srch";
           # show_icon = false;
-          keyboard_layout = { layout = "us,ir"; };
+          keyboard_layout = {
+            layout = "us,ir";
+          };
         };
       };
       matches = {
@@ -333,12 +357,16 @@
             {
               name = "currentdate";
               type = "date";
-              params = { format = "%Y/%m/%d"; };
+              params = {
+                format = "%Y/%m/%d";
+              };
             }
             {
               name = "currenttime";
               type = "date";
-              params = { format = "%R"; };
+              params = {
+                format = "%R";
+              };
             }
           ];
         };
@@ -373,7 +401,9 @@
     # auto dark mode
     darkman = {
       enable = true;
-      settings = { usegeoclue = true; };
+      settings = {
+        usegeoclue = true;
+      };
     };
 
     polybar = {

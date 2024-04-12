@@ -1,4 +1,5 @@
-{ ... }: {
+{ ... }:
+{
   # TODO: switch to fuzzel
   programs.wofi = {
     enable = true;

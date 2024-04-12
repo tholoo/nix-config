@@ -1,7 +1,10 @@
-{ pkgs, ... }: {
+{ pkgs, ... }:
+{
   # home.packages = options.home.packages.default ++ (with pkgs; [ lazygit ]);
   programs = {
-    lazygit = { enable = true; };
+    lazygit = {
+      enable = true;
+    };
     gh = {
       enable = true;
       extensions = with pkgs; [ gh-copilot ];
@@ -15,7 +18,9 @@
       userEmail = "ali.mohamadza@gmail.com";
       # Install git with all the optional extras
       package = pkgs.gitAndTools.gitFull;
-      aliases = { clone-bare = "!sh ${./git-clone-bare.sh}"; };
+      aliases = {
+        clone-bare = "!sh ${./git-clone-bare.sh}";
+      };
       delta.enable = true;
       # diff-so-fancy.enable = true;
       extraConfig = {

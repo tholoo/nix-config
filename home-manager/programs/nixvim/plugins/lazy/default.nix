@@ -1,4 +1,11 @@
-{ pkgs, lib, getNixFiles, getPlugin, ... }: {
+{
+  pkgs,
+  lib,
+  getNixFiles,
+  getPlugin,
+  ...
+}:
+{
   lazy = {
     # this currently disables all other plugins
 

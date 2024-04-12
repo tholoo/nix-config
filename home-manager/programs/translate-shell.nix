@@ -1,4 +1,5 @@
-{...}: {
+{ ... }:
+{
   programs.translate-shell = {
     enable = true;
     settings = {

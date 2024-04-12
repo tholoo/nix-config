@@ -1,4 +1,5 @@
-{ pkgs, ... }: {
+{ pkgs, ... }:
+{
   xsession = {
     enable = false;
     windowManager = {
@@ -11,7 +12,9 @@
           workspaceAutoBackAndForth = true;
           menu = "${pkgs.rofi}/bin/rofi -show drun";
           defaultWorkspace = "1";
-          window = { hideEdgeBorders = "smart"; };
+          window = {
+            hideEdgeBorders = "smart";
+          };
         };
       };
     };

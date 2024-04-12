@@ -1,1 +1,6 @@
-{ pkgs, ... }: { programs.zoxide = { enable = true; }; }
+{ pkgs, ... }:
+{
+  programs.zoxide = {
+    enable = true;
+  };
+}

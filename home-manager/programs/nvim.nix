@@ -1,4 +1,5 @@
-{ pkgs, config, ... }: {
+{ pkgs, config, ... }:
+{
   config = {
     home.file."./.local/share/nvim/lazy/nvim-treesitter/" = {
       recursive = true;
@@ -10,7 +11,13 @@
       withRuby = true;
       withNodeJs = true;
       defaultEditor = true;
-      extraPython3Packages = ps: with ps; [ pip pynvim python-lsp-ruff mypy ];
+      extraPython3Packages =
+        ps: with ps; [
+          pip
+          pynvim
+          python-lsp-ruff
+          mypy
+        ];
       extraPackages = with pkgs; [
         mypy
         ruff
@@ -30,7 +37,10 @@
         lua-language-server
         stylua
       ];
-      plugins = with pkgs.vimPlugins; [ LazyVim semshi ];
+      plugins = with pkgs.vimPlugins; [
+        LazyVim
+        semshi
+      ];
     };
     xdg.configFile.nvim = {
       source = ../../resources/nvim;
@@ -38,7 +48,7 @@
     };
 
     # home.file."./.config/nvim/lua/config/options.lua".text = (builtins.readFile ../../resources/nvim/lua/config/options.lua) + ''
-      # vim.opt.runtimepath:append("${config.programs.neovim.finalPackage.python3Env}")
+    # vim.opt.runtimepath:append("${config.programs.neovim.finalPackage.python3Env}")
     # '';
   };
 }

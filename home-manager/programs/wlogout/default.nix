@@ -1,1 +1,6 @@
-{ pkgs, ... }: { programs.wlogout = { enable = true; }; }
+{ pkgs, ... }:
+{
+  programs.wlogout = {
+    enable = true;
+  };
+}

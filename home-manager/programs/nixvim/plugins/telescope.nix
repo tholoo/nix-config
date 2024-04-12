@@ -30,7 +30,9 @@
       ];
       set_env.COLORTERM = "truecolor";
       layout_strategy = "horizontal";
-      layout_config = { prompt_position = "top"; };
+      layout_config = {
+        prompt_position = "top";
+      };
       sorting_strategy = "ascending";
       winblend = 0;
     };

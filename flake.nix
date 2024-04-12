@@ -1,9 +1,7 @@
 {
   description = "Tholo's Nix Config";
   nixConfig = {
-    extra-substituters = [
-      "https://nix-community.cachix.org"
-    ];
+    extra-substituters = [ "https://nix-community.cachix.org" ];
     extra-trusted-public-keys = [
       "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
     ];
@@ -45,7 +43,13 @@
     stylix.url = "github:danth/stylix";
   };
 
-  outputs = { self, nixpkgs, home-manager, ... }@inputs:
+  outputs =
+    {
+      self,
+      nixpkgs,
+      home-manager,
+      ...
+    }@inputs:
     let
       inherit (self) outputs;
       # Supported systems for your flake packages, shell, etc.
@@ -59,7 +63,8 @@
       # This is a function that generates an attribute by calling a function you
       # pass to it, with each system as an argument
       forAllSystems = nixpkgs.lib.genAttrs systems;
-    in {
+    in
+    {
       # inputs.stylix = {
       #   image = ./resources/wallpapers/wallhaven-8586my_1920x1080.png;
       #   polarity = "dark";
@@ -67,12 +72,10 @@
 
       # Your custom packages
       # Accessible through 'nix build', 'nix shell', etc
-      packages =
-        forAllSystems (system: import ./pkgs nixpkgs.legacyPackages.${system});
+      packages = forAllSystems (system: import ./pkgs nixpkgs.legacyPackages.${system});
       # Formatter for your nix files, available through 'nix fmt'
       # Other options beside 'alejandra' include 'nixpkgs-fmt'
-      formatter =
-        forAllSystems (system: nixpkgs.legacyPackages.${system}.alejandra);
+      formatter = forAllSystems (system: nixpkgs.legacyPackages.${system}.alejandra);
 
       # Your custom packages and modifications, exported as overlays
       overlays = import ./overlays { inherit inputs; };
@@ -88,7 +91,9 @@
       nixosConfigurations = {
         # FIXME replace with your hostname
         "homepc" = nixpkgs.lib.nixosSystem {
-          specialArgs = { inherit inputs outputs; };
+          specialArgs = {
+            inherit inputs outputs;
+          };
           modules = [
             # inputs.stylix.nixosModules.stylix
             # > Our main nixos configuration file <
@@ -104,13 +109,20 @@
         "tholo" = home-manager.lib.homeManagerConfiguration {
           # Home-manager requires 'pkgs' instance
           pkgs = nixpkgs.legacyPackages.x86_64-linux;
-          extraSpecialArgs = let
-            getNixFiles = dir:
-              with nixpkgs.lib;
-              map (file: dir + "/${file}") (attrNames (filterAttrs
-                (file: type: (hasSuffix ".nix" file) || (type == "directory"))
-                (builtins.readDir dir)));
-          in { inherit inputs outputs getNixFiles; };
+          extraSpecialArgs =
+            let
+              getNixFiles =
+                dir:
+                with nixpkgs.lib;
+                map (file: dir + "/${file}") (
+                  attrNames (
+                    filterAttrs (file: type: (hasSuffix ".nix" file) || (type == "directory")) (builtins.readDir dir)
+                  )
+                );
+            in
+            {
+              inherit inputs outputs getNixFiles;
+            };
           modules = [
             # inputs.stylix.homeManagerModules.stylix
             # > Our main home-manager configuration file <

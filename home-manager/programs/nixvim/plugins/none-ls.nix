@@ -5,8 +5,8 @@
     sources = {
       formatting = {
         # alejandra.enable = true;
-        # nixfmt.enable = true;
-        nixpkgs_fmt.enable = true;
+        nixfmt.enable = true;
+        # nixpkgs_fmt.enable = true;
       };
     };
     # extraOptions = {

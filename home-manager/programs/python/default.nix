@@ -1,5 +1,8 @@
-{ pkgs, ... }: {
-  programs.pyenv = { enable = true; };
+{ pkgs, ... }:
+{
+  programs.pyenv = {
+    enable = true;
+  };
 
   # python formatter
   # programs.ruff = {

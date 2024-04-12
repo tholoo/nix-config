@@ -1,22 +1,43 @@
-{ pkgs, lib, getNixFiles, options, config, ... }: {
-  imports = let
-    getPlugin = file:
-      let importedFile = import file;
-      in if builtins.isFunction importedFile then
-        importedFile { inherit pkgs lib options config getNixFiles getPlugin; }
-      else
-        importedFile;
+{
+  pkgs,
+  lib,
+  getNixFiles,
+  options,
+  config,
+  ...
+}:
+{
+  imports =
+    let
+      getPlugin =
+        file:
+        let
+          importedFile = import file;
+        in
+        if builtins.isFunction importedFile then
+          importedFile {
+            inherit
+              pkgs
+              lib
+              options
+              config
+              getNixFiles
+              getPlugin
+              ;
+          }
+        else
+          importedFile;
 
-    addNixvim = file:
-      let pluginSet = getPlugin file;
-      in {
-        programs.nixvim = if lib.hasAttr "plugins" pluginSet then
-          pluginSet
-        else {
-          plugins = pluginSet;
+      addNixvim =
+        file:
+        let
+          pluginSet = getPlugin file;
+        in
+        {
+          programs.nixvim = if lib.hasAttr "plugins" pluginSet then pluginSet else { plugins = pluginSet; };
         };
-      };
-  in map addNixvim (getNixFiles ./plugins);
+    in
+    map addNixvim (getNixFiles ./plugins);
 
   programs.nixvim = {
     enable = false;
@@ -28,13 +49,17 @@
     # ];
 
     luaLoader.enable = true;
-    clipboard.providers = { xsel.enable = true; };
+    clipboard.providers = {
+      xsel.enable = true;
+    };
 
     # Highlight and remove extra white spaces
     # highlight.ExtraWhitespace.bg = "red";
     match.ExtraWhitespace = "\\s\\+$";
 
-    globals = { mapleader = " "; };
+    globals = {
+      mapleader = " ";
+    };
 
     opts = {
       number = true;
@@ -94,8 +119,7 @@
       }
       {
         key = "]<Space>";
-        action =
-          '':<C-u>put =repeat(nr2char(10),v:count)<Bar>execute "\'[-1"<CR>'';
+        action = '':<C-u>put =repeat(nr2char(10),v:count)<Bar>execute "\'[-1"<CR>'';
         mode = "n";
         options = {
           silent = true;
@@ -104,8 +128,7 @@
       }
       {
         key = "[<Space>";
-        action =
-          '':<C-u>put!=repeat(nr2char(10),v:count)<Bar>execute "\']+1"<CR>'';
+        action = '':<C-u>put!=repeat(nr2char(10),v:count)<Bar>execute "\']+1"<CR>'';
         mode = "n";
         options = {
           silent = true;

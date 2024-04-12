@@ -1,6 +1,14 @@
 # This is your system's configuration file.
 # Use this to configure your system environment (it replaces /etc/nixos/configuration.nix)
-{ inputs, outputs, lib, config, pkgs, ... }: {
+{
+  inputs,
+  outputs,
+  lib,
+  config,
+  pkgs,
+  ...
+}:
+{
   # You can import other NixOS modules here
   imports = [
     # If you want to use modules your own flake exports (from modules/nixos):
@@ -52,28 +60,34 @@
 
   # This will add each flake input as a registry
   # To make nix3 commands consistent with your flake
-  nix.registry = (lib.mapAttrs (_: flake: { inherit flake; }))
-    ((lib.filterAttrs (_: lib.isType "flake")) inputs);
+  nix.registry = (lib.mapAttrs (_: flake: { inherit flake; })) (
+    (lib.filterAttrs (_: lib.isType "flake")) inputs
+  );
 
   # This will additionally add your inputs to the system's legacy channels
   # Making legacy nix commands consistent as well, awesome!
   nix.nixPath = [ "/etc/nix/path" ];
-  environment.etc = (lib.mapAttrs' (name: value: {
-    name = "nix/path/${name}";
-    value.source = value.flake;
-  }) config.nix.registry) // {
-    "greetd/environments".text = ''
-      sway
-      Hyprland
-    '';
-  };
+  environment.etc =
+    (lib.mapAttrs' (name: value: {
+      name = "nix/path/${name}";
+      value.source = value.flake;
+    }) config.nix.registry)
+    // {
+      "greetd/environments".text = ''
+        sway
+        Hyprland
+      '';
+    };
 
   nix.settings = {
     # Enable flakes and new 'nix' command
     experimental-features = "nix-command flakes";
     # Deduplicate and optimize nix store
     auto-optimise-store = true;
-    trusted-users = ["root" "tholo"];
+    trusted-users = [
+      "root"
+      "tholo"
+    ];
     extra-trusted-public-keys = [
       "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
     ];
@@ -82,7 +96,9 @@
   security = {
     polkit.enable = true;
     rtkit.enable = true;
-    pam.services.swaylock = { text = "auth include login"; };
+    pam.services.swaylock = {
+      text = "auth include login";
+    };
   };
 
   nix.gc = {
@@ -98,8 +114,7 @@
     serviceConfig = {
       Type = "simple";
       User = "tholo";
-      ExecStart =
-        "${pkgs.v2ray}/bin/v2ray run --config=/home/tholo/v2ray/config.json";
+      ExecStart = "${pkgs.v2ray}/bin/v2ray run --config=/home/tholo/v2ray/config.json";
       Restart = "on-failure";
     };
   };
@@ -128,8 +143,9 @@
             main = {
               # https://github.com/rvaiya/keyd/blob/2338f11b1ddd81eaddd957de720a3b4279222da0/t/keys.py
               capslock = "esc";
+              leftbrace = "overload(meta, leftbrace)";
               # leftbrace = "lettermod(meta, leftbrace, 100, 150)";
-              leftbrace = "overloadi(leftbrace, overloadt2(meta, leftbrace, 150), 100)"
+              # leftbrace = "overloadi(leftbrace, overloadt2(meta, leftbrace, 150), 100)";
               # meta = "oneshot(meta)";
               # rightalt = "overload(meta, rightalt)";
               rightalt = "layer(nav)";
@@ -189,22 +205,23 @@
       audio.enable = true;
       extraConfig.pipewire = {
         "99-silent-bell.conf" = {
-          "context.properties" = { "module.x11.bell" = false; };
+          "context.properties" = {
+            "module.x11.bell" = false;
+          };
         };
       };
       wireplumber = {
         enable = true;
         # Higher quality for bluetooth
         configPackages = [
-          (pkgs.writeTextDir
-            "share/wireplumber/bluetooth.lua.d/51-bluez-config.lua" ''
-              bluez_monitor.properties = {
-                ["bluez5.enable-sbc-xq"] = true,
-                ["bluez5.enable-msbc"] = true,
-                ["bluez5.enable-hw-volume"] = true,
-                ["bluez5.headset-roles"] = "[ hsp_hs hsp_ag hfp_hf hfp_ag ]"
-              }
-            '')
+          (pkgs.writeTextDir "share/wireplumber/bluetooth.lua.d/51-bluez-config.lua" ''
+            bluez_monitor.properties = {
+              ["bluez5.enable-sbc-xq"] = true,
+              ["bluez5.enable-msbc"] = true,
+              ["bluez5.enable-hw-volume"] = true,
+              ["bluez5.headset-roles"] = "[ hsp_hs hsp_ag hfp_hf hfp_ag ]"
+            }
+          '')
         ];
       };
       pulse.enable = true;
@@ -308,8 +325,7 @@
 
   # Pick only one of the below networking options.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
-  networking.networkmanager.enable =
-    true; # Easiest to use and most distros use this by default.
+  networking.networkmanager.enable = true; # Easiest to use and most distros use this by default.
 
   # TODO: This is just an example, be sure to use whatever bootloader you prefer
   boot.loader.systemd-boot.enable = true;
@@ -336,7 +352,7 @@
     docker = {
       enable = true;
       daemon.settings = {
-        registry-mirrors = ["https://registry.docker.ir"];
+        registry-mirrors = [ "https://registry.docker.ir" ];
       };
     };
     libvirtd.enable = true;
@@ -352,7 +368,14 @@
       openssh.authorizedKeys.keys = [
         # TODO: Add your SSH public key(s) here, if you plan on using SSH to connect
       ];
-      extraGroups = [ "wheel" "networkmanager" "audio" "docker" "video" "input" ];
+      extraGroups = [
+        "wheel"
+        "networkmanager"
+        "audio"
+        "docker"
+        "video"
+        "input"
+      ];
     };
   };
   programs = {

@@ -1,4 +1,5 @@
-{ lib, ... }: {
+{ lib, ... }:
+{
   plugins = {
     luasnip.enable = true;
     friendly-snippets.enable = true;
@@ -33,7 +34,10 @@
       key = "<s-tab>";
       action = "function() require('luasnip').jump(-1) end";
       lua = true;
-      mode = [ "i" "s" ];
+      mode = [
+        "i"
+        "s"
+      ];
       options = {
         silent = true;
         noremap = true;
@@ -49,7 +53,10 @@
         end
       '';
       lua = true;
-      mode = [ "i" "s" ];
+      mode = [
+        "i"
+        "s"
+      ];
       options = {
         silent = true;
         noremap = true;

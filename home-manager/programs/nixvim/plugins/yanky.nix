@@ -1,7 +1,9 @@
 {
   plugins.yanky = {
     enable = true;
-    extraOptions = { highlight.timer = 100; };
+    extraOptions = {
+      highlight.timer = 100;
+    };
   };
   # keymaps = [
   #   {
