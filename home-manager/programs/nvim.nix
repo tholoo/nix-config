@@ -36,6 +36,7 @@
         markdownlint-cli2
         lua-language-server
         stylua
+        yaml-language-server
       ];
       plugins = with pkgs.vimPlugins; [
         LazyVim

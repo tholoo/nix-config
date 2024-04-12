@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 {
   programs.fish = {
     enable = true;
@@ -244,19 +244,20 @@
       merge = "xrdb -merge ~/.Xresources";
 
       # git
-      lg = "${pkgs.lazygit}/bin/lazygit";
       ga = "git add";
       gaa = "git add .";
       gb = "git branch";
-      gco = "git checkout";
-      gcl = "git clone";
       gc = "git commit -m";
+      gcb = "git checkout -b";
+      gcl = "git clone";
+      gco = "git checkout";
       gf = "git fetch";
-      pull = "git pull origin";
-      push = "git push origin";
-      gtag = "git tag";
+      glog = "git log --oneline --graph --decorate --all --abbrev-commit --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset'";
       gnewtag = "git tag -a";
       gss = "git status -s";
+      gtag = "git tag";
+      pull = "git pull origin";
+      push = "git push origin";
 
       # get error messages from journalctl
       jctl = "journalctl -p 3 -xb";
@@ -272,22 +273,21 @@
       # fishc = ''vim ~/.config/fish/config.fish'';
 
       # restow = ''stow --restow --verbose --target ~'';
-
-      glog = "git log --oneline --graph --decorate --all --abbrev-commit --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset'";
-      gcb = "git checkout -b";
     };
 
     shellAliases = {
       e = "$EDITOR";
-      ls = "${pkgs.eza}/bin/eza -la --color=auto --group-directories-first --git";
-      la = "${pkgs.eza}/bin/eza -la --color=auto --group-directories-first --git --git-ignore -I .venv -I __pycache__ -I .git";
-      laa = "${pkgs.eza}/bin/eza -la --color=auto --group-directories-first";
-      ll = "${pkgs.eza}/bin/eza -l --color=auto --group-directories-first --git -I .venv -I __pycache__ -I .git";
-      lt = "${pkgs.eza}/bin/eza -l --tree --level=2 --color=auto --group-directories-first -I .venv -I __pycache__ -I .git";
-      ltt = "${pkgs.eza}/bin/eza -l --tree --color=auto --group-directories-first -I .venv -I __pycache__ -I .git";
-      lat = "${pkgs.eza}/bin/eza -la --tree --level=2 --color=auto --group-directories-first -I .venv -I __pycache__ -I .git";
-      latt = "${pkgs.eza}/bin/eza -la --tree --color=auto --group-directories-first -I .venv -I __pycache__ -I .git";
-      "l." = ''${pkgs.eza}/bin/eza -la | egrep "^\."'';
+      ls = "${lib.getExe pkgs.eza} -la --color=auto --group-directories-first --git";
+      la = "${lib.getExe pkgs.eza} -la --color=auto --group-directories-first --git --git-ignore -I .venv -I __pycache__ -I .git";
+      laa = "${lib.getExe pkgs.eza} -la --color=auto --group-directories-first";
+      ll = "${lib.getExe pkgs.eza} -l --color=auto --group-directories-first --git -I .venv -I __pycache__ -I .git";
+      lt = "${lib.getExe pkgs.eza} -l --tree --level=2 --color=auto --group-directories-first -I .venv -I __pycache__ -I .git";
+      ltt = "${lib.getExe pkgs.eza} -l --tree --color=auto --group-directories-first -I .venv -I __pycache__ -I .git";
+      lat = "${lib.getExe pkgs.eza} -la --tree --level=2 --color=auto --group-directories-first -I .venv -I __pycache__ -I .git";
+      latt = "${lib.getExe pkgs.eza} -la --tree --color=auto --group-directories-first -I .venv -I __pycache__ -I .git";
+      "l." = ''${lib.getExe pkgs.eza} -la | egrep "^\."'';
+
+      lg = lib.getExe pkgs.lazygit;
 
       grep = "grep --color=auto";
       egrep = "egrep --color=auto";

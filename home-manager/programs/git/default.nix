@@ -4,6 +4,17 @@
   programs = {
     lazygit = {
       enable = true;
+      settings = {
+        git = {
+          log.showWholeGraph = true;
+        };
+        gui = {
+          theme = {
+            selectedLineBgColor = [ "#2e2e2e" ];
+          };
+          nerdFontsVersion = "3";
+        };
+      };
     };
     gh = {
       enable = true;
@@ -33,6 +44,17 @@
         rebase.updateRefs = true;
         # if branch exists in origin, git worktree add will use that branch instead of creating a new one
         worktree.guessRemote = true;
+      };
+      aliases = {
+        a = "add";
+        b = "branch";
+        c = "commit";
+        cb = "checkout -b";
+        cm = "commit -m";
+        co = "checkout";
+        f = "fetch";
+        s = "status -s";
+        lg = "log --oneline --graph --decorate --all --abbrev-commit --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset'";
       };
     };
   };
