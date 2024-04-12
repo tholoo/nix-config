@@ -82,18 +82,20 @@
 
     packages = with pkgs; [
       # essentials
+      xdg-utils
       # gcc
       libgcc
       libgccjit
       clang
 
       # neovim
-      # nerdfonts
+      # fonts
       (nerdfonts.override {
-        fonts = [ "FiraCode" "FiraMono" "JetBrainsMono" ];
+        fonts = [ "FiraCode" "FiraMono" "JetBrainsMono" "Overpass" ];
       })
+      ubuntu_font_family
 
-      vazir-fonts # persian font
+      # vazir-fonts # persian font
       codespell
 
       proxychains
@@ -129,6 +131,7 @@
       gg # for proxying commands
       xh # faster httpie
       # asdf # a runtime programming language version manager (like pyenv)
+      yt-dlp # audio/video downloader
 
       # cool
       figlet # generate ascii art of strings
@@ -184,6 +187,8 @@
 
       # social
       telegram-desktop
+      # since 64gram and telegram-desktop share the same bin name:
+      (pkgs.writeShellScriptBin "64gram" "exec -a $0 ${lib.getExe _64gram} $@")
 
       # browser
       # (vivaldi.override {
@@ -345,7 +350,8 @@
     # notification daemon
     # mako = { enable = true; };
     # clipboard manager for wayland
-    copyq.enable = true;
+    # copyq.enable = true;
+    cliphist.enable = true;
     # screenshot
     # flameshot.enable = true;
     # screen annotatiaon tool

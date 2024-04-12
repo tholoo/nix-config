@@ -24,7 +24,7 @@
       terminal = "wezterm";
       workspaceAutoBackAndForth = true;
       defaultWorkspace = "1";
-      menu = "${pkgs.wofi}/bin/wofi --show drun,run";
+      menu = "${lib.getExe pkgs.wofi} --show drun,run";
       gaps = {
         smartGaps = true;
         smartBorders = "on";
@@ -59,20 +59,21 @@
         hideEdgeBorders = "smart";
         titlebar = false;
       };
-      keybindings = lib.mkOptionDefault {
+      keybindings = lib.mkOptionDefault (with pkgs; with lib; {
         # "Print" = "exec ${pkgs.shotman}/bin/shotman -c output";
         # "Print+Shift" = "exec ${pkgs.shotman}/bin/shotman -c region";
         # "Print+Shift+Control" = "exec ${pkgs.shotman}/bin/shotman -c window";
         # "Print" = ''exec --no-startup-id "${pkgs.flameshot}/bin/flameshot"'';
         "Print" = ''
-          exec ${pkgs.wayshot}/bin/wayshot -s "$(${pkgs.slurp}/bin/slurp -o -c '#ff0000ff')" --stdout | ${pkgs.satty}/bin/satty --filename - --fullscreen --initial-tool line'';
+          exec ${getExe wayshot} -s "$(${getExe slurp} -o -c '#ff0000ff')" --stdout | ${getExe satty} --filename - --fullscreen --initial-tool line'';
 
         "Insert" =
-          "exec ${pkgs.wayshot}/bin/wayshot --stdout | ${pkgs.satty}/bin/satty --filename - --fullscreen --initial-tool brush";
+          "exec ${getExe wayshot} --stdout | ${getExe satty} --filename - --fullscreen --initial-tool brush";
 
-        "${modifier}+period" =
-          "exec ${pkgs.swaynotificationcenter}/bin/swaync-client --hide-latest";
+        "${modifier}+period" = "exec ${getExe' swaynotificationcenter "swaync-client"} --hide-latest";
 
+        "${modifier}+y" =
+          "exec ${getExe cliphist} list | ${getExe wofi} --show dmenu | ${getExe cliphist} decode | ${getExe' wl-clipboard "wl-copy"}";
         # "Insert" =
         #   "exec ${pkgs.grim}/bin/grim -o $(swaymsg -t get_outputs | ${pkgs.jq}/bin/jq -r '.[] | select(.focused) | .name') - | ${pkgs.satty}/bin/satty --filename - --fullscreen";
         # Screen recording
@@ -97,7 +98,7 @@
         # "${modifier}+period" = "exec makoctl dismiss";
         # "${modifier}+shift+period" = "exec makoctl dismiss -a";
         "${modifier}+z" = "exec swaylock";
-        "${modifier}+Shift+z" = "exec ${pkgs.wlogout}/bin/wlogout";
+        "${modifier}+Shift+z" = "exec ${getExe wlogout}";
         "XF86AudioMute" =
           "exec wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle && (wpctl get-volume @DEFAULT_AUDIO_SINK@ | grep -q MUTED && echo 0 > $XDG_RUNTIME_DIR/wob.sock) || wpctl get-volume @DEFAULT_AUDIO_SINK@ > $XDG_RUNTIME_DIR/wob.sock";
         "XF86AudioRaiseVolume" =
@@ -107,8 +108,8 @@
 
         # Toggle control center
         "${modifier}+Shift+n" =
-          "exec ${pkgs.swaynotificationcenter}/bin/swaync-client --toggle-panel --skip-wait";
-      };
+          "exec ${getExe' swaynotificationcenter "swaync-client"} --toggle-panel --skip-wait";
+      });
       output = {
         "*" = {
           bg =
