@@ -37,6 +37,7 @@
         lua-language-server
         stylua
         yaml-language-server
+        shfmt
       ];
       plugins = with pkgs.vimPlugins; [
         LazyVim

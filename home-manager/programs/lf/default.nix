@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 {
   xdg.configFile."lf/icons".source = ./icons;
   programs.lf = {
@@ -11,6 +11,7 @@
           mkdir -p $DIR
         }}
       '';
+      trash = "\$${lib.getExe pkgs.trashy} \"$fx\"";
     };
     settings = {
       number = true;
@@ -23,7 +24,8 @@
     keybindings = {
       "<enter>" = "open";
       o = "mkdir";
+      D = "trash";
     };
-    previewer.source = pkgs.pistol + /bin/pistol;
+    previewer.source = lib.getExe pkgs.ctpv;
   };
 }
