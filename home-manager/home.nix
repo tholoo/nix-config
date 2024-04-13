@@ -111,6 +111,7 @@
           "FiraMono"
           "JetBrainsMono"
           "Overpass"
+          "CascadiaCode"
         ];
       })
       ubuntu_font_family

@@ -38,6 +38,8 @@
         stylua
         yaml-language-server
         shfmt
+        dockerfile-language-server-nodejs
+        hadolint
       ];
       plugins = with pkgs.vimPlugins; [
         LazyVim
