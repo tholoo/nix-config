@@ -38,6 +38,9 @@ return {
       -- null_ls.builtins.diagnostics.mypy,
       -- null_ls.builtins.diagnostics.flake8,
 
+      -- js
+      null_ls.builtins.formatting.biome,
+
       -- markdown
       null_ls.builtins.diagnostics.markdownlint_cli2,
 

@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 {
   # home.packages = options.home.packages.default ++ (with pkgs; [ lazygit ]);
   programs = {
@@ -30,7 +30,7 @@
       # Install git with all the optional extras
       package = pkgs.gitAndTools.gitFull;
       aliases = {
-        clone-bare = "!sh ${./git-clone-bare.sh}";
+        clone-bare = "!${lib.getExe pkgs.bash} ${./git-clone-bare.sh}";
       };
       delta.enable = true;
       # diff-so-fancy.enable = true;

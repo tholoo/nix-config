@@ -40,6 +40,8 @@
         shfmt
         dockerfile-language-server-nodejs
         hadolint
+        biome
+        yarn
       ];
       plugins = with pkgs.vimPlugins; [
         LazyVim
