@@ -120,6 +120,7 @@
       codespell
 
       proxychains
+      nekoray
 
       distrobox
 
@@ -136,6 +137,8 @@
       # with more detailed log output
       nix-output-monitor
       nix-prefetch-github
+      nix-tree
+      nh
       devenv
 
       # utils

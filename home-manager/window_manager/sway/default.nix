@@ -116,6 +116,19 @@
 
           # Toggle control center
           "${modifier}+Shift+n" = "exec ${getExe' swaynotificationcenter "swaync-client"} --toggle-panel --skip-wait";
+
+          # Work with Persian layout
+          "${modifier}+Farsi_1" = "workspace number 1";
+          "${modifier}+Farsi_2" = "workspace number 2";
+          "${modifier}+Farsi_3" = "workspace number 3";
+          "${modifier}+Farsi_4" = "workspace number 4";
+          "${modifier}+Farsi_5" = "workspace number 5";
+          "${modifier}+Farsi_6" = "workspace number 6";
+          "${modifier}+Farsi_7" = "workspace number 7";
+          "${modifier}+Farsi_8" = "workspace number 8";
+          "${modifier}+Farsi_9" = "workspace number 9";
+          "${modifier}+Farsi_0" = "workspace number 10";
+
         }
       );
       output = {
