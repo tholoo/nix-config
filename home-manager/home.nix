@@ -91,6 +91,12 @@
   # locales = [ "en_US.UTF-8/UTF-8" ];
   # };
 
+  xdg.portal = {
+    enable = true;
+    xdgOpenUsePortal = true;
+    extraPortals = with pkgs; [ xdg-desktop-portal-wlr ];
+  };
+
   home = {
     username = "tholo";
     homeDirectory = "/home/tholo";
