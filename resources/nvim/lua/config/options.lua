@@ -44,4 +44,4 @@ vim.lsp.handlers["textDocument/signatureHelp"] = vim.lsp.with(vim.lsp.handlers.s
 -- vim.g.python_host_prog = "/home/tholo/.pyenv/versions/3.12.1/bin/python"
 -- vim.g.python3_host_prog = "/home/tholo/.pyenv/versions/3.12.1/bin/python"
 
-vim.g.copilot_proxy = "localhost:2081"
+vim.g.copilot_proxy = "localhost:2080"
