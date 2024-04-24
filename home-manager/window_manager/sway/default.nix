@@ -128,9 +128,13 @@
           "${modifier}+Farsi_8" = "workspace number 8";
           "${modifier}+Farsi_9" = "workspace number 9";
           "${modifier}+Farsi_0" = "workspace number 10";
-
         }
       );
+
+      keycodebindings = {
+        "${modifier}+shift+24" = "kill";
+      };
+
       output = {
         "*" = {
           bg = "${../../../resources/wallpapers/wallhaven-fields-858z32.png} fill";
