@@ -42,6 +42,7 @@
         hadolint
         biome
         yarn
+        prettierd
       ];
       plugins = with pkgs.vimPlugins; [
         LazyVim

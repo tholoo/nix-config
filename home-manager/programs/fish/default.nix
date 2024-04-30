@@ -83,12 +83,25 @@
               setxkbmap -option caps:escape
             end
 
-      ### AUTOCOMPLETE AND HIGHLIGHT COLORS ###
+            ### AUTOCOMPLETE AND HIGHLIGHT COLORS ###
             set fish_color_normal brcyan
             set fish_color_autosuggestion '#7d7d7d'
             set fish_color_command brcyan
             set fish_color_error '#ff6c6b'
             set fish_color_param brcyan
+
+
+            # wt completions
+            set list (wt list | awk '{ print $1; }' | tr "\n" " ")
+            set opts ""
+
+            for item in (string split " " "$list")
+              set -a opts (basename -- "$item")
+            end
+
+            complete -c wt -f -n '__fish_is_nth_token 1' -a "$opts"
+
+            source "${pkgs.asdf-vm}/share/asdf-vm/asdf.fish"
     '';
     functions = {
       fish_user_key_bindings = ''
@@ -191,6 +204,32 @@
           # end
 
           eval "$cmd"
+        '';
+      };
+
+      wt = {
+        description = "git worktree helper";
+        body = ''
+          set -l arg (string replace -a '/' '\/' $argv[1])
+
+          switch $argv[1]
+              case 'list'
+                git worktree list
+              case '-'
+                set -l main_worktree (git worktree list --porcelain | string match -r 'worktree .*' | head -n 1 | cut -d ' ' -f2-)
+                if test -n "$main_worktree"
+                    echo "Changing to main worktree at: $main_worktree"
+                    cd $main_worktree
+                end
+              case '*'
+                set -l directory (git worktree list --porcelain | grep -E "worktree " | string match -r ".*$arg.*" | head -n 1 | cut -d ' ' -f2-)
+                if test -n "$directory"
+                    echo "Changing to worktree at: $directory"
+                    cd $directory
+                else
+                    echo "No worktree matches the provided name."
+                end
+            end
         '';
       };
 

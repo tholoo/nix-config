@@ -162,7 +162,7 @@
       usql # universal sql cli tool
       gg # for proxying commands
       xh # faster httpie
-      # asdf # a runtime programming language version manager (like pyenv)
+      asdf-vm # a runtime programming language version manager (like pyenv)
       yt-dlp # audio/video downloader
 
       # cool

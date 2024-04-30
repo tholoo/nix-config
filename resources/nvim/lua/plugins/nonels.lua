@@ -39,7 +39,8 @@ return {
       -- null_ls.builtins.diagnostics.flake8,
 
       -- js
-      null_ls.builtins.formatting.biome,
+      -- null_ls.builtins.formatting.biome,
+      null_ls.builtins.formatting.prettierd,
 
       -- markdown
       null_ls.builtins.diagnostics.markdownlint_cli2,
