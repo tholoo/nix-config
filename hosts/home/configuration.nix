@@ -104,17 +104,17 @@
     options = "--delete-older-than 7d";
   };
 
-  systemd.services.vpn = {
-    wantedBy = [ "multi-user.target" ];
-    after = [ "network.target" ];
-    description = "V2Ray Service";
-    serviceConfig = {
-      Type = "simple";
-      User = "tholo";
-      ExecStart = "${pkgs.v2ray}/bin/v2ray run --config=/home/tholo/v2ray/config.json";
-      Restart = "on-failure";
-    };
-  };
+  # systemd.services.vpn = {
+    # wantedBy = [ "multi-user.target" ];
+    # after = [ "network.target" ];
+    # description = "V2Ray Service";
+    # serviceConfig = {
+      # Type = "simple";
+      # User = "tholo";
+      # ExecStart = "${pkgs.v2ray}/bin/v2ray run --config=/home/tholo/v2ray/config.json";
+      # Restart = "on-failure";
+    # };
+  # };
 
   # systemd.user.services.polkit-gnome-authentication-agent-1 = {
   #   description = "polkit-gnome-authentication-agent-1";
