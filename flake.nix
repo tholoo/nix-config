@@ -68,8 +68,31 @@
       # This is a function that generates an attribute by calling a function you
       # pass to it, with each system as an argument
       forAllSystems = nixpkgs.lib.genAttrs systems;
+      lib = nixpkgs.lib;
+      getNixFiles =
+        dir:
+        with lib;
+        map (file: dir + "/${file}") (
+          attrNames (
+            filterAttrs (file: type: (hasSuffix ".nix" file) || (type == "directory")) (builtins.readDir dir)
+          )
+        );
+      flakeSelf = self;
+      callPackage = lib.callPackageWith {
+        inherit
+          flakeSelf
+          nixpkgs
+          home-manager
+          inputs
+          outputs
+          getNixFiles
+          ;
+      };
+      hosts = getNixFiles ./hosts;
+      # get all the hosts and merge them
+      hostsAttrs = lib.fold (el: c: lib.recursiveUpdate c (callPackage el { })) { } hosts;
     in
-    {
+    lib.recursiveUpdate hostsAttrs {
       # inputs.stylix = {
       #   image = ./resources/wallpapers/wallhaven-8586my_1920x1080.png;
       #   polarity = "dark";
@@ -93,46 +116,46 @@
 
       # NixOS configuration entrypoint
       # Available through 'nixos-rebuild --flake .#your-hostname'
-      nixosConfigurations = {
-        "homepc" = nixpkgs.lib.nixosSystem {
-          specialArgs = {
-            inherit inputs outputs;
-          };
-          modules = [
-            # inputs.stylix.nixosModules.stylix
-            # > Our main nixos configuration file <
-            ./nixos/configuration.nix
-          ];
-        };
-      };
+      # nixosConfigurations = {
+        # "homepc" = nixpkgs.lib.nixosSystem {
+          # specialArgs = {
+            # inherit inputs outputs;
+          # };
+          # modules = [
+            # # inputs.stylix.nixosModules.stylix
+            # # > Our main nixos configuration file <
+            # ./nixos/configuration.nix
+          # ];
+        # };
+      # };
 
       # Standalone home-manager configuration entrypoint
       # Available through 'home-manager --flake .#your-username@your-hostname'
-      homeConfigurations = {
-        "tholo" = home-manager.lib.homeManagerConfiguration {
-          # Home-manager requires 'pkgs' instance
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
-          extraSpecialArgs =
-            let
-              getNixFiles =
-                dir:
-                with nixpkgs.lib;
-                map (file: dir + "/${file}") (
-                  attrNames (
-                    filterAttrs (file: type: (hasSuffix ".nix" file) || (type == "directory")) (builtins.readDir dir)
-                  )
-                );
-            in
-            {
-              inherit inputs outputs getNixFiles;
-            };
-          modules = [
-            # inputs.stylix.homeManagerModules.stylix
-            # > Our main home-manager configuration file <
-            inputs.nixvim.homeManagerModules.nixvim
-            ./home-manager/home.nix
-          ];
-        };
-      };
+      # homeConfigurations = {
+      # "tholo" = home-manager.lib.homeManagerConfiguration {
+      # # Home-manager requires 'pkgs' instance
+      # pkgs = nixpkgs.legacyPackages.x86_64-linux;
+      # extraSpecialArgs =
+      # let
+      # getNixFiles =
+      # dir:
+      # with nixpkgs.lib;
+      # map (file: dir + "/${file}") (
+      # attrNames (
+      # filterAttrs (file: type: (hasSuffix ".nix" file) || (type == "directory")) (builtins.readDir dir)
+      # )
+      # );
+      # in
+      # {
+      # inherit inputs outputs getNixFiles self;
+      # };
+      # modules = [
+      # # inputs.stylix.homeManagerModules.stylix
+      # # > Our main home-manager configuration file <
+      # inputs.nixvim.homeManagerModules.nixvim
+      # ./home-manager/home.nix
+      # ];
+      # };
+      # };
     };
 }

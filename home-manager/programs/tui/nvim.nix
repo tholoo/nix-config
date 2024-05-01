@@ -1,4 +1,9 @@
-{ pkgs, config, ... }:
+{
+  pkgs,
+  config,
+  flakeSelf,
+  ...
+}:
 {
   config = {
     home.file."./.local/share/nvim/lazy/nvim-treesitter/" = {
@@ -50,7 +55,7 @@
       ];
     };
     xdg.configFile.nvim = {
-      source = ../../resources/nvim;
+      source = ../../../resources/nvim;
       recursive = true;
     };
 

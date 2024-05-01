@@ -3,6 +3,7 @@
   pkgs,
   lib,
   options,
+  self,
   ...
 }:
 {

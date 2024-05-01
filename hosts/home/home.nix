@@ -5,16 +5,18 @@
   getNixFiles,
   lib,
   pkgs,
-  self,
+  flakeSelf,
   ...
 }:
 {
   imports =
     # getNixFiles ./programs
     [
-      ./programs/gui
-      ./programs/tui
-    ] ++ getNixFiles ./window_manager ++ [ inputs.nix-colors.homeManagerModules.default ];
+      ../../home-manager/programs/gui
+      ../../home-manager/programs/tui
+    ]
+    ++ getNixFiles ../../home-manager/window_manager
+    ++ [ inputs.nix-colors.homeManagerModules.default ];
   # imports = [
   # If you want to use modules your own flake exports (from modules/home-manager):
   # outputs.homeManagerModules.example
