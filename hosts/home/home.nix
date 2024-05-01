@@ -6,27 +6,23 @@
   lib,
   pkgs,
   flakeSelf,
+  username,
+  hostname,
   ...
 }:
 {
-  imports =
-    # getNixFiles ./programs
-    [
-      ../../home-manager/programs/gui
-      ../../home-manager/programs/tui
-    ]
-    ++ getNixFiles ../../home-manager/window_manager
-    ++ [ inputs.nix-colors.homeManagerModules.default ];
-  # imports = [
-  # If you want to use modules your own flake exports (from modules/home-manager):
-  # outputs.homeManagerModules.example
+  imports = [
+    ../../home-manager/programs/gui
+    ../../home-manager/programs/tui
+    ../../home-manager/window_manager
+    ../../home-manager/services
+    inputs.nix-colors.homeManagerModules.default
+    # If you want to use modules your own flake exports (from modules/home-manager):
+    # outputs.homeManagerModules.example
 
-  # Or modules exported from other flakes (such as nix-colors):
-  # inputs.nix-colors.homeManagerModules.default
-
-  # You can also split up your configuration and import pieces of it here:
-  # ./nvim.nix
-  # ];
+    # Or modules exported from other flakes (such as nix-colors):
+    # inputs.nix-colors.homeManagerModules.default
+  ];
   # stylix = {
   #   image = ../resources/wallpapers/wallhaven-fields-858z32.png;
   #   polarity = "dark";
@@ -61,7 +57,7 @@
     settings = {
       trusted-users = [
         "root"
-        "tholo"
+        "${username}"
       ];
       max-jobs = "auto";
 
@@ -101,7 +97,7 @@
       # Add overlays your own flake exports (from overlays and pkgs dir):
       outputs.overlays.additions
       outputs.overlays.modifications
-      outputs.overlays.unstable-packages
+      # outputs.overlays.unstable-packages
 
       # You can also add overlays exported from other flakes:
       # neovim-nightly-overlay.overlays.default
@@ -113,7 +109,6 @@
       #   });
       # })
     ];
-    # Configure your nixpkgs instance
     config = {
       allowUnfree = true;
       # Workaround for https://github.com/nix-community/home-manager/issues/2942
@@ -122,10 +117,6 @@
   };
 
   fonts.fontconfig.enable = true;
-  # i18n.glibcLocales = pkgs.glibcLocales.override {
-  # allLocales = false;
-  # locales = [ "en_US.UTF-8/UTF-8" ];
-  # };
 
   xdg.portal = {
     enable = true;
@@ -134,8 +125,8 @@
   };
 
   home = {
-    username = "tholo";
-    homeDirectory = "/home/tholo";
+    username = "${username}";
+    homeDirectory = "/home/${username}";
 
     packages = with pkgs; [
       # essentials
@@ -145,7 +136,6 @@
       libgccjit
       clang
 
-      # neovim
       # fonts
       (nerdfonts.override {
         fonts = [
@@ -157,7 +147,6 @@
         ];
       })
       ubuntu_font_family
-
       # vazir-fonts # persian font
       codespell
 
@@ -166,15 +155,13 @@
 
       distrobox
 
-      # # You can also create simple shell scripts directly inside your
-      # # configuration. For example, this adds a command 'my-hello' to your
+      # # this adds a command 'my-hello' to your
       # # environment:
       # (pkgs.writeShellScriptBin "my-hello" ''
       #   echo "Hello, ${config.home.username}!"
       # '')
 
       # nix related
-
       # it provides the command `nom` works just like `nix`
       # with more detailed log output
       nix-output-monitor
@@ -200,10 +187,10 @@
       xh # faster httpie
       asdf-vm # a runtime programming language version manager (like pyenv)
       yt-dlp # audio/video downloader
+      inetutils # commands like telnet
 
       # cool
       figlet # generate ascii art of strings
-
       grc # command colorizer
 
       # archives
@@ -289,7 +276,7 @@
 
   home.file = {
     # ".config/nvim" = {
-    # source = /home/tholo/dotfiles/nvim/.config/nvim;
+    # source = /home/${username}/dotfiles/nvim/.config/nvim;
     # recursive = true;
     # };
     # # Building this configuration will create a copy of 'dotfiles/screenrc' in
@@ -311,7 +298,7 @@
   # or
   #  ~/.local/state/nix/profiles/profile/etc/profile.d/hm-session-vars.sh
   # or
-  #  /etc/profiles/per-user/tholo/etc/profile.d/hm-session-vars.sh
+  #  /etc/profiles/per-user/${username}/etc/profile.d/hm-session-vars.sh
   home.sessionVariables = {
     EDITOR = "nvim";
     SUDO_EDITOR = "nvim";
@@ -347,85 +334,6 @@
   programs.home-manager.enable = true;
 
   services = {
-    activitywatch = {
-      enable = true;
-      package = pkgs.aw-server-rust;
-      watchers = {
-        aw-watcher-afk = {
-          package = pkgs.aw-watcher-afk;
-          settings = {
-            timeout = 300;
-            poll_time = 2;
-          };
-        };
-        aw-watcher-window = {
-          package = pkgs.aw-watcher-window;
-          settings = {
-            poll_time = 1;
-            exclude_title = true;
-          };
-        };
-      };
-    };
-    espanso = {
-      enable = true;
-      package = pkgs.espanso-wayland;
-      configs = {
-        default = {
-          show_notification = false;
-          search_shortcut = "ALT+SPACE";
-          search_trigger = ";srch";
-          # show_icon = false;
-          keyboard_layout = {
-            layout = "us,ir";
-          };
-        };
-      };
-      matches = {
-        base = {
-          matches = [
-            {
-              trigger = ";now";
-              replace = "{{currentdate}} {{currenttime}}";
-            }
-            {
-              trigger = ";date";
-              replace = "{{currentdate}}";
-            }
-            {
-              trigger = ";time";
-              replace = "{{currenttime}}";
-            }
-          ];
-        };
-        global_vars = {
-          global_vars = [
-            {
-              name = "currentdate";
-              type = "date";
-              params = {
-                format = "%Y/%m/%d";
-              };
-            }
-            {
-              name = "currenttime";
-              type = "date";
-              params = {
-                format = "%R";
-              };
-            }
-          ];
-        };
-      };
-    };
-    # use headphone buttons to control volume
-    mpris-proxy.enable = true;
-    kanshi.enable = true;
-    # notification daemon
-    # mako = { enable = true; };
-    # clipboard manager for wayland
-    # copyq.enable = true;
-    cliphist.enable = true;
     # screenshot
     # flameshot.enable = true;
     # screen annotatiaon tool
@@ -434,31 +342,6 @@
     #   hotKey = "F9";
     #   # undoKey = "Shift+Insert";
     # };
-    # progress bar
-    wob = {
-      enable = true;
-      systemd = true;
-    };
-    # connect android to linux
-    kdeconnect = {
-      enable = true;
-      indicator = true;
-    };
-    # auto dark mode
-    darkman = {
-      enable = true;
-      settings = {
-        usegeoclue = true;
-      };
-    };
-
-    polybar = {
-      script = "polybar bar &";
-      enable = true;
-    };
-
-    # pipewire audio effects
-    easyeffects.enable = true;
   };
 
   # Nicely reload system units when changing configs

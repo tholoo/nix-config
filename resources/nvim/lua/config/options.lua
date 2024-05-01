@@ -39,7 +39,6 @@ local float = { focusable = true, style = "minimal", border = "rounded" }
 vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, float)
 vim.lsp.handlers["textDocument/signatureHelp"] = vim.lsp.with(vim.lsp.handlers.signature_help, float)
 
--- TODO: make a python env for neovim
 -- let g:python3_host_prog = '/path/to/py3nvim/bin/python'
 -- vim.g.python_host_prog = "/home/tholo/.pyenv/versions/3.12.1/bin/python"
 -- vim.g.python3_host_prog = "/home/tholo/.pyenv/versions/3.12.1/bin/python"

@@ -7,11 +7,22 @@
   getNixFiles,
   ...
 }:
+let
+  username = "tholo";
+  hostname = "homepc";
+in
 {
   nixosConfigurations = {
-    "homepc" = nixpkgs.lib.nixosSystem {
+    "${hostname}" = nixpkgs.lib.nixosSystem {
       specialArgs = {
-        inherit inputs outputs;
+        inherit
+          inputs
+          outputs
+          getNixFiles
+          flakeSelf
+          username
+          hostname
+          ;
       };
       modules = [
         # inputs.stylix.nixosModules.stylix
@@ -21,16 +32,18 @@
   };
 
   homeConfigurations = {
-    "tholo" = home-manager.lib.homeManagerConfiguration {
+    "${username}" = home-manager.lib.homeManagerConfiguration {
       pkgs = nixpkgs.legacyPackages.x86_64-linux;
       extraSpecialArgs = {
-          inherit
-            inputs
-            outputs
-            getNixFiles
-            flakeSelf
-            ;
-        };
+        inherit
+          inputs
+          outputs
+          getNixFiles
+          flakeSelf
+          username
+          hostname
+          ;
+      };
       modules = [
         # inputs.stylix.homeManagerModules.stylix
         inputs.nixvim.homeManagerModules.nixvim

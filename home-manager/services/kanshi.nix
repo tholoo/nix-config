@@ -1,0 +1,4 @@
+{ ... }:
+{
+  services.kanshi.enable = true;
+}

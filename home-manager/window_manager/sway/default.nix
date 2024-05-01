@@ -3,7 +3,7 @@
   pkgs,
   lib,
   options,
-  self,
+  flakeSelf,
   ...
 }:
 {

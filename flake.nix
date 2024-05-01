@@ -8,16 +8,12 @@
   };
 
   inputs = {
-    # Nixpkgs
     # nixpkgs.url = "github:nixos/nixpkgs/nixos-23.05";
-    # You can access packages and modules from different nixpkgs revs
-    # at the same time. Here's an working example:
     # nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     # Also see the 'unstable-packages' overlay at 'overlays/default.nix'.
 
     # Home manager
-    # home-manager, used for managing user configuration
     home-manager = {
       # stable
       # url = "github:nix-community/home-manager/release-23.11";
@@ -57,7 +53,6 @@
     }@inputs:
     let
       inherit (self) outputs;
-      # Supported systems for your flake packages, shell, etc.
       systems = [
         "aarch64-linux"
         "i686-linux"
@@ -74,7 +69,9 @@
         with lib;
         map (file: dir + "/${file}") (
           attrNames (
-            filterAttrs (file: type: (hasSuffix ".nix" file) || (type == "directory")) (builtins.readDir dir)
+            filterAttrs (
+              file: type: (((hasSuffix ".nix" file) || (type == "directory")) && !(hasPrefix "default" file))
+            ) (builtins.readDir dir)
           )
         );
       flakeSelf = self;
@@ -102,8 +99,7 @@
       # Accessible through 'nix build', 'nix shell', etc
       packages = forAllSystems (system: import ./pkgs nixpkgs.legacyPackages.${system});
       # Formatter for your nix files, available through 'nix fmt'
-      # Other options beside 'alejandra' include 'nixpkgs-fmt'
-      formatter = forAllSystems (system: nixpkgs.legacyPackages.${system}.alejandra);
+      formatter = forAllSystems (system: nixpkgs.legacyPackages.${system}.nixfmt-rfc-style);
 
       # Your custom packages and modifications, exported as overlays
       overlays = import ./overlays { inherit inputs; };
@@ -113,49 +109,5 @@
       # Reusable home-manager modules you might want to export
       # These are usually stuff you would upstream into home-manager
       homeManagerModules = import ./modules/home-manager;
-
-      # NixOS configuration entrypoint
-      # Available through 'nixos-rebuild --flake .#your-hostname'
-      # nixosConfigurations = {
-        # "homepc" = nixpkgs.lib.nixosSystem {
-          # specialArgs = {
-            # inherit inputs outputs;
-          # };
-          # modules = [
-            # # inputs.stylix.nixosModules.stylix
-            # # > Our main nixos configuration file <
-            # ./nixos/configuration.nix
-          # ];
-        # };
-      # };
-
-      # Standalone home-manager configuration entrypoint
-      # Available through 'home-manager --flake .#your-username@your-hostname'
-      # homeConfigurations = {
-      # "tholo" = home-manager.lib.homeManagerConfiguration {
-      # # Home-manager requires 'pkgs' instance
-      # pkgs = nixpkgs.legacyPackages.x86_64-linux;
-      # extraSpecialArgs =
-      # let
-      # getNixFiles =
-      # dir:
-      # with nixpkgs.lib;
-      # map (file: dir + "/${file}") (
-      # attrNames (
-      # filterAttrs (file: type: (hasSuffix ".nix" file) || (type == "directory")) (builtins.readDir dir)
-      # )
-      # );
-      # in
-      # {
-      # inherit inputs outputs getNixFiles self;
-      # };
-      # modules = [
-      # # inputs.stylix.homeManagerModules.stylix
-      # # > Our main home-manager configuration file <
-      # inputs.nixvim.homeManagerModules.nixvim
-      # ./home-manager/home.nix
-      # ];
-      # };
-      # };
     };
 }

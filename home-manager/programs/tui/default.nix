@@ -5,5 +5,5 @@
   ...
 }:
 {
-  imports = lib.lists.remove ./default.nix (getNixFiles ./.);
+  imports = getNixFiles ./.;
 }
