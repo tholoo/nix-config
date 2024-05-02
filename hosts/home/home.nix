@@ -148,6 +148,7 @@
       ubuntu_font_family
       vazir-fonts # persian font
       vazir-code-font # persian font
+      noto-fonts
       codespell
 
       proxychains
@@ -170,6 +171,7 @@
       nh
       devenv
       manix
+      nurl
 
       # utils
       ripgrep # recursively searches directories for a regex pattern

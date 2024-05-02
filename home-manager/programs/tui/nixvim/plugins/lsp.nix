@@ -51,7 +51,13 @@
         {
           nil_ls = {
             enable = true;
-            settings.formatting.command = [ "${lib.getExe pkgs.nixfmt-rfc-style}" ];
+            settings = {
+              formatting.command = [ "${lib.getExe pkgs.nixfmt-rfc-style}" ];
+              nix.flake = {
+                autoArchive = true;
+                autoEvalInputs = true;
+              };
+            };
           };
         }
         [
@@ -87,11 +93,12 @@
           "typst-lsp"
         ];
 
-    onAttach = ''
-      if client.server_capabilities.inlayHintProvider and vim.lsp.inlay_hint then
-          vim.lsp.inlay_hint.enable(bufnr, true)
-      end
-    '';
+    onAttach = # lua
+      ''
+        if client.server_capabilities.inlayHintProvider and vim.lsp.inlay_hint then
+            vim.lsp.inlay_hint.enable(true, {bufnr})
+        end
+      '';
   };
 
   lsp-format.enable = true;
