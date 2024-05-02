@@ -79,6 +79,7 @@
       scrolloff = 8;
       signcolumn = "yes";
       updatetime = 50;
+      termbidi = true;
       # foldlevelstart = 99;
     };
     keymaps = [

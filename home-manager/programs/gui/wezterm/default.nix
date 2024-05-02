@@ -31,12 +31,12 @@
 
       -- config.font = wezterm.font 'JetBrainsMono Nerd Font'
       config.font = wezterm.font_with_fallback({
-              {
-                      family = "FiraCode Nerd Font",
-              },
-              {
-                      family = "Vazirmatn",
-              },
+        {
+          family = "FiraCode Nerd Font",
+        },
+        {
+          family = "Vazir Code Hack",
+        },
       })
       config.bold_brightens_ansi_colors = "BrightAndBold"
       config.underline_position = -3.5

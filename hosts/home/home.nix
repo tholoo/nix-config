@@ -147,7 +147,8 @@
         ];
       })
       ubuntu_font_family
-      # vazir-fonts # persian font
+      vazir-fonts # persian font
+      vazir-code-font # persian font
       codespell
 
       proxychains
