@@ -214,15 +214,15 @@
 
           switch $argv[1]
               case 'list'
-                git worktree list
+                ${lib.getExe pkgs.git} worktree list
               case '-'
-                set -l main_worktree (git worktree list --porcelain | string match -r 'worktree .*' | head -n 1 | cut -d ' ' -f2-)
+                set -l main_worktree (${lib.getExe pkgs.git} worktree list --porcelain | string match -r 'worktree .*' | head -n 1 | cut -d ' ' -f2-)
                 if test -n "$main_worktree"
                     echo "Changing to main worktree at: $main_worktree"
                     cd $main_worktree
                 end
               case '*'
-                set -l directory (git worktree list --porcelain | grep -E "worktree " | string match -r ".*$arg.*" | head -n 1 | cut -d ' ' -f2-)
+                set -l directory (${lib.getExe pkgs.git} worktree list --porcelain | grep -E "worktree " | string match -r ".*$arg.*" | head -n 1 | cut -d ' ' -f2-)
                 if test -n "$directory"
                     echo "Changing to worktree at: $directory"
                     cd $directory
@@ -313,14 +313,16 @@
 
     shellAliases = {
       e = "$EDITOR";
-      ls = "${lib.getExe pkgs.eza} -la --color=auto --group-directories-first --git";
-      la = "${lib.getExe pkgs.eza} -la --color=auto --group-directories-first --git --git-ignore -I .venv -I __pycache__ -I .git";
-      laa = "${lib.getExe pkgs.eza} -la --color=auto --group-directories-first";
-      ll = "${lib.getExe pkgs.eza} -l --color=auto --group-directories-first --git -I .venv -I __pycache__ -I .git";
-      lt = "${lib.getExe pkgs.eza} -l --tree --level=2 --color=auto --group-directories-first -I .venv -I __pycache__ -I .git";
-      ltt = "${lib.getExe pkgs.eza} -l --tree --color=auto --group-directories-first -I .venv -I __pycache__ -I .git";
-      lat = "${lib.getExe pkgs.eza} -la --tree --level=2 --color=auto --group-directories-first -I .venv -I __pycache__ -I .git";
-      latt = "${lib.getExe pkgs.eza} -la --tree --color=auto --group-directories-first -I .venv -I __pycache__ -I .git";
+      f = "${lib.getExe pkgs.yazi}";
+
+      ls = "${lib.getExe pkgs.eza} -la --group-directories-first --git";
+      la = "${lib.getExe pkgs.eza} -la --group-directories-first --git --git-ignore -I .venv -I __pycache__ -I .git";
+      laa = "${lib.getExe pkgs.eza} -la --group-directories-first";
+      ll = "${lib.getExe pkgs.eza} -l --group-directories-first --git -I .venv -I __pycache__ -I .git";
+      lt = "${lib.getExe pkgs.eza} -l --tree --level=2 --group-directories-first -I .venv -I __pycache__ -I .git";
+      ltt = "${lib.getExe pkgs.eza} -l --tree --group-directories-first -I .venv -I __pycache__ -I .git";
+      lat = "${lib.getExe pkgs.eza} -la --tree --level=2 --group-directories-first -I .venv -I __pycache__ -I .git";
+      latt = "${lib.getExe pkgs.eza} -la --tree --group-directories-first -I .venv -I __pycache__ -I .git";
       "l." = ''${lib.getExe pkgs.eza} -la | egrep "^\."'';
 
       lg = lib.getExe pkgs.lazygit;

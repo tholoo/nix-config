@@ -1,4 +1,4 @@
-{ lib, ... }:
+{ pkgs, lib, ... }:
 {
   lsp = {
     enable = true;
@@ -18,44 +18,74 @@
         K = "hover";
         "<leader>cr" = "rename";
         "<leader>fs" = "workspace_symbol";
-        "<Ctrl-s>" = "workspace_symbol";
+        "<ctrl-s>" = "workspace_symbol";
         "<leader>ca" = "code_action";
         "<leader>ch" = "signature_help";
       };
+      extra = [
+        {
+          key = "<leader>fs";
+          action = # lua
+            ''
+              function()
+                require("telescope.builtin").lsp_dynamic_workspace_symbols({})
+              end
+            '';
+          lua = true;
+        }
+      ];
     };
-    servers = lib.fold (name: c: { "${name}".enable = true; } // c) { } [
-      "tsserver"
+    postConfig = # lua
+      ''
+        vim.fn.sign_define('DiagnosticSignError', { text = '', texthl = 'DiagnosticSignError' })
+        vim.fn.sign_define('DiagnosticSignWarn', { text = '', texthl = 'DiagnosticSignWarn' })
+        vim.fn.sign_define('DiagnosticSignInfo', { text = '', texthl = 'DiagnosticSignInfo' })
+        vim.fn.sign_define('DiagnosticSignHint', { text = '', texthl = 'DiagnosticSignHint' })
 
-      "lua-ls"
+        vim.diagnostic.config({
+          severity_sort = true
+        })
+      '';
+    servers =
+      lib.fold (name: c: { "${name}".enable = true; } // c)
+        {
+          nil_ls = {
+            enable = true;
+            settings.formatting.command = [ "${lib.getExe pkgs.nixfmt-rfc-style}" ];
+          };
+        }
+        [
+          "tsserver"
 
-      "ruff-lsp"
-      "pyright"
-      # NOTE: Broken because of rust version
-      # "pylyzer"
-      # "pylsp"
+          "lua-ls"
 
-      "nil_ls"
-      # "nixd"
+          "ruff-lsp"
+          "pyright"
+          # NOTE: Broken because of rust version
+          # "pylyzer"
+          # "pylsp"
 
-      "html"
-      "htmx"
+          # "nixd"
 
-      "jsonls"
-      "yamlls"
+          "html"
+          "htmx"
 
-      "dockerls"
+          "jsonls"
+          "yamlls"
 
-      "eslint"
+          "dockerls"
 
-      "gopls"
+          "eslint"
 
-      # NOTE: Broken
-      # "graphql"
+          "gopls"
 
-      "typos-lsp"
+          # NOTE: Broken
+          # "graphql"
 
-      "typst-lsp"
-    ];
+          "typos-lsp"
+
+          "typst-lsp"
+        ];
 
     onAttach = ''
       if client.server_capabilities.inlayHintProvider and vim.lsp.inlay_hint then
@@ -64,10 +94,13 @@
     '';
   };
 
-  lsp-format = {
-    enable = true;
-  };
+  lsp-format.enable = true;
+
   lspkind.enable = true;
-  lspsaga.enable = true;
+  # lspsaga.enable = true;
+  navic = {
+    enable = true;
+    lsp.autoAttach = true;
+  };
   # lsp-lines.enable = true;
 }

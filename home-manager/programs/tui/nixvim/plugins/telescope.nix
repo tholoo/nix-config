@@ -14,12 +14,19 @@
 
       # find recent
       "<leader>fr" = "oldfiles";
+      "<leader>fR" = "resume";
       "<C-f>" = "live_grep";
     };
 
     keymapsSilent = true;
 
-    defaults = {
+    extensions = {
+      frecency.enable = true;
+      fzf-native.enable = true;
+      undo.enable = true;
+    };
+
+    settings.defaults = {
       file_ignore_patterns = [
         "^.git/"
         "^.mypy_cache/"

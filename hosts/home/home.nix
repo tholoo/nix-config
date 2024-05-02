@@ -169,6 +169,7 @@
       nix-tree
       nh
       devenv
+      manix
 
       # utils
       ripgrep # recursively searches directories for a regex pattern
@@ -224,12 +225,12 @@
       usbutils # lsusb
 
       # languages
-      lua
+      # lua
 
-      python3
-      poetry
+      # python3
+      # poetry
 
-      nodejs_21
+      # nodePackages.nodejs
 
       # screenshot
       shotman

@@ -40,7 +40,7 @@
     map addNixvim (getNixFiles ./plugins);
 
   programs.nixvim = {
-    enable = false;
+    enable = true;
     defaultEditor = true;
 
     colorschemes.ayu.enable = true;
@@ -135,9 +135,21 @@
           noremap = true;
         };
       }
+      {
+        key = "<leader>fu";
+        action = ''<CMD>Telescope undo<CR>'';
+        mode = "n";
+        options = {
+          noremap = true;
+        };
+      }
     ];
     extraConfigLua = ''
       vim.api.nvim_set_hl(0, "WinSeparator", {guibg=False})
+      -- Disable auto comment next line
+      vim.cmd([[autocmd FileType * set formatoptions-=ro]])
+      -- change line number coloring
+      vim.api.nvim_set_hl(0, "LineNr", { fg = "gray" })
     '';
     extraPlugins = with pkgs.vimPlugins; [ LazyVim ];
   };

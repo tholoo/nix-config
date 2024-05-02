@@ -2,13 +2,13 @@
   conform-nvim = {
     enable = false;
     # formatters = {inherit }
+    formatOnSave = {
+      lspFallback = true;
+    };
 
     formattersByFt = {
       lua = [ "stylua" ];
-      nix = [
-        "alejandra"
-        "nixfmt"
-      ];
+      nix = [ ];
       python = [ "ruff_format" ];
       # Use a sub-list to run only the first available formatter
       javascript = [
@@ -42,10 +42,6 @@
       # Use the "_" filetype to run formatters on filetypes that don't
       # have other formatters configured.
       "_" = [ "trim_whitespace" ];
-    };
-
-    formatOnSave = {
-      lspFallback = true;
     };
   };
 }

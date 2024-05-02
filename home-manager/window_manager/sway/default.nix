@@ -1,14 +1,11 @@
 {
-  config,
   pkgs,
   lib,
   options,
-  flakeSelf,
   ...
 }:
 {
-  # Use sway desktop environment with Wayland display server
-  home.packages = options.home.packages.default ++ (with pkgs; [ swaynotificationcenter ]);
+  imports = [ ./swaync.nix ];
   programs.swaylock = {
     enable = true;
     settings = {
@@ -39,7 +36,6 @@
       startup = [
         { command = "vivaldi"; }
         { command = "wezterm"; }
-        { command = "exec ${lib.getExe' pkgs.swaynotificationcenter "swaync"}"; }
         # make copied data persist after closing the application
         { command = "exec ${lib.getExe pkgs.wl-clip-persist} --clipboard both"; }
         { command = "telegram-desktop"; }
@@ -150,6 +146,5 @@
       #   };
       # };
     };
-    # extraConfig = "exec ${pkgs.swaynotificationcenter}/bin/swaync";
   };
 }

@@ -4,8 +4,7 @@
     enableLspFormat = true;
     sources = {
       formatting = {
-        # alejandra.enable = true;
-        nixfmt.enable = true;
+        # nixfmt.enable = true;
         # nixpkgs_fmt.enable = true;
       };
     };
