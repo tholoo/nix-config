@@ -41,6 +41,7 @@
 
   programs.nixvim = {
     enable = true;
+    package = pkgs.neovim-nightly;
     defaultEditor = true;
 
     colorschemes.ayu.enable = true;
@@ -74,6 +75,7 @@
       # swapfile = false; #Undotree
       # backup = false; #Undotree
       undofile = true;
+      undolevels = 10000;
       incsearch = true;
       termguicolors = true;
       scrolloff = 8;
@@ -81,6 +83,19 @@
       updatetime = 50;
       termbidi = true;
       # foldlevelstart = 99;
+      smartcase = true;
+      splitright = true; # Put new windows right of current
+      virtualedit = "block"; # Allow cursor to move where there is no text in visual block mode
+      fillchars = {
+        foldopen = "";
+        foldclose = "";
+        fold = " ";
+        foldsep = " ";
+        diff = "╱";
+        eob = " ";
+      };
+      smoothscroll = true;
+      foldmethod = "expr";
     };
     keymaps = [
       {
