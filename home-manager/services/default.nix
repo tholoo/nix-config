@@ -1,10 +1,4 @@
-{
-  pkgs,
-  lib,
-  getNixFiles,
-  flakeSelf,
-  ...
-}:
+{ getNixFiles, ... }:
 {
   imports = getNixFiles ./.;
 }

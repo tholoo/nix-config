@@ -1,9 +1,4 @@
-{
-  pkgs,
-  lib,
-  getNixFiles,
-  ...
-}:
+{ getNixFiles, ... }:
 {
   imports = getNixFiles ./.;
 }

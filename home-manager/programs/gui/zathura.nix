@@ -6,6 +6,7 @@
       statusbar-h-padding = 0;
       statusbar-v-padding = 0;
       page-padding = 1;
+      selection-clipboard = "clipboard";
     };
     mappings = {
       u = "scroll half-up";
