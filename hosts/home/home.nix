@@ -192,6 +192,17 @@
       yt-dlp # audio/video downloader
       inetutils # commands like telnet
 
+      # kube
+      kubectl
+      kubelogin
+      kubelogin-oidc
+      kubernetes-helm
+      kubeseal
+      kubectx
+      kns
+      kubie
+      krew
+
       # cool
       figlet # generate ascii art of strings
       grc # command colorizer

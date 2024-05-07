@@ -62,6 +62,7 @@
         }
         [
           "tsserver"
+          "volar"
 
           "lua-ls"
 

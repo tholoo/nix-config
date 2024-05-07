@@ -1,1 +1,1 @@
-{ neogit.enable = true; }
+{ neogit.enable = false; }
