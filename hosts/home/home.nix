@@ -24,9 +24,6 @@
     # Or modules exported from other flakes (such as nix-colors):
     # inputs.nix-colors.homeManagerModules.default
   ];
-  age.secrets = {
-    ip-tholo-tech.file = ../../secrets/ip-tholo-tech.age;
-  };
   # stylix = {
   #   image = ../resources/wallpapers/wallhaven-fields-858z32.png;
   #   polarity = "dark";
