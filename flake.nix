@@ -44,6 +44,19 @@
     };
 
     neovim-nightly-overlay.url = "github:nix-community/neovim-nightly-overlay";
+
+    disko = {
+      url = "github:nix-community/disko";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+
+    agenix = {
+      url = "github:ryantm/agenix";
+      inputs.nixpkgs.follows = "nixpkgs";
+      # optionally choose not to download darwin deps (saves some resources on Linux)
+      inputs.agenix.inputs.darwin.follows = "";
+    };
   };
 
   outputs =
@@ -72,7 +85,7 @@
         map (file: dir + "/${file}") (
           attrNames (
             filterAttrs (
-              file: type: (((hasSuffix ".nix" file) || (type == "directory")) && !(hasPrefix "default" file))
+              file: type: (type == "directory") || ((hasSuffix ".nix" file) && !(hasInfix "default" file))
             ) (builtins.readDir dir)
           )
         );

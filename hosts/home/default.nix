@@ -26,6 +26,7 @@ in
       };
       modules = [
         # inputs.stylix.nixosModules.stylix
+        inputs.agenix.nixosModules.default
         ./configuration.nix
       ];
     };
@@ -47,6 +48,7 @@ in
       modules = [
         # inputs.stylix.homeManagerModules.stylix
         inputs.nixvim.homeManagerModules.nixvim
+        inputs.agenix.homeManagerModules.default
         ./home.nix
       ];
     };

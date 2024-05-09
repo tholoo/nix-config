@@ -1,4 +1,9 @@
-{ ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 {
   programs.ssh = {
     enable = true;
@@ -13,6 +18,12 @@
       gitlab = {
         hostname = "gitlab.com";
         user = "git";
+      };
+      "tholo.tech" = {
+        user = "tholo";
+        checkHostIP = false;
+        # get the ip from secrets
+        proxyCommand = "${lib.getExe pkgs.netcat} $(${lib.getExe' pkgs.coreutils "cat"} ${config.age.secrets.ip-tholo-tech.path}) %p";
       };
     };
   };

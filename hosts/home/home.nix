@@ -8,6 +8,7 @@
   flakeSelf,
   username,
   hostname,
+  config,
   ...
 }:
 {
@@ -23,6 +24,9 @@
     # Or modules exported from other flakes (such as nix-colors):
     # inputs.nix-colors.homeManagerModules.default
   ];
+  age.secrets = {
+    ip-tholo-tech.file = ../../secrets/ip-tholo-tech.age;
+  };
   # stylix = {
   #   image = ../resources/wallpapers/wallhaven-fields-858z32.png;
   #   polarity = "dark";
@@ -63,12 +67,12 @@
 
       # The maximum number of parallel TCP connections used to fetch files from binary caches and by other downloads.
       # It defaults to 25. 0 means no limit.
-      http-connections = 128;
+      # http-connections = 128;
 
       # This option defines the maximum number of substitution jobs that Nix will try to run in
       # parallel. The default is 16. The minimum value one can choose is 1 and lower values will be
       # interpreted as 1.
-      max-substitution-jobs = 128;
+      # max-substitution-jobs = 128;
 
       # The number of lines of the tail of the log to show if a build fails.
       log-lines = 25;
@@ -123,6 +127,13 @@
     extraPortals = with pkgs; [ xdg-desktop-portal-wlr ];
   };
 
+  dconf.settings = {
+    "org/virt-manager/virt-manager/connections" = {
+      autoconnect = [ "qemu:///system" ];
+      uris = [ "qemu:///system" ];
+    };
+  };
+
   home = {
     username = "${username}";
     homeDirectory = "/home/${username}";
@@ -149,6 +160,7 @@
       vazir-fonts # persian font
       vazir-code-font # persian font
       noto-fonts
+      # symbola
       codespell
 
       proxychains
@@ -216,6 +228,7 @@
       tldr
       cht-sh
       obsidian
+      calibre
 
       # productivity
       # hugo # static site generator

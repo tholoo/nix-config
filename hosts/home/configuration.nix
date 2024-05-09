@@ -29,6 +29,16 @@
   #   polarity = "dark";
   # };
 
+  # TODO: change to grub
+  boot.loader = {
+    systemd-boot = {
+      enable = true;
+      configurationLimit = 30;
+    };
+    efi.canTouchEfiVariables = true;
+    grub.configurationLimit = 30;
+  };
+
   # nixpkgs.config.nvidia.acceptLicense = true;
   environment.etc."greetd/environments".text = ''
     sway
@@ -208,6 +218,7 @@
         "docker"
         "video"
         "input"
+        "libvirtd"
       ];
     };
   };
