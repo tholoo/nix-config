@@ -330,6 +330,8 @@
       grep = "grep --color=auto";
       egrep = "egrep --color=auto";
       fgrep = "fgrep --color=auto";
+
+      mysync = "${lib.getExe pkgs.rsync} --progress --partial --human-readable --archive --verbose --exclude-from='${./rsync-excludes.txt}'";
     };
     plugins = with pkgs.fishPlugins; [
       # Enable a plugin (here grc for colorized command output) from nixpkgs

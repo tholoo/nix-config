@@ -1,0 +1,9 @@
+.DS_Store
+.cache/
+.env/
+.git/
+.mypy_cache/
+.venv/
+__pycache__/
+node_modules/
+venv/
