@@ -3,6 +3,7 @@ let
 
   users = mkAll {
     tholo = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDP5NAC+t7dRdeCUVaMPRUvfu4hrFLqEqpmh8NlXORwF";
+    tholo_work = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDb3wbU6SiU7K7WLRt2WuttDWblL6+JW7vD4tJpY659Z";
   };
 
   systems = mkAll {

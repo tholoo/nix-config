@@ -56,7 +56,7 @@
       url = "github:ryantm/agenix";
       inputs.nixpkgs.follows = "nixpkgs";
       # optionally choose not to download darwin deps (saves some resources on Linux)
-      inputs.agenix.inputs.darwin.follows = "";
+      inputs.darwin.follows = "";
     };
   };
 
