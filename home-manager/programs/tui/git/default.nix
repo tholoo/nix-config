@@ -29,9 +29,6 @@
       userEmail = "ali.mohamadza@gmail.com";
       # Install git with all the optional extras
       package = pkgs.gitAndTools.gitFull;
-      aliases = {
-        clone-bare = "!${lib.getExe pkgs.bash} ${./git-clone-bare.sh}";
-      };
       delta.enable = true;
       # diff-so-fancy.enable = true;
       extraConfig = {
@@ -55,6 +52,8 @@
         f = "fetch";
         s = "status -s";
         lg = "log --oneline --graph --decorate --all --abbrev-commit --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset'";
+        clone-bare = "!${lib.getExe pkgs.bash} ${./git-clone-bare.sh}";
+        info = "!${lib.getExe pkgs.onefetch}";
       };
     };
   };

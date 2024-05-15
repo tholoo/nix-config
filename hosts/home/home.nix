@@ -216,6 +216,9 @@
       # cool
       figlet # generate ascii art of strings
       grc # command colorizer
+      # fetchers
+      fastfetch
+      onefetch
 
       # archives
       zip
