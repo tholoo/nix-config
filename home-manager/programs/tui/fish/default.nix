@@ -154,20 +154,24 @@
 
       backup = {
         description = "backup files";
-        wraps = "cp";
+        wraps = "cp -r";
         body = ''
           for arg in $argv
-              cp "$arg"{,.bak}
+              cp -r "$arg"{,.bak}
           end
         '';
       };
 
       unback = {
         description = "unbackup files";
-        wraps = "cp";
+        wraps = "cp -r";
         body = ''
           for arg in $argv
-              cp "$arg"{.bak,}
+              if string match -q -r ".*\.bak\$" -- $arg
+                  cp -r "$arg" (string replace -r "\.bak\$" "" -- $arg)
+              else
+                  cp -r "$arg"{.bak,}
+              end
           end
         '';
       };
@@ -336,6 +340,7 @@
       fgrep = "fgrep --color=auto";
 
       mysync = "${lib.getExe pkgs.rsync} --progress --partial --human-readable --archive --verbose --exclude-from='${./rsync-excludes.txt}'";
+      fetch = lib.getExe pkgs.fastfetch;
     };
     plugins = with pkgs.fishPlugins; [
       # Enable a plugin (here grc for colorized command output) from nixpkgs

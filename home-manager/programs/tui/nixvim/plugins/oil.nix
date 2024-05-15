@@ -18,5 +18,13 @@
         noremap = true;
       };
     }
+    {
+      key = "-";
+      action = "<CMD>Oil<CR>";
+      options = {
+        silent = true;
+        noremap = true;
+      };
+    }
   ];
 }

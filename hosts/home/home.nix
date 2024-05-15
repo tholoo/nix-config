@@ -135,156 +135,13 @@
     username = "${username}";
     homeDirectory = "/home/${username}";
 
-    packages = with pkgs; [
-      # essentials
-      xdg-utils
-      # gcc
-      libgcc
-      libgccjit
-      clang
-
-      # fonts
-      (nerdfonts.override {
-        fonts = [
-          "FiraCode"
-          "FiraMono"
-          "JetBrainsMono"
-          "Overpass"
-          "CascadiaCode"
-        ];
-      })
-      ubuntu_font_family
-      vazir-fonts # persian font
-      vazir-code-font # persian font
-      noto-fonts
-      # symbola
-      codespell
-
-      proxychains
-      nekoray
-
-      distrobox
-
-      # # this adds a command 'my-hello' to your
-      # # environment:
-      # (pkgs.writeShellScriptBin "my-hello" ''
-      #   echo "Hello, ${config.home.username}!"
-      # '')
-
-      # nix related
-      # it provides the command `nom` works just like `nix`
-      # with more detailed log output
-      nix-output-monitor
-      nix-prefetch-github
-      nix-tree
-      nh
-      devenv
-      manix
-      nurl
-
-      # utils
-      ripgrep # recursively searches directories for a regex pattern
-      jq # A lightweight and flexible command-line JSON processor
-      yq-go # yaml processor https://github.com/mikefarah/yq
-      fd # A rust alternative to find
-      watchexec # Run commands based on file change
-      satty # Screen annotatiaon tool
-      bottom # System monitor
-      dust # a better du
-      duf # a better df
-      gping # ping but with a graph
-      trashy # for deleting things to trash
-      usql # universal sql cli tool
-      gg # for proxying commands
-      xh # faster httpie
-      asdf-vm # a runtime programming language version manager (like pyenv)
-      yt-dlp # audio/video downloader
-      inetutils # commands like telnet
-
-      # kube
-      kubectl
-      kubelogin
-      kubelogin-oidc
-      kubernetes-helm
-      kubeseal
-      kubectx
-      kns
-      kubie
-      krew
-      minikube
-
-      # cool
-      figlet # generate ascii art of strings
-      grc # command colorizer
-      # fetchers
-      fastfetch
-      onefetch
-
-      # archives
-      zip
-      unzip
-      p7zip
-
-      # learning
-      tldr
-      cht-sh
-      obsidian
-      calibre
-
-      # productivity
-      # hugo # static site generator
-      glow # markdown previewer in terminal
-
-      btop # replacement of htop/nmon
-      iotop # io monitoring
-      iftop # network monitoring
-
-      # system call monitoring
-      strace # system call monitoring
-      ltrace # library call monitoring
-      lsof # list open files
-
-      # system tools
-      sysstat
-      lm_sensors # for `sensors` command
-      ethtool
-      pciutils # lspci
-      usbutils # lsusb
-
-      # languages
-      # lua
-
-      # python3
-      # poetry
-
-      # nodePackages.nodejs
-
-      # screenshot
-      shotman
-      grim
-      swappy
-      slurp
-
-      # clipboard
-      wl-clipboard
-
-      # social
-      telegram-desktop
-      # since 64gram and telegram-desktop share the same bin name:
-      (pkgs.writeShellScriptBin "64gram" "exec -a $0 ${lib.getExe _64gram} $@")
-
-      # browser
-      # (vivaldi.override {
-      # proprietaryCodecs = true;
-      # enableWidevine = false;
-      # })
-      vivaldi
-      vivaldi-ffmpeg-codecs
-
-      # audio
-      qpwgraph
-      helvum
-    ];
+    # packages = [
+    # # this adds a command 'my-hello' to your
+    # # environment:
+    # (pkgs.writeShellScriptBin "my-hello" ''
+    #   echo "Hello, ${config.home.username}!"
+    # '')
+    # ];
   };
 
   # link the configuration file in current directory to the specified location in home directory
@@ -302,22 +159,22 @@
   #     xxx
   # '';
 
-  home.file = {
-    # ".config/nvim" = {
-    # source = /home/${username}/dotfiles/nvim/.config/nvim;
-    # recursive = true;
-    # };
-    # # Building this configuration will create a copy of 'dotfiles/screenrc' in
-    # # the Nix store. Activating the configuration will then make '~/.screenrc' a
-    # # symlink to the Nix store copy.
-    # ".screenrc".source = dotfiles/screenrc;
+  # home.file = {
+  # ".config/nvim" = {
+  # source = /home/${username}/dotfiles/nvim/.config/nvim;
+  # recursive = true;
+  # };
+  # # Building this configuration will create a copy of 'dotfiles/screenrc' in
+  # # the Nix store. Activating the configuration will then make '~/.screenrc' a
+  # # symlink to the Nix store copy.
+  # ".screenrc".source = dotfiles/screenrc;
 
-    # # You can also set the file content immediately.
-    # ".gradle/gradle.properties".text = ''
-    #   org.gradle.console=verbose
-    #   org.gradle.daemon.idletimeout=3600000
-    # '';
-  };
+  # # You can also set the file content immediately.
+  # ".gradle/gradle.properties".text = ''
+  #   org.gradle.console=verbose
+  #   org.gradle.daemon.idletimeout=3600000
+  # '';
+  # };
 
   # If you don't want to manage your shell through Home
   # Manager then you have to manually source 'hm-session-vars.sh' located at
@@ -360,17 +217,6 @@
   };
 
   programs.home-manager.enable = true;
-
-  services = {
-    # screenshot
-    # flameshot.enable = true;
-    # screen annotatiaon tool
-    # gromit-mpx = {
-    #   enable = true;
-    #   hotKey = "F9";
-    #   # undoKey = "Shift+Insert";
-    # };
-  };
 
   # Nicely reload system units when changing configs
   systemd.user.startServices = "sd-switch";

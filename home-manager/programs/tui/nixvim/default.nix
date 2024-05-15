@@ -84,6 +84,7 @@
       termbidi = true;
       # foldlevelstart = 99;
       smartcase = true;
+      ignorecase = true;
       splitright = true; # Put new windows right of current
       virtualedit = "block"; # Allow cursor to move where there is no text in visual block mode
       fillchars = {
