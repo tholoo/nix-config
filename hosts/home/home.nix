@@ -211,6 +211,7 @@
       kns
       kubie
       krew
+      minikube
 
       # cool
       figlet # generate ascii art of strings

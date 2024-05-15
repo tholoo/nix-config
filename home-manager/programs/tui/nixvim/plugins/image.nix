@@ -1,1 +1,1 @@
-{ image.enable = true; }
+{ image.enable = false; }

@@ -304,6 +304,10 @@
         function = "multicd";
       };
 
+      k = "kubectl";
+      kns = "kubens";
+      ktx = "kubectx";
+
       # reload = ''source ~/.config/fish/config.fish'';
       # fishr = ''source ~/.config/fish/config.fish'';
       # fishc = ''vim ~/.config/fish/config.fish'';
