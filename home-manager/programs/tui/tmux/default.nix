@@ -85,6 +85,18 @@
       set-option -g status-left '#S'
       set-option -g window-status-format ' #I: #W '
       set-option -g window-status-current-format '#[bg=#{@minimal-tmux-bg},fg=#000000] #I: #W#{?window_zoomed_flag,  , }'
+
+      # Activate OFF mode
+      bind -n C-o \
+        set prefix None \;\
+        set key-table off \;\
+        set status-style "fg=colour245,bg=colour238"
+
+      # Disable OFF mode
+      bind -T off C-O \
+        set -u prefix \;\
+        set -u key-table \;\
+        set -u status-style
     '';
 
     plugins = with pkgs.tmuxPlugins; [
