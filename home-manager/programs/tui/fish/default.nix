@@ -341,6 +341,7 @@
 
       mysync = "${lib.getExe pkgs.rsync} --progress --partial --human-readable --archive --verbose --exclude-from='${./rsync-excludes.txt}'";
       fetch = lib.getExe pkgs.fastfetch;
+      cat = "${lib.getExe pkgs.bat} -n";
     };
     plugins = with pkgs.fishPlugins; [
       # Enable a plugin (here grc for colorized command output) from nixpkgs

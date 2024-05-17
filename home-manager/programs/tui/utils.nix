@@ -17,5 +17,6 @@
     asdf-vm # a runtime programming language version manager (like pyenv)
     yt-dlp # audio/video downloader
     inetutils # commands like telnet
+    sd # better sed
   ];
 }

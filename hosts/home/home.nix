@@ -122,6 +122,17 @@
     enable = true;
     xdgOpenUsePortal = true;
     extraPortals = with pkgs; [ xdg-desktop-portal-wlr ];
+    config = {
+      common = {
+        default = [
+          "sway"
+          "gtk"
+          "qt5"
+          "qtwayland"
+        ];
+        "org.freedesktop.impl.portal.Secret" = [ "gnome-keyring" ];
+      };
+    };
   };
 
   dconf.settings = {

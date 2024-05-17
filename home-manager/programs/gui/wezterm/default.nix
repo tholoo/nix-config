@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ ... }:
 {
   programs.wezterm = {
     enable = true;
@@ -24,7 +24,7 @@
       config.initial_cols = 100
       config.scrollback_lines = 10000
 
-      config.color_scheme = "Atom"
+      -- config.color_scheme = "Atom"
       config.enable_tab_bar = false
       config.window_background_opacity = 0.93
       -- config.default_cwd = "~"
@@ -108,6 +108,18 @@
               end
               window:set_config_overrides(overrides)
       end)
+
+      --atom colors without messing up the colors
+      config.colors = {
+        foreground = "#c5c8c6",
+        background = "#161719",
+        cursor_bg = "#d0d0d0",
+        cursor_border = "#d0d0d0",
+        cursor_fg = "#151515",
+        selection_bg = "#444444",
+        selection_fg = "#c5c8c6",
+      }
+
 
       return config
     '';
