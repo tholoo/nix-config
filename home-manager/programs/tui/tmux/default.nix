@@ -113,9 +113,15 @@
           '';
       }
       copy-toolkit
+      {
+        plugin = extrakto;
+        extraConfig = # tmux
+          ''
+            set -g @extrakto_clip_tool 'wl-copy'
+            set -g @extrakto_filter_order 'word line all'
+          '';
+      }
 
-      # fzf
-      # fzf-url
       yank
       # vim-tmux-navigator
       # {
