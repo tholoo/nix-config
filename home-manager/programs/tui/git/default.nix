@@ -7,6 +7,7 @@
       settings = {
         git = {
           log.showWholeGraph = true;
+          paging.externalDiffCommand = "${lib.getExe pkgs.difftastic} --color=always";
         };
         gui = {
           theme = {

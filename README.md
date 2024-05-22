@@ -15,3 +15,14 @@ or
 nix run home-manager/master -- switch --flake .
 ```
 
+
+## tips
+Check the size with: 
+```bash
+nix-shell -p nix-tree.out --run nix-tree
+```
+
+Repl:
+```bash
+nix --extra-experimental-features repl-flake repl . --show-trace
+```
