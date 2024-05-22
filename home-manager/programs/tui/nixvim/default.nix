@@ -160,6 +160,221 @@
           noremap = true;
         };
       }
+      # better up/down
+      {
+        key = "j";
+        action = "v:count == 0 ? 'gj' : 'j'";
+        mode = [
+          "n"
+          "x"
+        ];
+        options = {
+          expr = true;
+          silent = true;
+        };
+      }
+      {
+        key = "<Down>";
+        action = "v:count == 0 ? 'gj' : 'j'";
+        mode = [
+          "n"
+          "x"
+        ];
+        options = {
+          expr = true;
+          silent = true;
+        };
+      }
+      {
+        key = "k";
+        action = "v:count == 0 ? 'gk' : 'k'";
+        mode = [
+          "n"
+          "x"
+        ];
+        options = {
+          expr = true;
+          silent = true;
+        };
+      }
+      {
+        key = "<Up>";
+        action = "v:count == 0 ? 'gk' : 'k'";
+        mode = [
+          "n"
+          "x"
+        ];
+        options = {
+          expr = true;
+          silent = true;
+        };
+      }
+      # Resize window using <ctrl> arrow keys
+      {
+        key = "<C-Up>";
+        action = "<cmd>resize +2<cr>";
+        mode = [ "n" ];
+        options = {
+          silent = true;
+          desc = "Increase Window Height";
+        };
+      }
+      {
+        key = "<C-Down>";
+        action = "<cmd>resize -2<cr>";
+        mode = [ "n" ];
+        options = {
+          silent = true;
+          desc = "Decrease Window Height";
+        };
+      }
+      {
+        key = "<C-Left>";
+        action = "<cmd>vertical resize -2<cr>";
+        mode = [ "n" ];
+        options = {
+          silent = true;
+          desc = "Decrease Window Width";
+        };
+      }
+      {
+        key = "<C-Right>";
+        action = "<cmd>vertical resize +2<cr>";
+        mode = [ "n" ];
+        options = {
+          silent = true;
+          desc = "Increase Window Width";
+        };
+      }
+      # Move Lines
+      {
+        key = "<A-j>";
+        action = "<cmd>m .+1<cr>==";
+        mode = [ "n" ];
+        options = {
+          silent = true;
+          desc = "Move Down";
+        };
+      }
+      {
+        key = "<A-k>";
+        action = "<cmd>m .-2<cr>==";
+        mode = [ "n" ];
+        options = {
+          silent = true;
+          desc = "Move Up";
+        };
+      }
+      {
+        key = "<A-j>";
+        action = "<esc><cmd>m .+1<cr>==gi";
+        mode = [ "i" ];
+        options = {
+          silent = true;
+          desc = "Move Down";
+        };
+      }
+      {
+        key = "<A-k>";
+        action = "<esc><cmd>m .-2<cr>==gi";
+        mode = [ "i" ];
+        options = {
+          silent = true;
+          desc = "Move Up";
+        };
+      }
+      {
+        key = "<A-j>";
+        action = ":m '>+1<cr>gv=gv";
+        mode = [ "v" ];
+        options = {
+          silent = true;
+          desc = "Move Down";
+        };
+      }
+      {
+        key = "<A-k>";
+        action = ":m '<-2<cr>gv=gv";
+        mode = [ "v" ];
+        options = {
+          silent = true;
+          desc = "Move Up";
+        };
+      }
+      # buffers
+      {
+        key = "<S-h>";
+        action = "<cmd>bprevious<cr>";
+        mode = [ "n" ];
+        options = {
+          silent = true;
+          desc = "Prev Buffer";
+        };
+      }
+      {
+        key = "<S-l>";
+        action = "<cmd>bnext<cr>";
+        mode = [ "n" ];
+        options = {
+          silent = true;
+          desc = "Next Buffer";
+        };
+      }
+      {
+        key = "[b";
+        action = "<cmd>bprevious<cr>";
+        mode = [ "n" ];
+        options = {
+          silent = true;
+          desc = "Prev Buffer";
+        };
+      }
+      {
+        key = "]b";
+        action = "<cmd>bnext<cr>";
+        mode = [ "n" ];
+        options = {
+          silent = true;
+          desc = "Next Buffer";
+        };
+      }
+      {
+        key = "<leader>bb";
+        action = "<cmd>e #<cr>";
+        mode = [ "n" ];
+        options = {
+          silent = true;
+          desc = "Switch to Other Buffer";
+        };
+      }
+      {
+        key = "<leader>`";
+        action = "<cmd>e #<cr>";
+        mode = [ "n" ];
+        options = {
+          silent = true;
+          desc = "Switch to Other Buffer";
+        };
+      }
+      # quickfix
+      {
+        key = "[q";
+        action = "vim.cmd.cprev";
+        mode = [ "n" ];
+        options = {
+          silent = true;
+          desc = "Previous Quickfix";
+        };
+      }
+      {
+        key = "]q";
+        action = "vim.cmd.cnext";
+        mode = [ "n" ];
+        options = {
+          silent = true;
+          desc = "Next Quickfix";
+        };
+      }
     ];
     extraConfigLua = ''
       vim.api.nvim_set_hl(0, "WinSeparator", {guibg=False})
