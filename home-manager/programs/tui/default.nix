@@ -1,4 +1,0 @@
-{ getNixFiles, ... }:
-{
-  imports = getNixFiles ./.;
-}

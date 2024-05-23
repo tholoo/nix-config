@@ -58,76 +58,72 @@
       # optionally choose not to download darwin deps (saves some resources on Linux)
       inputs.darwin.follows = "";
     };
+
+    snowfall-lib = {
+      url = "github:snowfallorg/lib";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
-    {
-      self,
-      nixpkgs,
-      home-manager,
-      ...
-    }@inputs:
-    let
-      inherit (self) outputs;
-      systems = [
-        "aarch64-linux"
-        "i686-linux"
-        "x86_64-linux"
-        "aarch64-darwin"
-        "x86_64-darwin"
-      ];
-      # This is a function that generates an attribute by calling a function you
-      # pass to it, with each system as an argument
-      forAllSystems = nixpkgs.lib.genAttrs systems;
-      lib = nixpkgs.lib;
-      getNixFiles =
-        dir:
-        with lib;
-        map (file: dir + "/${file}") (
-          attrNames (
-            filterAttrs (
-              file: type: (type == "directory") || ((hasSuffix ".nix" file) && !(hasInfix "default" file))
-            ) (builtins.readDir dir)
-          )
-        );
-      flakeSelf = self;
-      callPackage = lib.callPackageWith {
-        inherit
-          flakeSelf
-          nixpkgs
-          home-manager
-          inputs
-          outputs
-          getNixFiles
-          ;
+    inputs:
+    inputs.snowfall-lib.mkFlake {
+      inherit inputs;
+      src = ./.;
+      snowfall = {
+        # Choose a namespace to use for your flake's packages, library,
+        # and overlays.
+        namespace = "mine";
+        meta = {
+          name = "tholo-config";
+          title = "tholo's config";
+        };
       };
-      hosts = getNixFiles ./hosts;
-      # get all the hosts and merge them
-      hostsAttrs = lib.fold (el: c: lib.recursiveUpdate c (callPackage el { })) { } hosts;
-    in
-    lib.recursiveUpdate hostsAttrs {
-      # inputs.stylix = {
-      #   image = ./resources/wallpapers/wallhaven-8586my_1920x1080.png;
-      #   polarity = "dark";
+
+      channels-config = {
+        allowUnfree = true;
+        allowUnfreePredicate = _: true;
+      };
+
+      systems.modules.nixos = with inputs; [ agenix.nixosModules.default ];
+
+      # Add a module to a specific host.
+      # systems.hosts.my-host.modules = with inputs; [
+      # my-input.nixosModules.my-module
+      # ];
+
+      # systems.hosts.my-host.specialArgs = {
+      #   my-custom-value = "my-value";
       # };
 
-      # Your custom packages
-      # Accessible through 'nix build', 'nix shell', etc
-      packages = forAllSystems (system: import ./pkgs nixpkgs.legacyPackages.${system});
-      # Formatter for your nix files, available through 'nix fmt'
-      formatter = forAllSystems (system: nixpkgs.legacyPackages.${system}.nixfmt-rfc-style);
+      homes.modules = with inputs; [
+        nixvim.homeManagerModules.nixvim
+        agenix.homeManagerModules.default
+      ];
 
-      # Your custom packages and modifications, exported as overlays
-      overlays = import ./overlays { inherit inputs; };
-      # Reusable nixos modules you might want to export
-      # These are usually stuff you would upstream into nixpkgs
-      nixosModules = import ./modules/nixos;
-      # Reusable home-manager modules you might want to export
-      # These are usually stuff you would upstream into home-manager
-      homeManagerModules = import ./modules/home-manager;
+      # homes.users."my-user@my-host".specialArgs = {
+      #   my-custom-value = "my-value";
+      # };
 
-      checks = builtins.mapAttrs (
-        system: deployLib: deployLib.deployChecks self.deploy
-      ) inputs.deploy-rs.lib;
+      outputs-builder = channels: { formatter = channels.nixpkgs.nixfmt-rfc-style; };
     };
+  # callPackage = lib.callPackageWith {
+  #   inherit
+  #     flakeSelf
+  #     nixpkgs
+  #     home-manager
+  #     inputs
+  #     outputs
+  #     getNixFiles
+  #     ;
+  # };
+  #   # inputs.stylix = {
+  #   #   image = ./resources/wallpapers/wallhaven-8586my_1920x1080.png;
+  #   #   polarity = "dark";
+  #   # };
+  #
+  #   checks = builtins.mapAttrs (
+  #     system: deployLib: deployLib.deployChecks self.deploy
+  #   ) inputs.deploy-rs.lib;
+  # };
 }
