@@ -8,5 +8,13 @@
   ...
 }:
 {
-  # Your configuration.
+  mine = {
+    user = {
+      name = "tholo";
+      fullName = "tholo";
+      email = "ali.mohamadza@gmail.com";
+    };
+    gui.enable = true;
+    tui.enable = true;
+  };
 }

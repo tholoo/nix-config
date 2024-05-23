@@ -1,5 +1,5 @@
 {
-  pkgs,
+  inputs,
   config,
   lib,
   ...
@@ -15,7 +15,7 @@ in
 
   config = mkIf cfg.enable {
     age.secrets = {
-      ip-tholo-tech.file = ../../../secrets/ip-tholo-tech.age;
+      ip-tholo-tech.file = inputs.self + /secrets/ip-tholo-tech.age;
     };
   };
 }

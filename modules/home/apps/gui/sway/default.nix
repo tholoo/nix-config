@@ -1,4 +1,5 @@
 {
+  inputs,
   pkgs,
   config,
   lib,
@@ -20,11 +21,14 @@ in
   };
 
   config = mkIf cfg.enable {
-    imports = [ ./swaync.nix ];
+    services.swaync = {
+      enable = true;
+    };
+
     programs.swaylock = {
       enable = true;
       settings = {
-        image = "${../../../resources/wallpapers/wallhaven-car-swamp.png}";
+        image = "${inputs.self}/resources/wallpapers/wallhaven-car-swamp.png";
         ignore-empty-password = true;
         show-failed-attempts = true;
         scaling = "fit";
@@ -32,8 +36,10 @@ in
         indicator-radius = 100;
       };
     };
+
     # for showing notifications for common actions like changing volume
     services.swayosd.enable = true;
+
     wayland.windowManager.sway = {
       enable = true;
       wrapperFeatures.gtk = true;
@@ -149,7 +155,7 @@ in
 
         output = {
           "*" = {
-            bg = "${../../../resources/wallpapers/wallhaven-fields-858z32.png} fill";
+            bg = "${inputs.self}/resources/wallpapers/wallhaven-fields-858z32.png fill";
           };
         };
 

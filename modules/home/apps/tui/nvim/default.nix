@@ -1,9 +1,4 @@
-{
-  pkgs,
-  config,
-  lib,
-  ...
-}:
+{ config, lib, ... }:
 let
   inherit (lib) mkIf;
   inherit (lib.mine) mkEnable;
@@ -19,6 +14,14 @@ in
   };
 
   config = mkIf cfg.enable {
+    # home.sessionVariables = {
+    #   EDITOR = "nvim";
+    #   SUDO_EDITOR = "nvim";
+    #   VISUAL = "nvim";
+    #   DIFFPROG = "nvim -d";
+    #   MANPAGER = "nvim +Man!";
+    # };
+
     # config = {
     # home.file."./.local/share/nvim/lazy/nvim-treesitter/" = {
     # recursive = true;

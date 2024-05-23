@@ -12,6 +12,38 @@ let
   name = "nixvim";
 in
 {
+  imports =
+    let
+      getPlugin =
+        file:
+        let
+          importedFile = import file;
+        in
+        if builtins.isFunction importedFile then
+          importedFile {
+            inherit
+              pkgs
+              lib
+              options
+              config
+              getNixFiles
+              getPlugin
+              ;
+          }
+        else
+          importedFile;
+
+      addNixvim =
+        file:
+        let
+          pluginSet = getPlugin file;
+        in
+        {
+          programs.nixvim = if lib.hasAttr "plugins" pluginSet then pluginSet else { plugins = pluginSet; };
+        };
+    in
+    map addNixvim (getNixFiles ./plugins);
+
   options.mine.${name} = mkEnable config {
     tags = [
       "tui"
@@ -20,37 +52,14 @@ in
   };
 
   config = mkIf cfg.enable {
-    imports =
-      let
-        getPlugin =
-          file:
-          let
-            importedFile = import file;
-          in
-          if builtins.isFunction importedFile then
-            importedFile {
-              inherit
-                pkgs
-                lib
-                options
-                config
-                getNixFiles
-                getPlugin
-                ;
-            }
-          else
-            importedFile;
 
-        addNixvim =
-          file:
-          let
-            pluginSet = getPlugin file;
-          in
-          {
-            programs.nixvim = if lib.hasAttr "plugins" pluginSet then pluginSet else { plugins = pluginSet; };
-          };
-      in
-      map addNixvim (getNixFiles ./plugins);
+    home.sessionVariables = {
+      EDITOR = "nvim";
+      SUDO_EDITOR = "nvim";
+      VISUAL = "nvim";
+      DIFFPROG = "nvim -d";
+      MANPAGER = "nvim +Man!";
+    };
 
     programs.nixvim = {
       enable = true;

@@ -70,15 +70,16 @@
     inputs.snowfall-lib.mkFlake {
       inherit inputs;
       src = ./.;
+
       snowfall = {
-        # Choose a namespace to use for your flake's packages, library,
-        # and overlays.
         namespace = "mine";
         meta = {
           name = "tholo-config";
           title = "tholo's config";
         };
       };
+
+      overlays = with inputs; [ neovim-nightly-overlay.overlays.default ];
 
       channels-config = {
         allowUnfree = true;

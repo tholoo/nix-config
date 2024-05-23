@@ -66,6 +66,10 @@ with lib.mine;
           message = "mine.user.home must be set";
         }
       ];
+      programs.home-manager.enable = true;
+
+      # Nicely reload system units when changing configs
+      systemd.user.startServices = "sd-switch";
 
       home = {
         username = mkDefault cfg.name;
@@ -73,8 +77,9 @@ with lib.mine;
       };
 
       xdg.enable = true;
+
+      # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
+      home.stateVersion = lib.mkDefault (osConfig.system.stateVersion or "23.11");
     }
   ]);
-
-  stateVersion = lib.mkDefault (osConfig.system.stateVersion or "23.11");
 }

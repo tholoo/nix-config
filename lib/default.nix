@@ -10,6 +10,4 @@ with lib;
         ) (builtins.readDir dir)
       )
     );
-
-  listContainsList = checkContains: fold (el: c: c || builtins.elem el checkContains) false;
 }

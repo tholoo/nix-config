@@ -32,5 +32,10 @@ in
         '';
       };
     };
+
+    environment.etc."greetd/environments".text = ''
+      sway
+      Hyprland
+    '';
   };
 }
