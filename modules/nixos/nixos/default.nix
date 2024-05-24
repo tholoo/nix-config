@@ -53,6 +53,8 @@ with lib.mine;
         wget
         curl
 
+        home-manager
+
         qemu
       ];
 
