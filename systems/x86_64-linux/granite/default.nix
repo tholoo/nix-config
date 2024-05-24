@@ -7,12 +7,13 @@
   ];
   mine = {
     host = {
-      name = "elderwood";
+      name = "granite";
       location = "Asia/Tehran";
     };
 
-    gui.enable = true;
     tui.enable = true;
+
+    systemd-boot.enable = false;
   };
 
   security.sudo.wheelNeedsPassword = false;

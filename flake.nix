@@ -67,24 +67,27 @@
 
   outputs =
     inputs:
-    inputs.snowfall-lib.mkFlake {
-      inherit inputs;
-      src = ./.;
+    let
+      lib = inputs.snowfall-lib.mkLib {
+        inherit inputs;
+        src = ./.;
 
-      snowfall = {
-        namespace = "mine";
-        meta = {
-          name = "tholo-config";
-          title = "tholo's config";
+        snowfall = {
+          namespace = "mine";
+          meta = {
+            name = "tholo-config";
+            title = "tholo's config";
+          };
         };
       };
-
-      overlays = with inputs; [ neovim-nightly-overlay.overlays.default ];
-
+    in
+    lib.mkFlake {
       channels-config = {
         allowUnfree = true;
         allowUnfreePredicate = _: true;
       };
+
+      overlays = with inputs; [ neovim-nightly-overlay.overlays.default ];
 
       systems.modules.nixos = with inputs; [
         agenix.nixosModules.default
@@ -111,24 +114,25 @@
       # };
 
       outputs-builder = channels: { formatter = channels.nixpkgs.nixfmt-rfc-style; };
+
+      deploy.nodes = {
+        "granite" = {
+          hostname = "tholo.tech";
+          sshUser = "root";
+          remoteBuild = true;
+          profiles.system = {
+            user = "root";
+            path = inputs.deploy-rs.lib.x86_64-linux.activate.nixos inputs.self.nixosConfigurations.granite;
+          };
+        };
+      };
+
+      checks = builtins.mapAttrs (
+        system: deploy-lib: deploy-lib.deployChecks inputs.self.deploy
+      ) inputs.deploy-rs.lib;
+
+      alias = {
+        shells.default = "default";
+      };
     };
-  # callPackage = lib.callPackageWith {
-  #   inherit
-  #     flakeSelf
-  #     nixpkgs
-  #     home-manager
-  #     inputs
-  #     outputs
-  #     getNixFiles
-  #     ;
-  # };
-  #   # inputs.stylix = {
-  #   #   image = ./resources/wallpapers/wallhaven-8586my_1920x1080.png;
-  #   #   polarity = "dark";
-  #   # };
-  #
-  #   checks = builtins.mapAttrs (
-  #     system: deployLib: deployLib.deployChecks self.deploy
-  #   ) inputs.deploy-rs.lib;
-  # };
 }

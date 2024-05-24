@@ -45,7 +45,7 @@ in
         o = "mkdir";
         D = "trash";
       };
-      previewer.source = lib.getExe pkgs.ctpv;
+      previewer.source = lib.getExe' pkgs.ctpv "ctpv";
     };
   };
 }

@@ -1,7 +1,7 @@
 { channels, ... }:
 final: prev: {
   keyd = prev.keyd.overrideAttrs (oldAttrs: {
-    version = "2.4.3";
+    version = "2.4.99";
     src = final.fetchFromGitHub {
       owner = "rvaiya";
       repo = "keyd";
