@@ -18,9 +18,15 @@ with lib.mine;
     };
 
     name = mkOption {
-      type = types.nullOr types.str;
+      type = with types; (nullOr str);
       default = "tholo";
       description = "the host name";
+    };
+
+    authorizedKeys = mkOption {
+      type = with types; (listOf str);
+      default = [ ];
+      description = "the authorized keys";
     };
   };
 
@@ -33,13 +39,15 @@ with lib.mine;
         }
       ];
       users.users = {
+        root = {
+          openssh.authorizedKeys.keys = cfg.authorizedKeys;
+        };
+
         "${cfg.name}" = {
           initialPassword = "1234";
           isNormalUser = true;
           shell = pkgs.fish;
-          openssh.authorizedKeys.keys = [
-            # TODO: 
-          ];
+          openssh.authorizedKeys.keys = cfg.authorizedKeys;
           extraGroups = [
             "wheel"
             "networkmanager"

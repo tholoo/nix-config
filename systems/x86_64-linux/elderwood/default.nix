@@ -22,5 +22,7 @@
 
     gui.enable = true;
     tui.enable = true;
+
+    grub.enable = false;
   };
 }

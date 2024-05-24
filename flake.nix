@@ -86,7 +86,11 @@
         allowUnfreePredicate = _: true;
       };
 
-      systems.modules.nixos = with inputs; [ agenix.nixosModules.default ];
+      systems.modules.nixos = with inputs; [
+        agenix.nixosModules.default
+        disko.nixosModules.disko
+        home-manager.nixosModules.home-manager
+      ];
 
       # Add a module to a specific host.
       # systems.hosts.my-host.modules = with inputs; [

@@ -14,6 +14,7 @@
       fullName = "tholo";
       email = "ali.mohamadza@gmail.com";
     };
+
     gui.enable = true;
     tui.enable = true;
   };

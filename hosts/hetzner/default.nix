@@ -39,10 +39,9 @@ in
         ;
     };
     modules = [
-      inputs.disko.nixosModules.disko
       # inputs.nixvim.nixosManagerModules.nixvim
+      inputs.disko.nixosModules.disko
       inputs.home-manager.nixosModules.home-manager
-      ./configuration.nix
     ];
   };
 
@@ -55,22 +54,4 @@ in
       path = deployPkgs.deploy-rs.lib.activate.nixos flakeSelf.nixosConfigurations."${hostname}";
     };
   };
-
-  # homeConfigurations."${username}" = home-manager.lib.homeManagerConfiguration {
-  #   pkgs = nixpkgs.legacyPackages.x86_64-linux;
-  #   extraSpecialArgs = {
-  #     inherit
-  #       inputs
-  #       outputs
-  #       getNixFiles
-  #       flakeSelf
-  #       username
-  #       hostname
-  #       ;
-  #   };
-  #   modules = [
-  #     inputs.nixvim.homeManagerModules.nixvim
-  #     ./home.nix
-  #   ];
-  # };
 }

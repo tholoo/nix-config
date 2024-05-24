@@ -14,8 +14,11 @@ in
   };
 
   config = mkIf cfg.enable {
-    # Pick only one of the below networking options.
-    networking.wireless.enable = false; # Enables wireless support via wpa_supplicant.
-    networking.networkmanager.enable = true; # Easiest to use and most distros use this by default.
+    networking = {
+      # Pick only one of the below networking options.
+      wireless.enable = false; # Enables wireless support via wpa_supplicant.
+      networkmanager.enable = true; # Easiest to use and most distros use this by default.
+      firewall.enable = true;
+    };
   };
 }

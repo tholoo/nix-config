@@ -3,7 +3,7 @@ let
   inherit (lib) mkIf;
   inherit (lib.mine) mkEnable;
   cfg = config.mine.${name};
-  name = "systemd-boot";
+  name = "grub";
 in
 {
   options.mine.${name} = mkEnable config {
@@ -16,9 +16,11 @@ in
 
   config = mkIf cfg.enable {
     boot.loader = {
-      systemd-boot = {
+      grub = {
         enable = true;
         configurationLimit = 30;
+        efiSupport = true;
+        efiInstallAsRemovable = true;
       };
       efi.canTouchEfiVariables = true;
     };

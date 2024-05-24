@@ -3,24 +3,22 @@ let
   inherit (lib) mkIf;
   inherit (lib.mine) mkEnable;
   cfg = config.mine.${name};
-  name = "systemd-boot";
+  name = "home-manager";
 in
 {
   options.mine.${name} = mkEnable config {
     tags = [
       "gui"
       "tui"
-      "boot"
+      "home"
+      "config"
     ];
   };
 
   config = mkIf cfg.enable {
-    boot.loader = {
-      systemd-boot = {
-        enable = true;
-        configurationLimit = 30;
-      };
-      efi.canTouchEfiVariables = true;
+    home-manager = {
+      useGlobalPkgs = true;
+      useUserPackages = true;
     };
   };
 }

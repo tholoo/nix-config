@@ -28,7 +28,7 @@ in
       escapeTime = 0;
       customPaneNavigationAndResize = true;
       mouse = true;
-      shell = "${pkgs.fish}/bin/fish";
+      shell = lib.getExe pkgs.fish;
       terminal = "screen-256color";
       shortcut = "b";
       extraConfig = # tmux
