@@ -10,6 +10,19 @@ let
   inherit (lib.mine) mkEnable;
   cfg = config.mine.${name};
   name = "sway";
+
+  mkNumbers =
+    key: cmd:
+    let
+      numsEnglish = map (num: builtins.toString num) (lib.range 0 9);
+      numsPersian = lib.mergeAttrsList (map (num: { "${num}" = "Farsi_${num}"; }) numsEnglish);
+
+      mapEnglish = map (num: { "${key}+${num}" = "exec '${cmd} ${num}'"; }) numsEnglish;
+      mapPersian = lib.mapAttrsFlatten (numEn: numFa: {
+        "${key}+${numFa}" = "exec '${cmd} ${numEn}'";
+      }) numsPersian;
+    in
+    lib.mergeAttrsList (mapEnglish ++ mapPersian);
 in
 {
   options.mine.${name} = mkEnable config {
@@ -135,63 +148,6 @@ in
 
             # Toggle control center
             "${modifier}+Shift+n" = "exec ${getExe' swaynotificationcenter "swaync-client"} --toggle-panel --skip-wait";
-
-            # Work with Persian layout
-            "${modifier}+Farsi_1" = "exec '${lib.getExe pkgs.swaysome} focus 1'";
-            "${modifier}+Farsi_2" = "exec '${lib.getExe pkgs.swaysome} focus 2'";
-            "${modifier}+Farsi_3" = "exec '${lib.getExe pkgs.swaysome} focus 3'";
-            "${modifier}+Farsi_4" = "exec '${lib.getExe pkgs.swaysome} focus 4'";
-            "${modifier}+Farsi_5" = "exec '${lib.getExe pkgs.swaysome} focus 5'";
-            "${modifier}+Farsi_6" = "exec '${lib.getExe pkgs.swaysome} focus 6'";
-            "${modifier}+Farsi_7" = "exec '${lib.getExe pkgs.swaysome} focus 7'";
-            "${modifier}+Farsi_8" = "exec '${lib.getExe pkgs.swaysome} focus 8'";
-            "${modifier}+Farsi_9" = "exec '${lib.getExe pkgs.swaysome} focus 9'";
-            "${modifier}+Farsi_0" = "exec '${lib.getExe pkgs.swaysome} focus 0'";
-
-            # Change focus between workspaces
-            "${modifier}+1" = "exec '${lib.getExe pkgs.swaysome} focus 1'";
-            "${modifier}+2" = "exec '${lib.getExe pkgs.swaysome} focus 2'";
-            "${modifier}+3" = "exec '${lib.getExe pkgs.swaysome} focus 3'";
-            "${modifier}+4" = "exec '${lib.getExe pkgs.swaysome} focus 4'";
-            "${modifier}+5" = "exec '${lib.getExe pkgs.swaysome} focus 5'";
-            "${modifier}+6" = "exec '${lib.getExe pkgs.swaysome} focus 6'";
-            "${modifier}+7" = "exec '${lib.getExe pkgs.swaysome} focus 7'";
-            "${modifier}+8" = "exec '${lib.getExe pkgs.swaysome} focus 8'";
-            "${modifier}+9" = "exec '${lib.getExe pkgs.swaysome} focus 9'";
-            "${modifier}+0" = "exec '${lib.getExe pkgs.swaysome} focus 0'";
-            # Move containers between workspaces
-            "${modifier}+Shift+1" = "exec '${lib.getExe pkgs.swaysome} move 1'";
-            "${modifier}+Shift+2" = "exec '${lib.getExe pkgs.swaysome} move 2'";
-            "${modifier}+Shift+3" = "exec '${lib.getExe pkgs.swaysome} move 3'";
-            "${modifier}+Shift+4" = "exec '${lib.getExe pkgs.swaysome} move 4'";
-            "${modifier}+Shift+5" = "exec '${lib.getExe pkgs.swaysome} move 5'";
-            "${modifier}+Shift+6" = "exec '${lib.getExe pkgs.swaysome} move 6'";
-            "${modifier}+Shift+7" = "exec '${lib.getExe pkgs.swaysome} move 7'";
-            "${modifier}+Shift+8" = "exec '${lib.getExe pkgs.swaysome} move 8'";
-            "${modifier}+Shift+9" = "exec '${lib.getExe pkgs.swaysome} move 9'";
-            "${modifier}+Shift+0" = "exec '${lib.getExe pkgs.swaysome} move 0'";
-            # Focus workspace groups
-            "${modifier}+Alt+1" = "exec '${lib.getExe pkgs.swaysome} focus-group 1'";
-            "${modifier}+Alt+2" = "exec '${lib.getExe pkgs.swaysome} focus-group 2'";
-            "${modifier}+Alt+3" = "exec '${lib.getExe pkgs.swaysome} focus-group 3'";
-            "${modifier}+Alt+4" = "exec '${lib.getExe pkgs.swaysome} focus-group 4'";
-            "${modifier}+Alt+5" = "exec '${lib.getExe pkgs.swaysome} focus-group 5'";
-            "${modifier}+Alt+6" = "exec '${lib.getExe pkgs.swaysome} focus-group 6'";
-            "${modifier}+Alt+7" = "exec '${lib.getExe pkgs.swaysome} focus-group 7'";
-            "${modifier}+Alt+8" = "exec '${lib.getExe pkgs.swaysome} focus-group 8'";
-            "${modifier}+Alt+9" = "exec '${lib.getExe pkgs.swaysome} focus-group 9'";
-            "${modifier}+Alt+0" = "exec '${lib.getExe pkgs.swaysome} focus-group 0'";
-            # Move containers to other workspace groups
-            "${modifier}+Alt+Shift+1" = "exec '${lib.getExe pkgs.swaysome} move-to-group 1'";
-            "${modifier}+Alt+Shift+2" = "exec '${lib.getExe pkgs.swaysome} move-to-group 2'";
-            "${modifier}+Alt+Shift+3" = "exec '${lib.getExe pkgs.swaysome} move-to-group 3'";
-            "${modifier}+Alt+Shift+4" = "exec '${lib.getExe pkgs.swaysome} move-to-group 4'";
-            "${modifier}+Alt+Shift+5" = "exec '${lib.getExe pkgs.swaysome} move-to-group 5'";
-            "${modifier}+Alt+Shift+6" = "exec '${lib.getExe pkgs.swaysome} move-to-group 6'";
-            "${modifier}+Alt+Shift+7" = "exec '${lib.getExe pkgs.swaysome} move-to-group 7'";
-            "${modifier}+Alt+Shift+8" = "exec '${lib.getExe pkgs.swaysome} move-to-group 8'";
-            "${modifier}+Alt+Shift+9" = "exec '${lib.getExe pkgs.swaysome} move-to-group 9'";
-            "${modifier}+Alt+Shift+0" = "exec '${lib.getExe pkgs.swaysome} move-to-group 0'";
             # Move focused container to next output
             "${modifier}+o" = "exec '${lib.getExe pkgs.swaysome} next-output'";
             # Move focused container to previous output
@@ -201,6 +157,15 @@ in
             # Move focused workspace group to previous output
             "${modifier}+Alt+Shift+o" = "exec '${lib.getExe pkgs.swaysome} workspace-group-prev-output'";
           }
+          # Work with Persian layout
+          // mkNumbers modifier "${lib.getExe pkgs.swaysome} focus"
+          # Move containers between workspaces
+          // mkNumbers "${modifier}+Shift" "${lib.getExe pkgs.swaysome} move"
+          # Focus workspace groups
+          // mkNumbers "${modifier}+Alt" "${lib.getExe pkgs.swaysome} focus-group"
+          # Move containers to other workspace groups
+          // mkNumbers "${modifier}+Alt+Shift" "${lib.getExe pkgs.swaysome} move-to-group"
+
         );
 
         keycodebindings = {
