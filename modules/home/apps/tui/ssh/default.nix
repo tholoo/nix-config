@@ -33,7 +33,7 @@ in
           hostname = "gitlab.com";
           user = "git";
         };
-        "tholo.tech" = {
+        "granite" = {
           user = "tholo";
           checkHostIP = false;
           # get the ip from secrets

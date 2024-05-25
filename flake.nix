@@ -117,7 +117,7 @@
 
       deploy.nodes = {
         "granite" = {
-          hostname = "tholo.tech";
+          hostname = "granite";
           sshUser = "root";
           remoteBuild = true;
           profiles.system = {
