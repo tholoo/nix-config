@@ -76,14 +76,14 @@ in
           { command = "telegram-desktop"; }
           # { command = "systemctl --user restart waybar"; always = true; }
         ];
-        # assigns = {
-        #   "1" = [ { app_id = "^org.wezfurlong.wezterm$"; } ];
-        #   "2" = [
-        #     { app_id = "^firefox$"; }
-        #     { app_id = "vivaldi-stable"; }
-        #   ];
-        #   "3" = [ { app_id = "org.telegram.desktop"; } ];
-        # };
+        assigns = {
+          "11" = [ { app_id = "^org.wezfurlong.wezterm$"; } ];
+          "12" = [
+            { app_id = "^firefox$"; }
+            { app_id = "vivaldi-stable"; }
+          ];
+          "13" = [ { app_id = "org.telegram.desktop"; } ];
+        };
         bars = [
           {
             #   fonts.size = 15.0;
