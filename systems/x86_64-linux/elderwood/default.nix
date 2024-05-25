@@ -20,6 +20,8 @@
       location = "Asia/Tehran";
     };
 
+    tags.exclude = [ "server" ];
+
     gui.enable = true;
     tui.enable = true;
 
