@@ -17,4 +17,5 @@
   };
 
   security.sudo.wheelNeedsPassword = false;
+  services.minecraft-server.serverProperties.jvmOpts = "-Xmx512M -Xms512M";
 }
