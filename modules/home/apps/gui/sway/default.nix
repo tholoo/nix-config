@@ -48,13 +48,14 @@ in
         modifier = "Mod4";
         terminal = "wezterm";
         workspaceAutoBackAndForth = true;
-        defaultWorkspace = "1";
+        # defaultWorkspace = "1";
         menu = "${lib.getExe pkgs.wofi} --show drun,run";
         gaps = {
           smartGaps = true;
           smartBorders = "on";
         };
         startup = [
+          { command = "'${lib.getExe pkgs.swaysome} init 1'"; }
           { command = "vivaldi"; }
           { command = "wezterm"; }
           # make copied data persist after closing the application
@@ -62,14 +63,14 @@ in
           { command = "telegram-desktop"; }
           # { command = "systemctl --user restart waybar"; always = true; }
         ];
-        assigns = {
-          "1" = [ { app_id = "^org.wezfurlong.wezterm$"; } ];
-          "2" = [
-            { app_id = "^firefox$"; }
-            { app_id = "vivaldi-stable"; }
-          ];
-          "3" = [ { app_id = "org.telegram.desktop"; } ];
-        };
+        # assigns = {
+        #   "1" = [ { app_id = "^org.wezfurlong.wezterm$"; } ];
+        #   "2" = [
+        #     { app_id = "^firefox$"; }
+        #     { app_id = "vivaldi-stable"; }
+        #   ];
+        #   "3" = [ { app_id = "org.telegram.desktop"; } ];
+        # };
         bars = [
           {
             #   fonts.size = 15.0;
@@ -136,16 +137,69 @@ in
             "${modifier}+Shift+n" = "exec ${getExe' swaynotificationcenter "swaync-client"} --toggle-panel --skip-wait";
 
             # Work with Persian layout
-            "${modifier}+Farsi_1" = "workspace number 1";
-            "${modifier}+Farsi_2" = "workspace number 2";
-            "${modifier}+Farsi_3" = "workspace number 3";
-            "${modifier}+Farsi_4" = "workspace number 4";
-            "${modifier}+Farsi_5" = "workspace number 5";
-            "${modifier}+Farsi_6" = "workspace number 6";
-            "${modifier}+Farsi_7" = "workspace number 7";
-            "${modifier}+Farsi_8" = "workspace number 8";
-            "${modifier}+Farsi_9" = "workspace number 9";
-            "${modifier}+Farsi_0" = "workspace number 10";
+            "${modifier}+Farsi_1" = "exec '${lib.getExe pkgs.swaysome} focus 1'";
+            "${modifier}+Farsi_2" = "exec '${lib.getExe pkgs.swaysome} focus 2'";
+            "${modifier}+Farsi_3" = "exec '${lib.getExe pkgs.swaysome} focus 3'";
+            "${modifier}+Farsi_4" = "exec '${lib.getExe pkgs.swaysome} focus 4'";
+            "${modifier}+Farsi_5" = "exec '${lib.getExe pkgs.swaysome} focus 5'";
+            "${modifier}+Farsi_6" = "exec '${lib.getExe pkgs.swaysome} focus 6'";
+            "${modifier}+Farsi_7" = "exec '${lib.getExe pkgs.swaysome} focus 7'";
+            "${modifier}+Farsi_8" = "exec '${lib.getExe pkgs.swaysome} focus 8'";
+            "${modifier}+Farsi_9" = "exec '${lib.getExe pkgs.swaysome} focus 9'";
+            "${modifier}+Farsi_0" = "exec '${lib.getExe pkgs.swaysome} focus 0'";
+
+            # Change focus between workspaces
+            "${modifier}+1" = "exec '${lib.getExe pkgs.swaysome} focus 1'";
+            "${modifier}+2" = "exec '${lib.getExe pkgs.swaysome} focus 2'";
+            "${modifier}+3" = "exec '${lib.getExe pkgs.swaysome} focus 3'";
+            "${modifier}+4" = "exec '${lib.getExe pkgs.swaysome} focus 4'";
+            "${modifier}+5" = "exec '${lib.getExe pkgs.swaysome} focus 5'";
+            "${modifier}+6" = "exec '${lib.getExe pkgs.swaysome} focus 6'";
+            "${modifier}+7" = "exec '${lib.getExe pkgs.swaysome} focus 7'";
+            "${modifier}+8" = "exec '${lib.getExe pkgs.swaysome} focus 8'";
+            "${modifier}+9" = "exec '${lib.getExe pkgs.swaysome} focus 9'";
+            "${modifier}+0" = "exec '${lib.getExe pkgs.swaysome} focus 0'";
+            # Move containers between workspaces
+            "${modifier}+Shift+1" = "exec '${lib.getExe pkgs.swaysome} move 1'";
+            "${modifier}+Shift+2" = "exec '${lib.getExe pkgs.swaysome} move 2'";
+            "${modifier}+Shift+3" = "exec '${lib.getExe pkgs.swaysome} move 3'";
+            "${modifier}+Shift+4" = "exec '${lib.getExe pkgs.swaysome} move 4'";
+            "${modifier}+Shift+5" = "exec '${lib.getExe pkgs.swaysome} move 5'";
+            "${modifier}+Shift+6" = "exec '${lib.getExe pkgs.swaysome} move 6'";
+            "${modifier}+Shift+7" = "exec '${lib.getExe pkgs.swaysome} move 7'";
+            "${modifier}+Shift+8" = "exec '${lib.getExe pkgs.swaysome} move 8'";
+            "${modifier}+Shift+9" = "exec '${lib.getExe pkgs.swaysome} move 9'";
+            "${modifier}+Shift+0" = "exec '${lib.getExe pkgs.swaysome} move 0'";
+            # Focus workspace groups
+            "${modifier}+Alt+1" = "exec '${lib.getExe pkgs.swaysome} focus-group 1'";
+            "${modifier}+Alt+2" = "exec '${lib.getExe pkgs.swaysome} focus-group 2'";
+            "${modifier}+Alt+3" = "exec '${lib.getExe pkgs.swaysome} focus-group 3'";
+            "${modifier}+Alt+4" = "exec '${lib.getExe pkgs.swaysome} focus-group 4'";
+            "${modifier}+Alt+5" = "exec '${lib.getExe pkgs.swaysome} focus-group 5'";
+            "${modifier}+Alt+6" = "exec '${lib.getExe pkgs.swaysome} focus-group 6'";
+            "${modifier}+Alt+7" = "exec '${lib.getExe pkgs.swaysome} focus-group 7'";
+            "${modifier}+Alt+8" = "exec '${lib.getExe pkgs.swaysome} focus-group 8'";
+            "${modifier}+Alt+9" = "exec '${lib.getExe pkgs.swaysome} focus-group 9'";
+            "${modifier}+Alt+0" = "exec '${lib.getExe pkgs.swaysome} focus-group 0'";
+            # Move containers to other workspace groups
+            "${modifier}+Alt+Shift+1" = "exec '${lib.getExe pkgs.swaysome} move-to-group 1'";
+            "${modifier}+Alt+Shift+2" = "exec '${lib.getExe pkgs.swaysome} move-to-group 2'";
+            "${modifier}+Alt+Shift+3" = "exec '${lib.getExe pkgs.swaysome} move-to-group 3'";
+            "${modifier}+Alt+Shift+4" = "exec '${lib.getExe pkgs.swaysome} move-to-group 4'";
+            "${modifier}+Alt+Shift+5" = "exec '${lib.getExe pkgs.swaysome} move-to-group 5'";
+            "${modifier}+Alt+Shift+6" = "exec '${lib.getExe pkgs.swaysome} move-to-group 6'";
+            "${modifier}+Alt+Shift+7" = "exec '${lib.getExe pkgs.swaysome} move-to-group 7'";
+            "${modifier}+Alt+Shift+8" = "exec '${lib.getExe pkgs.swaysome} move-to-group 8'";
+            "${modifier}+Alt+Shift+9" = "exec '${lib.getExe pkgs.swaysome} move-to-group 9'";
+            "${modifier}+Alt+Shift+0" = "exec '${lib.getExe pkgs.swaysome} move-to-group 0'";
+            # Move focused container to next output
+            "${modifier}+o" = "exec '${lib.getExe pkgs.swaysome} next-output'";
+            # Move focused container to previous output
+            "${modifier}+Shift+o" = "exec '${lib.getExe pkgs.swaysome} prev-output'";
+            # Move focused workspace group to next output
+            "${modifier}+Alt+o" = "exec '${lib.getExe pkgs.swaysome} workspace-group-next-output'";
+            # Move focused workspace group to previous output
+            "${modifier}+Alt+Shift+o" = "exec '${lib.getExe pkgs.swaysome} workspace-group-prev-output'";
           }
         );
 

@@ -49,17 +49,23 @@ in
             "clock"
             "tray"
           ];
-          #   battery = {
-          #     format = "{capacity}% {icon}";
-          #     format-alt = "{time} {icon}";
-          #     format-charging = "{capacity}% ";
-          #     format-icons = [ "" "" "" "" "" ];
-          #     format-plugged = "{capacity}% ";
-          #     states = {
-          #       critical = 15;
-          #       warning = 30;
-          #     };
-          #   };
+          battery = {
+            format = "{capacity}% {icon}";
+            format-alt = "{time} {icon}";
+            format-charging = "{capacity}% ";
+            format-icons = [
+              ""
+              ""
+              ""
+              ""
+              ""
+            ];
+            format-plugged = "{capacity}% ";
+            states = {
+              critical = 15;
+              warning = 30;
+            };
+          };
 
           wireplumber = {
             format = "{volume}% {icon}";
