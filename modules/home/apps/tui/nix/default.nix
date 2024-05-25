@@ -68,7 +68,7 @@ in
         auto-optimise-store = true;
 
         # Whether to warn about dirty Git/Mercurial trees.
-        # warn-dirty = false;
+        warn-dirty = false;
       };
     };
   };
