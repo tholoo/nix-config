@@ -5,7 +5,7 @@
   ...
 }:
 let
-  inherit (lib) mkIf;
+  inherit (lib) mkIf mkOption types;
   inherit (lib.mine) mkEnable;
   cfg = config.mine.${name};
   name = "fonts";
@@ -16,26 +16,41 @@ in
       "gui"
       "gui-text"
     ];
+
+    minimal = mkOption {
+      type = types.bool;
+      default = false;
+      description = "Whether to install minimal amount of fonts";
+    };
   };
 
   config = mkIf cfg.enable {
     fonts.fontconfig.enable = true;
-    home.packages = with pkgs; [
-      (nerdfonts.override {
-        fonts = [
-          "FiraCode"
-          "FiraMono"
-          "JetBrainsMono"
-          "Overpass"
-          "CascadiaCode"
-        ];
-      })
-      ubuntu_font_family
-      vazir-fonts # persian font
-      vazir-code-font # persian font
-      noto-fonts
-      # symbola
-      codespell
-    ];
+    home.packages =
+      with pkgs;
+      [
+        ubuntu_font_family
+        vazir-fonts # persian font
+        vazir-code-font # persian font
+        noto-fonts
+        # symbola
+        codespell
+      ]
+      ++ (
+        if cfg.minimal then
+          [
+            (nerdfonts.override {
+              fonts = [
+                "FiraCode"
+                "FiraMono"
+                "JetBrainsMono"
+                "Overpass"
+                "CascadiaCode"
+              ];
+            })
+          ]
+        else
+          [ nerdfonts ]
+      );
   };
 }
