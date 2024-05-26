@@ -11,6 +11,8 @@ let
   cfg = config.mine.${name};
   name = "sway";
 
+  # make commands ranging from 0 to 9 for both english and persian
+  # e.g. modifier+1 = exec 'something 1'
   mkNumbers =
     key: cmd:
     let

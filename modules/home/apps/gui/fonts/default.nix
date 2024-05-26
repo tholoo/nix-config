@@ -35,6 +35,7 @@ in
         noto-fonts
         # symbola
         codespell
+        noto-fonts
       ]
       ++ (
         if cfg.minimal then

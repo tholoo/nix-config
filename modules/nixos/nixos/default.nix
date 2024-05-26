@@ -60,6 +60,7 @@ with lib.mine;
 
       environment.variables = {
         EDITOR = "nvim";
+        SUDO_EDITOR = "nvim";
         # Native wayland support
         NIXOS_OZONE_WL = "1";
       };
