@@ -25,7 +25,10 @@ with lib.mine;
 
     authorizedKeys = mkOption {
       type = with types; (listOf str);
-      default = [ ];
+      default = [
+        "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBYrWi1/IR56l4LXk5wtJuUSHN7U3baYLvqmlTFfmNA3 root@nixos"
+        "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDP5NAC+t7dRdeCUVaMPRUvfu4hrFLqEqpmh8NlXORwF tholo@nixos"
+      ];
       description = "the authorized keys";
     };
   };
