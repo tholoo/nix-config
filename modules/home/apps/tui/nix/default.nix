@@ -2,6 +2,8 @@
   pkgs,
   config,
   lib,
+  inputs,
+  system,
   ...
 }:
 let
@@ -29,6 +31,7 @@ in
       devenv
       manix
       nurl
+      inputs.nix-alien.packages.${system}.nix-alien
     ];
 
     nix = {

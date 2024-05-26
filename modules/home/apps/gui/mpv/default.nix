@@ -30,7 +30,6 @@ in
       scripts = with pkgs.mpvScripts; [
         mpris
         # Feature-rich minimalist proximity-based UI for MPV player
-        uosc
         seekTo
         thumbnail
         thumbfast

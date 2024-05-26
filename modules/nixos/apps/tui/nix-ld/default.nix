@@ -1,29 +1,22 @@
-{
-  pkgs,
-  config,
-  lib,
-  ...
-}:
+{ config, lib, ... }:
 let
   inherit (lib) mkIf;
   inherit (lib.mine) mkEnable;
   cfg = config.mine.${name};
-  name = "bat";
+  name = "nix-ld";
 in
 {
   options.mine.${name} = mkEnable config {
     tags = [
       "tui"
       "cli-tools"
+      "compat"
     ];
   };
 
   config = mkIf cfg.enable {
-    programs.bat = {
+    programs.nix-ld = {
       enable = true;
-      extraPackages = with pkgs.bat-extras; [
-        batgrep
-      ];
     };
   };
 }
