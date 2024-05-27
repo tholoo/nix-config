@@ -71,21 +71,21 @@ in
         };
         startup = [
           { command = "'${lib.getExe pkgs.swaysome} init 1'"; }
-          { command = "vivaldi"; }
-          { command = "wezterm"; }
+          # { command = "vivaldi"; }
+          # { command = "wezterm"; }
           # make copied data persist after closing the application
           { command = "exec ${lib.getExe pkgs.wl-clip-persist} --clipboard both"; }
-          { command = "telegram-desktop"; }
+          # { command = "telegram-desktop"; }
           # { command = "systemctl --user restart waybar"; always = true; }
         ];
-        assigns = {
-          "11" = [ { app_id = "^org.wezfurlong.wezterm$"; } ];
-          "12" = [
-            { app_id = "^firefox$"; }
-            { app_id = "vivaldi-stable"; }
-          ];
-          "13" = [ { app_id = "org.telegram.desktop"; } ];
-        };
+        # assigns = {
+        # "11" = [ { app_id = "^org.wezfurlong.wezterm$"; } ];
+        # "12" = [
+        #   { app_id = "^firefox$"; }
+        #   { app_id = "vivaldi-stable"; }
+        # ];
+        # "13" = [ { app_id = "org.telegram.desktop"; } ];
+        # };
         bars = [
           {
             #   fonts.size = 15.0;
@@ -100,7 +100,6 @@ in
             xkb_options = "caps:escape,grp:alt_shift_toggle";
           };
           "type:touchpad" = {
-            accel_profile = "adaptive";
             click_method = "clickfinger";
             drag = "enabled";
             dwt = "enabled";
@@ -202,8 +201,8 @@ in
 
       extraConfig = ''
         # Allow switching between workspaces with left and right swipes
-        bindgesture swipe:right workspace prev
-        bindgesture swipe:left workspace next
+        bindgesture swipe:right workspace next
+        bindgesture swipe:left workspace prev
             
         # Allow container movements by pinching them
         bindgesture pinch:inward+up move up

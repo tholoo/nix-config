@@ -45,8 +45,8 @@ in
       git-cliff.enable = true;
       git = {
         enable = true;
-        userName = "Ali M";
-        userEmail = "ali.mohamadza@gmail.com";
+        userName = config.mine.user.fullName;
+        userEmail = config.mine.user.email;
         # Install git with all the optional extras
         package = pkgs.gitAndTools.gitFull;
         delta.enable = true;

@@ -3,7 +3,7 @@
   mine = {
     user = {
       name = "tholo";
-      fullName = "tholo";
+      fullName = "Ali Mohammadzadeh";
       email = "ali0mhmz@gmail.com";
     };
 

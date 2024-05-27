@@ -397,6 +397,22 @@ in
             desc = "Next Quickfix";
           };
         }
+        {
+          key = "[q";
+          action = ''<CMD>cp<CR>'';
+          mode = "n";
+          options = {
+            noremap = true;
+          };
+        }
+        {
+          key = "]q";
+          action = ''<CMD>cn<CR>'';
+          mode = "n";
+          options = {
+            noremap = true;
+          };
+        }
       ];
       extraConfigLua = ''
         vim.api.nvim_set_hl(0, "WinSeparator", {guibg=False})
@@ -405,7 +421,10 @@ in
         -- change line number coloring
         vim.api.nvim_set_hl(0, "LineNr", { fg = "gray" })
       '';
-      extraPlugins = with pkgs.vimPlugins; [ LazyVim ];
+      extraPlugins = with pkgs.vimPlugins; [
+        LazyVim
+        vim-unimpaired
+      ];
     };
   };
 }
