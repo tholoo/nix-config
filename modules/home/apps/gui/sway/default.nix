@@ -99,6 +99,17 @@ in
             xkb_layout = "us,ir";
             xkb_options = "caps:escape,grp:alt_shift_toggle";
           };
+          "type:touchpad" = {
+            accel_profile = "adaptive";
+            click_method = "clickfinger";
+            drag = "enabled";
+            dwt = "enabled";
+            # events = "disabled_on_external_mouse";
+            middle_emulation = "enabled";
+            pointer_accel = "0.8";
+            scroll_method = "two_finger";
+            tap = "enabled";
+          };
         };
         window = {
           hideEdgeBorders = "smart";
@@ -188,6 +199,18 @@ in
         #   };
         # };
       };
+
+      extraConfig = ''
+        # Allow switching between workspaces with left and right swipes
+        bindgesture swipe:right workspace prev
+        bindgesture swipe:left workspace next
+            
+        # Allow container movements by pinching them
+        bindgesture pinch:inward+up move up
+        bindgesture pinch:inward+down move down
+        bindgesture pinch:inward+left move left
+        bindgesture pinch:inward+right move right
+      '';
     };
   };
 }
