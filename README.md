@@ -26,3 +26,13 @@ Repl:
 ```bash
 nix --extra-experimental-features repl-flake repl . --show-trace
 ```
+
+## secrets
+Get the public ip with:
+```bash
+ssh-keyscan <ip>
+```
+add it to ./secrets/secrets.nix and then
+```bash
+agenix --rekey
+```
