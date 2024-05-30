@@ -27,6 +27,11 @@ Repl:
 nix --extra-experimental-features repl-flake repl . --show-trace
 ```
 
+Generate specific output formats:
+```bash
+nix build .#nixosConfigurations.glacier.config.formats.iso
+```
+
 ## secrets
 Get the public ip with:
 ```bash

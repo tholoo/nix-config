@@ -95,6 +95,7 @@
         agenix.nixosModules.default
         disko.nixosModules.disko
         home-manager.nixosModules.home-manager
+        nixos-generators.nixosModules.all-formats
       ];
 
       # Add a module to a specific host.
