@@ -7,7 +7,7 @@
 
   keymaps = lib.mkAfter [
     {
-      key = "<leader>cd";
+      key = "<leader>cs";
       action = "function() require('neogen').generate() end";
       lua = true;
       mode = [ "n" ];
