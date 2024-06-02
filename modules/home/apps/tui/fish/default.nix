@@ -290,6 +290,20 @@ in
         #     eval "$cmd"
         #   '';
         # };
+        kshell = {
+          description = "execute python shell in the kube shell pod";
+          body = ''
+            # Find the pod name that contains "shell" in its name
+            set pod_name (${lib.getExe' pkgs.kubectl "kubectl"} get pods --no-headers -o custom-columns=":metadata.name" | grep "shell")
+
+            if test -z "$pod_name"
+                echo "No pod found with 'shell' in its name."
+                return 1
+            end
+
+            ${lib.getExe' pkgs.kubectl "kubectl"} exec -it $pod_name -- /bin/bash -c "python -c 'import django; django.setup(); from IPython import start_ipython; start_ipython(argv=[\"--no-banner\", \"--TerminalInteractiveShell.editing_mode=vi\", \"--TerminalInteractiveShell.emacs_bindings_in_vi_insert_mode=False\"])'"
+          '';
+        };
       };
 
       shellAbbrs = {
