@@ -105,6 +105,7 @@ in
             dwt = "enabled";
             # events = "disabled_on_external_mouse";
             middle_emulation = "enabled";
+            accel_profile = "flat"; # disable mouse acceleration
             pointer_accel = "0.8";
             scroll_method = "two_finger";
             tap = "enabled";
