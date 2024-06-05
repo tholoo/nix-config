@@ -63,7 +63,7 @@ in
 
     programs.nixvim = {
       enable = true;
-      package = pkgs.neovim-nightly;
+      # package = pkgs.neovim-nightly;
       defaultEditor = true;
 
       colorschemes.ayu.enable = true;

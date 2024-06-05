@@ -14,8 +14,8 @@
   keymaps = lib.mkAfter [
     {
       key = "<leader>cd";
-      action = "function() require('neogen').generate() end";
-      lua = true;
+      action.__raw = # lua
+        "function() require('neogen').generate() end";
       mode = [ "n" ];
       options = {
         silent = true;
