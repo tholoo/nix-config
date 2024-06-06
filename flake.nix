@@ -65,6 +65,8 @@
     };
 
     nix-alien.url = "github:thiagokokada/nix-alien";
+
+    wezterm-nightly.url = "github:wez/wezterm?dir=nix";
   };
 
   outputs =

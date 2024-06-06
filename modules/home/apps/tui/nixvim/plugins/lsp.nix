@@ -25,13 +25,12 @@
       extra = [
         {
           key = "<leader>fs";
-          action = # lua
+          action.__raw = # lua
             ''
               function()
                 require("telescope.builtin").lsp_dynamic_workspace_symbols({})
               end
             '';
-          lua = true;
         }
       ];
     };
@@ -49,7 +48,7 @@
     servers =
       lib.fold (name: c: { "${name}".enable = true; } // c)
         {
-          nil_ls = {
+          nil-ls = {
             enable = true;
             settings = {
               formatting.command = [ "${lib.getExe pkgs.nixfmt-rfc-style}" ];

@@ -8,8 +8,8 @@
   keymaps = lib.mkAfter [
     {
       key = "<leader>cs";
-      action = "function() require('neogen').generate() end";
-      lua = true;
+      action.__raw = # lua
+        "function() require('neogen').generate() end";
       mode = [ "n" ];
       options = {
         silent = true;
@@ -18,8 +18,7 @@
     }
     #   {
     #     key = "<C-l>";
-    #     action = "function() require('neogen').jump_next end";
-    #     lua = true;
+    #     action.__raw = "function() require('neogen').jump_next end";
     #     mode = [ "i" "s" ];
     #     options = {
     #       silent = true;
@@ -28,8 +27,7 @@
     #   }
     #   {
     #     key = "<C-h>";
-    #     action = "function() require('neogen').jump_prev end";
-    #     lua = true;
+    #     action.__raw = "function() require('neogen').jump_prev end";
     #     mode = [ "i" "s" ];
     #     options = {
     #       silent = true;

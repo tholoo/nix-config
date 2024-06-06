@@ -18,8 +18,6 @@
       "<C-f>" = "live_grep";
     };
 
-    keymapsSilent = true;
-
     extensions = {
       frecency.enable = true;
       fzf-native.enable = true;

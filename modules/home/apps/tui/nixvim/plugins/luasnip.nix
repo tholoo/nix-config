@@ -8,12 +8,12 @@
   keymaps = lib.mkAfter [
     {
       key = "<tab>";
-      action = ''
-        function()
-          return require("luasnip").jumpable(1) and "<Plug>luasnip-jump-next" or "<tab>"
-        end
-      '';
-      lua = true;
+      action.__raw = # lua
+        ''
+          function()
+            return require("luasnip").jumpable(1) and "<Plug>luasnip-jump-next" or "<tab>"
+          end
+        '';
       mode = "i";
       options = {
         expr = true;
@@ -22,8 +22,8 @@
     }
     {
       key = "<tab>";
-      action = "function() require('luasnip').jump(1) end";
-      lua = true;
+      action.__raw = # lua
+        "function() require('luasnip').jump(1) end";
       mode = [ "s" ];
       options = {
         silent = true;
@@ -32,8 +32,8 @@
     }
     {
       key = "<s-tab>";
-      action = "function() require('luasnip').jump(-1) end";
-      lua = true;
+      action.__raw = # lua
+        "function() require('luasnip').jump(-1) end";
       mode = [
         "i"
         "s"
@@ -45,14 +45,14 @@
     }
     {
       key = "<C-E>";
-      action = ''
-        function()
-          if require('luasnip').choice_active() then
-              require('luasnip').change_choice(1)
+      action.__raw = # lua
+        ''
+          function()
+            if require('luasnip').choice_active() then
+                require('luasnip').change_choice(1)
+            end
           end
-        end
-      '';
-      lua = true;
+        '';
       mode = [
         "i"
         "s"

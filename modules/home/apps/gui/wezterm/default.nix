@@ -60,7 +60,7 @@ in
         config.bold_brightens_ansi_colors = "BrightAndBold"
         config.underline_position = -3.5
         config.underline_thickness = 1
-        config.window_decorations = "RESIZE" -- NONE | TITLE | RESIZE | INTEGRATED_BUTTONS
+        config.window_decorations = "NONE" -- NONE | TITLE | RESIZE | INTEGRATED_BUTTONS
         config.audible_bell = "Disabled"
         -- config.default_cursor_style = "BlinkingBar"
         -- config.cursor_blink_ease_in = "Constant"

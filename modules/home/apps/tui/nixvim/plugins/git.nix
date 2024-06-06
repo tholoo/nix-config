@@ -13,6 +13,16 @@
   };
   keymaps = lib.mkAfter [
     {
+      key = "<leader>cd";
+      action.__raw = # lua
+        "function() require('neogen').generate() end";
+      mode = [ "n" ];
+      options = {
+        silent = true;
+        noremap = true;
+      };
+    }
+    {
       key = "]h";
       action = "<CMD>Gitsigns next_hunk<CR>";
       mode = [ "n" ];
