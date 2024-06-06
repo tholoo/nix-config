@@ -119,6 +119,7 @@ in
         end
 
         complete -c wt -f -n '__fish_is_nth_token 1' -a "$opts"
+        complete -c cht.sh -xa '(curl -s cheat.sh/:list)'
 
         source "${pkgs.asdf-vm}/share/asdf-vm/asdf.fish"
       '';
