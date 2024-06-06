@@ -41,3 +41,8 @@ add it to ./secrets/secrets.nix and then
 ```bash
 agenix --rekey
 ```
+
+Create a secret file:
+```bash
+agenix -e secret.age
+```
