@@ -1,4 +1,5 @@
 {
+  inputs,
   pkgs,
   config,
   lib,
@@ -62,6 +63,11 @@ in
           "[workspace 2 silent] $browser"
           "[workspace 3 silent] ${lib.getExe pkgs.telegram-desktop}"
           "[workspace 4 silent] ${lib.getExe pkgs.nekoray}"
+          "${lib.getExe' pkgs.swww "swww-daemon"}"
+        ];
+
+        exec = [
+          "${lib.getExe pkgs.swww} img ${inputs.self}/resources/wallpapers/wallhaven-fields-858z32.png"
         ];
 
         #############################
