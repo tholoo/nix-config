@@ -36,6 +36,7 @@ in
       yt-dlp # audio/video downloader
       inetutils # commands like telnet
       sd # better sed
+      lazydocker # like lazygit but for docker
     ];
   };
 }
