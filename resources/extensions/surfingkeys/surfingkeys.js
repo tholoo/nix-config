@@ -172,6 +172,7 @@ map("J", "]]");
 // use vim editor by default
 map("gi", "i");
 map("i", "I");
+map("I", "gi");
 
 // Get out with Control+c and Control+[
 imap("<Ctrl-c>", "<Esc>");
