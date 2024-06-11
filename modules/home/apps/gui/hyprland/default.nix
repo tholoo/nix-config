@@ -273,9 +273,20 @@ in
             "$mainMod SHIFT, Z, exec, ${getExe wlogout}"
             "$mainMod, period, exec, ${getExe' swaynotificationcenter "swaync-client"} --hide-latest"
 
+            # volume
             ", XF86AudioMute, exec, wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle && (wpctl get-volume @DEFAULT_AUDIO_SINK@ | grep -q MUTED && echo 0 > $XDG_RUNTIME_DIR/wob.sock) || wpctl get-volume @DEFAULT_AUDIO_SINK@ > $XDG_RUNTIME_DIR/wob.sock"
+          ];
+
+        binde =
+          with pkgs;
+          with lib;
+          [
+            # volume
             ", XF86AudioRaiseVolume, exec, wpctl set-volume --limit 1.5 @DEFAULT_AUDIO_SINK@ 2%+ && wpctl get-volume @DEFAULT_AUDIO_SINK@ | sed 's/[^0-9]//g' > $XDG_RUNTIME_DIR/wob.sock"
             ", XF86AudioLowerVolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 2%- && wpctl get-volume @DEFAULT_AUDIO_SINK@ | sed 's/[^0-9]//g' > $XDG_RUNTIME_DIR/wob.sock"
+            # light
+            '', XF86MonBrightnessUp, exec, ${getExe light} -A 1 && echo $(printf "%.0f" $(light)) > $XDG_RUNTIME_DIR/wob.sock''
+            '', XF86MonBrightnessDown, exec, ${getExe light} -U 1 && echo $(printf "%.0f" $(light)) > $XDG_RUNTIME_DIR/wob.sock''
           ];
 
         # Move/resize windows with mainMod + LMB/RMB and dragging
