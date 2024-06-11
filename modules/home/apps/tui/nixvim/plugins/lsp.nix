@@ -1,5 +1,6 @@
 { pkgs, lib, ... }:
 {
+  rustaceanvim.enable = true;
   lsp = {
     enable = true;
     keymaps = {

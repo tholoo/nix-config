@@ -424,6 +424,13 @@ in
       extraPlugins = with pkgs.vimPlugins; [
         LazyVim
         vim-unimpaired
+        webapi-vim
+      ];
+      extraPackages = with pkgs; [
+        rustfmt
+        rustc
+        cargo
+        lldb
       ];
     };
   };
