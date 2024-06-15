@@ -22,7 +22,11 @@ in
     xdg.portal = {
       enable = true;
       xdgOpenUsePortal = true;
-      extraPortals = with pkgs; [ xdg-desktop-portal-wlr ];
+      extraPortals = with pkgs; [
+        xdg-desktop-portal-wlr
+        xdg-desktop-portal-gtk
+        xdg-desktop-portal-hyprland
+      ];
       config = {
         common = {
           default = [
