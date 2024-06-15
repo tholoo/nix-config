@@ -30,7 +30,7 @@ in
       config = {
         common = {
           default = [
-            "sway"
+            "Hyprland"
             "gtk"
             "qt5"
             "qtwayland"
