@@ -67,7 +67,8 @@ in
         ];
 
         exec = [
-          "${lib.getExe pkgs.swww} img ${inputs.self}/resources/wallpapers/wallhaven-fields-858z32.png"
+          "${lib.getExe pkgs.swww} img ${inputs.self}/resources/wallpapers/wallhaven-fields-858z32.png -t none"
+          "${lib.getExe pkgs.waybar}"
         ];
 
         #############################
@@ -144,7 +145,7 @@ in
             "border, 1, 10, default"
             "borderangle, 1, 8, default"
             "fade, 1, 7, default"
-            "workspaces, 1, 2, default"
+            "workspaces, 0, 2, default"
           ];
         };
 
@@ -268,13 +269,13 @@ in
             "$mainMod, mouse_down, workspace, e+1"
             "$mainMod, mouse_up, workspace, e-1"
 
-            '', Print, exec, ${getExe wayshot} -s "$(${getExe slurp} -o -c '#ff0000ff')" --stdout | ${getExe satty} --filename - --fullscreen --initial-tool line''
+            ", Print, exec, ${getExe wayshot} -s \"$(${getExe slurp} -o -c '#ff0000ff')\" --stdout | ${getExe satty} --filename - --fullscreen --initial-tool line"
             ", Insert, exec, ${getExe wayshot} --stdout | ${getExe satty} --filename - --fullscreen --initial-tool brush"
             "$mainMod, Y, exec, ${getExe cliphist} list | ${getExe wofi} --show dmenu | ${getExe cliphist} decode | ${getExe' wl-clipboard "wl-copy"}"
             "$mainMod SHIFT, Z, exec, ${getExe wlogout}"
             "$mainMod, period, exec, ${getExe' swaynotificationcenter "swaync-client"} --hide-latest"
 
-            # volume
+            # Special audio keys (piped into wob, using pipewire)
             ", XF86AudioMute, exec, wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle && (wpctl get-volume @DEFAULT_AUDIO_SINK@ | grep -q MUTED && echo 0 > $XDG_RUNTIME_DIR/wob.sock) || wpctl get-volume @DEFAULT_AUDIO_SINK@ > $XDG_RUNTIME_DIR/wob.sock"
           ];
 
