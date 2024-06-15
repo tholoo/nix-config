@@ -142,18 +142,25 @@ in
         }
 
         yank
+        # {
+        # }
         # vim-tmux-navigator
-        # {
-        # plugin = resurrect;
-        # extraConfig = "set -g @resurrect-strategy-nvim 'session'";
-        # }
-        # {
-        # plugin = continuum;
-        # extraConfig = ''
-        # set -g @continuum-restore 'on'
-        # set -g @continuum-save-interval '60' # minutes
-        # '';
-        # }
+        {
+          plugin = resurrect;
+          extraConfig = # tmux
+            ''
+              set -g @resurrect-strategy-nvim 'session'
+              set -g @resurrect-capture-pane-contents 'on'
+            '';
+        }
+        {
+          plugin = continuum;
+          extraConfig = # tmux
+            ''
+              set -g @continuum-restore 'on'
+              set -g @continuum-save-interval '10' # minutes
+            '';
+        }
       ];
     };
   };
