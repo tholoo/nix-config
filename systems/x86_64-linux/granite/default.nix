@@ -12,6 +12,7 @@
     };
 
     tui.enable = true;
+    tags.exclude = [ "game" ];
 
     systemd-boot.enable = false;
   };
