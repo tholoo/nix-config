@@ -30,7 +30,7 @@ in
           search_trigger = ";srch";
           # show_icon = false;
           keyboard_layout = {
-            layout = "us,ir";
+            layout = "us";
           };
         };
       };
