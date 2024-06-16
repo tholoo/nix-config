@@ -75,6 +75,10 @@ in
           # { command = "wezterm"; }
           # make copied data persist after closing the application
           { command = "exec ${lib.getExe pkgs.wl-clip-persist} --clipboard both"; }
+          {
+            command = "${lib.getExe' pkgs.systemd "systemctl"} --user reload-or-restart kanshi.service";
+            always = true;
+          }
           # { command = "telegram-desktop"; }
           # { command = "systemctl --user restart waybar"; always = true; }
         ];

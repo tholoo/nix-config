@@ -15,8 +15,36 @@ in
     tags = [
       "service"
       "gui"
+      "monitor"
     ];
   };
 
-  config = mkIf cfg.enable { services.kanshi.enable = true; };
+  config = mkIf cfg.enable {
+    services.kanshi = {
+      enable = true;
+      settings = [
+        {
+          profile = {
+            name = "undocked";
+            outputs = [ { criteria = "eDP-1"; } ];
+          };
+        }
+        {
+          profile = {
+            name = "docked";
+            outputs = [
+              {
+                criteria = "eDP-1";
+                position = "1920,0";
+              }
+              {
+                criteria = "HDMI-A-1";
+                position = "0,0";
+              }
+            ];
+          };
+        }
+      ];
+    };
+  };
 }
