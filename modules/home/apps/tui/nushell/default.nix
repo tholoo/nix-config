@@ -65,6 +65,37 @@ in
             } | do $in $spans
         }
 
+        alias core-ls = ls;
+
+        def old-ls [path] {
+          core-ls $path | sort-by type name -i
+        }
+
+        # Shadow the ls command so that you always have the sort type you want
+        def ls [path?] {
+          if $path == null {
+            old-ls .
+          } else {
+            old-ls $path
+          }
+        }
+
+        def la [path?] {
+          if $path == null {
+            old-ls -a .
+          } else {
+            old-ls -a $path
+          }
+        }
+
+        def laa [path?] {
+          if $path == null {
+            old-ls -la .
+          } else {
+            old-ls -la $path
+          }
+        }
+
         $env.config = {
            show_banner: false,
            edit_mode: vi,
@@ -74,6 +105,26 @@ in
               completer: $external_completer
            }
           }
+         }
+         {
+           name: fuzzy_history,
+           modifier: control,
+           keycode: char_r,
+           mode: emacs,
+           event: {
+             send: executehostcommand,
+             cmd: "commandline edit --replace (history | each { |it| $it.command } | uniq | reverse | str collect (char nl) | fzf --layout=reverse --height=40% -q (commandline) | decode utf-8 | str trim)"
+           }
+         }
+         {
+           name: fuzzy_file,
+           modifier: control,
+           keycode: char_t,
+           mode: [emacs, vi_normal, vi_insert],
+           event: {
+             send: executehostcommand,
+             cmd: "commandline edit --replace (fzf --layout=reverse)"
+           }
          }
       '';
       shellAliases = {
