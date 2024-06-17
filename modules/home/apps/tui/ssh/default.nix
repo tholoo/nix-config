@@ -24,22 +24,35 @@ in
       addKeysToAgent = "yes";
       serverAliveInterval = 60;
       serverAliveCountMax = 60;
-      matchBlocks = {
-        github = {
-          hostname = "github.com";
-          user = "git";
+      matchBlocks =
+        let
+          cat = lib.getExe' pkgs.coreutils "cat";
+          sed = lib.getExe pkgs.gnused;
+          nc = lib.getExe pkgs.netcat;
+        in
+        with config.age.secrets;
+        {
+          github = {
+            hostname = "github.com";
+            user = "git";
+          };
+          gitlab = {
+            hostname = "gitlab.com";
+            user = "git";
+          };
+          granite = {
+            user = "tholo";
+            checkHostIP = false;
+            # get the ip from secrets
+            proxyCommand = "${nc} $(${cat} ${ip-granite.path}) %p";
+          };
+          ahm = {
+            user = "root";
+            checkHostIP = false;
+            # get the ip from secrets. first line is ip and the second is the port
+            proxyCommand = "${nc} $(${sed} -n '1p' ${ip-ahm.path}) $(${sed} -n '2p' ${ip-ahm.path})";
+          };
         };
-        gitlab = {
-          hostname = "gitlab.com";
-          user = "git";
-        };
-        "granite" = {
-          user = "tholo";
-          checkHostIP = false;
-          # get the ip from secrets
-          proxyCommand = "${lib.getExe pkgs.netcat} $(${lib.getExe' pkgs.coreutils "cat"} ${config.age.secrets.ip-tholo-tech.path}) %p";
-        };
-      };
     };
     services.ssh-agent.enable = true;
   };
