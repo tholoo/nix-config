@@ -293,17 +293,44 @@ in
         # };
         kshell = {
           description = "execute python shell in the kube shell pod";
-          body = ''
-            # Find the pod name that contains "shell" in its name
-            set pod_name (${lib.getExe' pkgs.kubectl "kubectl"} get pods --no-headers -o custom-columns=":metadata.name" | grep "shell")
+          argumentNames = [ "filter" ];
+          body =
+            let
+              kubectl = lib.getExe' pkgs.kubectl "kubectl";
+            in
+            ''
+              # Find the pod name that contains "shell" in its name
+              set pod_name (${kubectl} get pods --no-headers -o custom-columns=":metadata.name" | grep "shell")
 
-            if test -z "$pod_name"
-                echo "No pod found with 'shell' in its name."
-                return 1
-            end
+              if test -z "$pod_name"
+                  echo "No pod found with 'shell' in its name."
+                  return 1
+              end
 
-            ${lib.getExe' pkgs.kubectl "kubectl"} exec -it $pod_name -- /bin/bash -c "python -c 'import django; django.setup(); from IPython import start_ipython; start_ipython(argv=[\"--no-banner\", \"--TerminalInteractiveShell.editing_mode=vi\", \"--TerminalInteractiveShell.emacs_bindings_in_vi_insert_mode=False\"])'"
-          '';
+              # Check if multiple pods were found
+              if test (count $pod_name) -gt 1
+                  # Get the namespace name from the context
+                  set namespace (${kubectl} config view --minify --output 'jsonpath={..namespace}')
+
+                  # Filter pods by the namespace
+                  set pod_name (${kubectl} get pods --no-headers -o custom-columns=":metadata.name" | grep shell | grep "$namespace")
+
+                  # Check if no pods were found after filtering by namespace
+                  if test -z "$pod_name"
+                      echo "No pod found with 'shell' in its name in the specified namespace."
+                      return 1
+                  end
+
+                  # Check if still multiple pods were found after filtering by namespace
+                  if test (count $pod_name) -gt 1
+                      echo "Multiple pods found with 'shell' in their name in the specified namespace. Please refine your search."
+                      return 1
+                  end
+              end
+
+              # ${kubectl} exec -it $pod_name -- /bin/bash -c "python -c 'import django; django.setup(); from IPython import start_ipython; start_ipython(argv=[\"--no-banner\", \"--TerminalInteractiveShell.editing_mode=vi\", \"--TerminalInteractiveShell.emacs_bindings_in_vi_insert_mode=False\"])'"
+              ${kubectl} exec -it $pod_name -- ipython -i --no-banner --TerminalInteractiveShell.editing_mode=vi --TerminalInteractiveShell.emacs_bindings_in_vi_insert_mode=False -c "${builtins.readFile ./ipython-smart.bash}"
+            '';
         };
       };
 
