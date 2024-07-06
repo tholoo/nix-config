@@ -38,6 +38,8 @@ in
       wl-clipboard
 
       distrobox
+
+      ffmpeg
     ];
   };
 }

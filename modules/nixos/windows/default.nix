@@ -1,4 +1,9 @@
-{ config, lib, ... }:
+{
+  pkgs,
+  config,
+  lib,
+  ...
+}:
 let
   inherit (lib) mkIf;
   inherit (lib.mine) mkEnable;
@@ -14,5 +19,11 @@ in
     ];
   };
 
-  config = mkIf cfg.enable { boot.binfmt.emulatedSystems = [ "x86_64-windows" ]; };
+  config = mkIf cfg.enable {
+    boot.binfmt.emulatedSystems = [ "x86_64-windows" ];
+    environment.systemPackages = with pkgs; [
+      wineWowPackages.waylandFull
+      winetricks
+    ];
+  };
 }
