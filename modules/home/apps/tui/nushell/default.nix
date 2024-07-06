@@ -21,7 +21,6 @@ in
   config = mkIf cfg.enable {
     programs.nushell = {
       enable = true;
-      package = pkgs.nushellFull;
       # envFile.text = ''
       # '';
       configFile.text = ''

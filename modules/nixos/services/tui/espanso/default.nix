@@ -19,9 +19,14 @@ in
   };
 
   config = mkIf cfg.enable {
-    # services.espanso = {
-    #   enable = true;
-    #   wayland = true;
+    services.espanso = {
+      enable = true;
+      wayland = true;
+    };
+    # security.wrappers.espanso = {
+    #   source = lib.getExe pkgs.espanso-wayland;
+    #   capabilities = "cap_dac_override=eip";
+    #   owner = "root";
     # };
   };
 }

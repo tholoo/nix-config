@@ -1,7 +1,7 @@
 {
   plugins.yanky = {
     enable = true;
-    extraOptions = {
+    settings = {
       highlight.timer = 100;
     };
   };
