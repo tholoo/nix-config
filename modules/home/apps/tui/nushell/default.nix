@@ -81,17 +81,17 @@ in
 
         def la [path?] {
           if $path == null {
-            old-ls -a .
+            core-ls -a . | sort-by type name -i
           } else {
-            old-ls -a $path
+            core-ls -a $path | sort-by type name -i
           }
         }
 
         def laa [path?] {
           if $path == null {
-            old-ls -la .
+            core-ls -la . | sort-by type name -i
           } else {
-            old-ls -la $path
+            core-ls -la $path | sort-by type name -i
           }
         }
 
