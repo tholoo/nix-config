@@ -551,7 +551,7 @@ c = get_config()  # noqa
 ## Automatically add/delete closing bracket or quote when opening bracket or
 #  quote is entered/deleted. Brackets: (), [], {} Quotes: '', ""
 #  Default: False
-# c.TerminalInteractiveShell.auto_match = False
+c.TerminalInteractiveShell.auto_match = True
 
 ##
 #  See also: InteractiveShell.autoawait
