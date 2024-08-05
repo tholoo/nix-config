@@ -20,7 +20,7 @@ let
       numsPersian = lib.mergeAttrsList (map (num: { "${num}" = "Farsi_${num}"; }) numsEnglish);
 
       mapEnglish = map (num: { "${key}+${num}" = "exec '${cmd} ${num}'"; }) numsEnglish;
-      mapPersian = lib.mapAttrsFlatten (numEn: numFa: {
+      mapPersian = lib.mapAttrsToList (numEn: numFa: {
         "${key}+${numFa}" = "exec '${cmd} ${numEn}'";
       }) numsPersian;
     in
