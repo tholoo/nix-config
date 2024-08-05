@@ -1,4 +1,5 @@
 {
+  inputs,
   pkgs,
   options,
   config,
@@ -63,7 +64,7 @@ in
 
     programs.nixvim = {
       enable = true;
-      # package = pkgs.neovim-nightly;
+      package = inputs.neovim-nightly-overlay.packages.${pkgs.system}.default;
       defaultEditor = true;
 
       colorschemes.ayu.enable = true;
@@ -432,6 +433,21 @@ in
         cargo
         lldb
       ];
+      performance = {
+        byteCompileLua.enable = true;
+        combinePlugins = {
+          enable = true;
+          standalonePlugins = with pkgs.vimPlugins; [
+            nvim-treesitter
+            nvim-treesitter-textobjects
+            hmts-nvim
+            neovim-ayu
+            LazyVim
+            copilot-vim
+            copilot-lua
+          ];
+        };
+      };
     };
   };
 }
