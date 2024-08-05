@@ -34,21 +34,32 @@ in
           # layer = "top";
           position = "bottom";
           # tray = { spacing = 10; };
-          modules-center = [ "sway/window" ];
-          modules-left = [
-            "sway/workspaces"
-            "sway/mode"
-          ];
-          modules-right = [
-            "privacy"
-            "sway/language"
-            # "network"
-            "cpu"
-            "memory"
-            "wireplumber"
-            "clock"
-            "tray"
-          ];
+          modules-center =
+            if config.wayland.windowManager.sway.enable then [ "sway/window" ] else [ "hyprland/window" ];
+          modules-left =
+            if config.wayland.windowManager.sway.enable then
+              [
+                "sway/workspaces"
+                "sway/mode"
+              ]
+            else
+              [
+                "hyprland/workspaces"
+                "hyprland/submap"
+              ];
+          modules-right =
+            [ "privacy" ]
+            ++ (
+              if config.wayland.windowManager.sway.enable then [ "sway/language" ] else [ "hyprland/language" ]
+            )
+            ++ [
+              # "network"
+              "cpu"
+              "memory"
+              "wireplumber"
+              "clock"
+              "tray"
+            ];
           battery = {
             format = "{capacity}% {icon}";
             format-alt = "{time} {icon}";
