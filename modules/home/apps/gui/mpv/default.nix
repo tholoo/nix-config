@@ -26,6 +26,7 @@ in
         # profile = "gpu-hq";
         ytdl-format = "bestvideo+bestaudio";
         # cache-default = 4000000;
+        speed = 2;
       };
       scripts = with pkgs.mpvScripts; [
         mpris
