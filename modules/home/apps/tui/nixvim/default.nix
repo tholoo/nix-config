@@ -120,7 +120,9 @@ in
         };
         smoothscroll = true;
         foldmethod = "expr";
+        conceallevel = 2;
       };
+
       keymaps = [
         {
           key = "<esc>";
