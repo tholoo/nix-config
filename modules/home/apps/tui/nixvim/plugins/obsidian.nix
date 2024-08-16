@@ -32,6 +32,78 @@
               return suffix
           end
         '';
+      templates = {
+        folder = "Templates";
+        date_format = "%Y-%m-%d";
+        time_format = "%H:%M";
+        substitutions = { };
+      };
+      mappings = {
+        "<leader>ot" = {
+          action = "'<CMD>ObsidianToday<CR>'";
+          opts = {
+            buffer = true;
+            expr = false;
+          };
+        };
+
+        "<leader>on" = {
+          action = "'<CMD>ObsidianNew<CR>'";
+          opts = {
+            buffer = true;
+            expr = false;
+          };
+        };
+
+        "<leader>oo" = {
+          action = "'<CMD>ObsidianFollowLink<CR>'";
+          opts = {
+            buffer = true;
+            expr = false;
+          };
+        };
+
+        "<leader>os" = {
+          action = "'<CMD>ObsidianSearch<CR>'";
+          opts = {
+            buffer = true;
+            expr = false;
+          };
+        };
+
+        "<leader>oc" = {
+          action = "require('obsidian').util.toggle_checkbox";
+          opts = {
+            buffer = true;
+            expr = true;
+          };
+        };
+
+        "<leader>of" = {
+          action = "require('obsidian').util.toggle_checkbox";
+          opts = {
+            buffer = true;
+            expr = true;
+          };
+        };
+
+        gf = {
+          action = "require('obsidian').util.gf_passthrough";
+          opts = {
+            buffer = true;
+            expr = true;
+            noremap = false;
+          };
+        };
+
+        "<cr>" = {
+          action = "require('obsidian').util.smart_action()";
+          opts = {
+            buffer = true;
+            expr = true;
+          };
+        };
+      };
     };
   };
 }
