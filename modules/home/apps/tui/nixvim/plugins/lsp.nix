@@ -90,8 +90,6 @@
           # "graphql"
 
           "typos-lsp"
-
-          "typst-lsp"
         ];
 
     onAttach = # lua
