@@ -8,7 +8,7 @@
       workspaces = [
         {
           name = "tholos";
-          path = "~/tholos";
+          path = "~/syncs/tholos";
         }
       ];
       new_notes_location = "notes_subdir";
