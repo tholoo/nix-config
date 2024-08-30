@@ -35,7 +35,10 @@ in
           "elderwood" = {
             id = "A74CQ4A-GXIY4EQ-FJ2GZYW-CSD2XRN-HIZOAGT-ESWR36I-2Q4RSF5-7YS2GQ3";
             autoAcceptFolders = true;
-
+          };
+          "glacier" = {
+            id = "X6UUE6Z-VHMMJR4-5JB6V3O-FJR3H55-MNN4IBJ-W7E52EX-33HUBH2-DU4BBQP";
+            autoAcceptFolders = true;
           };
         };
         folders = {
@@ -46,6 +49,7 @@ in
               "phone"
               "granite"
               "elderwood"
+              "glacier"
             ];
           };
         };
