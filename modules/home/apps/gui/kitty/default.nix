@@ -16,6 +16,9 @@ in
   config = mkIf cfg.enable {
     programs.kitty = {
       enable = true;
+      settings = {
+        enable_audio_bell = false;
+      };
     };
   };
 }
