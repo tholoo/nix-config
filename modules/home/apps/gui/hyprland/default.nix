@@ -1,7 +1,7 @@
 {
   inputs,
-  pkgs,
   config,
+  pkgs,
   lib,
   ...
 }:
@@ -16,11 +16,24 @@ in
     tags = [
       "gui"
       "window-manager"
-      "wayland"
     ];
   };
 
   config = mkIf cfg.enable {
+    # programs.hyprlock = {
+    #   enable = true;
+    #   settings = {
+    #     background = {
+    #       monitor = "";
+    #       path = "${inputs.self}/resources/wallpapers/wallhaven-car-swamp.png";
+    #
+    #     };
+    #     general = {
+    #       hide_cursor = true;
+    #     };
+    #   };
+    # };
+
     wayland.windowManager.hyprland = {
       enable = true;
       systemd.enable = false;
@@ -64,11 +77,12 @@ in
           "[workspace 3 silent] ${lib.getExe pkgs.telegram-desktop}"
           "[workspace 4 silent] ${lib.getExe pkgs.nekoray}"
           "${lib.getExe' pkgs.swww "swww-daemon"}"
+          "${lib.getExe pkgs.wl-clip-persist} --clipboard both"
         ];
 
         exec = [
           "${lib.getExe pkgs.swww} img ${inputs.self}/resources/wallpapers/wallhaven-fields-858z32.png -t none"
-          "${lib.getExe pkgs.waybar}"
+          "pkill waybar; sleep 0.5; ${lib.getExe pkgs.waybar}"
         ];
 
         #############################
@@ -91,7 +105,7 @@ in
         # https://wiki.hyprland.org/Configuring/Variables/#general
         general = {
           gaps_in = "5";
-          gaps_out = "20";
+          gaps_out = "10";
 
           border_size = "2";
 
@@ -153,11 +167,13 @@ in
         dwindle = {
           pseudotile = true; # Master switch for pseudotiling. Enabling is bound to mainMod + P in the keybinds section below
           preserve_split = true; # You probably want this
+          no_gaps_when_only = 1;
         };
 
         # See https://wiki.hyprland.org/Configuring/Master-Layout/ for more
         master = {
           new_status = "master";
+          no_gaps_when_only = 1;
         };
 
         # https://wiki.hyprland.org/Configuring/Variables/#misc
@@ -174,9 +190,9 @@ in
         input = {
           kb_layout = "us,ir";
           kb_variant = "";
-          kb_model = "";
+          # kb_model = "logitech_base";
           kb_options = "caps:escape,grp:alt_shift_toggle";
-          kb_rules = "";
+          # kb_rules = "";
 
           follow_mouse = 1;
 
@@ -202,6 +218,11 @@ in
           workspace_back_and_forth = true;
         };
 
+        cursor = {
+          hide_on_key_press = true;
+          inactive_timeout = 3;
+        };
+
         # Example per-device config
         # See https://wiki.hyprland.org/Configuring/Keywords/#per-device-input-configs for more
 
@@ -213,6 +234,16 @@ in
         "$mainMod" = "SUPER"; # Sets "Windows" key as main modifier
 
         # Example binds, see https://wiki.hyprland.org/Configuring/Binds/ for more
+        # l -> locked, will also work when an input inhibitor (e.g. a lockscreen) is active.
+        # r -> release, will trigger on release of a key.
+        # e -> repeat, will repeat when held.
+        # n -> non-consuming, key/mouse events will be passed to the active window in addition to triggering the dispatcher.
+        # m -> mouse, see below.
+        # t -> transparent, cannot be shadowed by other binds.
+        # i -> ignore mods, will ignore modifiers.
+        # s -> separate, will arbitrarily combine keys between each mod/key, see [Keysym combos](#keysym-combos) above.
+        # d -> has description, will allow you to write a description for your bind.
+        # p -> bypasses the app's requests to inhibit keybinds.
         bind =
           with pkgs;
           with lib;
@@ -224,7 +255,7 @@ in
             "$mainMod, V, togglefloating,"
             "$mainMod, D, exec, $menu"
             "$mainMod, P, pseudo, # dwindle"
-            "$mainMod, J, togglesplit, # dwindle"
+            # "$mainMod, J, togglesplit, # dwindle"
 
             # Move focus with mainMod + arrow keys
             "$mainMod, left, movefocus, l"
@@ -269,14 +300,27 @@ in
             "$mainMod, mouse_down, workspace, e+1"
             "$mainMod, mouse_up, workspace, e-1"
 
-            ", Print, exec, ${getExe wayshot} -s \"$(${getExe slurp} -o -c '#ff0000ff')\" --stdout | ${getExe satty} --filename - --fullscreen --initial-tool line"
+            ", Print, exec, ${getExe wayshot} -s $(${getExe slurp} -o) --stdout | ${getExe satty} --filename - --fullscreen --initial-tool line"
             ", Insert, exec, ${getExe wayshot} --stdout | ${getExe satty} --filename - --fullscreen --initial-tool brush"
             "$mainMod, Y, exec, ${getExe cliphist} list | ${getExe wofi} --show dmenu | ${getExe cliphist} decode | ${getExe' wl-clipboard "wl-copy"}"
             "$mainMod SHIFT, Z, exec, ${getExe wlogout}"
             "$mainMod, period, exec, ${getExe' swaynotificationcenter "swaync-client"} --hide-latest"
 
             # Special audio keys (piped into wob, using pipewire)
+
+            "$mainMod, F, fullscreen"
+            "$mainMod, z, exec, swaylock"
+          ];
+
+        bindl =
+          with pkgs;
+          with lib;
+          [
             ", XF86AudioMute, exec, wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle && (wpctl get-volume @DEFAULT_AUDIO_SINK@ | grep -q MUTED && echo 0 > $XDG_RUNTIME_DIR/wob.sock) || wpctl get-volume @DEFAULT_AUDIO_SINK@ > $XDG_RUNTIME_DIR/wob.sock"
+            ", XF86AudioPlay, exec, ${getExe playerctl} play-pause"
+            ", XF86AudioNext, exec, ${getExe playerctl} next"
+            ", XF86AudioPrev, exec, ${getExe playerctl} previous"
+
           ];
 
         binde =
@@ -289,6 +333,12 @@ in
             # light
             '', XF86MonBrightnessUp, exec, ${getExe light} -A 1 && echo $(printf "%.0f" $(light)) > $XDG_RUNTIME_DIR/wob.sock''
             '', XF86MonBrightnessDown, exec, ${getExe light} -U 1 && echo $(printf "%.0f" $(light)) > $XDG_RUNTIME_DIR/wob.sock''
+
+            # gaps
+            "ALT, bracketleft  , exec, sh ${./gaps.sh} --inc_gaps_in"
+            "ALT, bracketright , exec, sh ${./gaps.sh} --dec_gaps_in"
+            "ALT, equal        , exec, sh ${./gaps.sh} --inc_gaps_out"
+            "ALT, minus        , exec, sh ${./gaps.sh} --dec_gaps_out"
           ];
 
         # Move/resize windows with mainMod + LMB/RMB and dragging

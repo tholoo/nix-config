@@ -13,5 +13,9 @@ in
     ];
   };
 
-  config = mkIf cfg.enable { programs.hyprland.enable = true; };
+  config = mkIf cfg.enable {
+    programs = {
+      hyprland.enable = true;
+    };
+  };
 }
