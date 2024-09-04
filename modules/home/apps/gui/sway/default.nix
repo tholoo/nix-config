@@ -56,7 +56,7 @@ in
     services.swayosd.enable = true;
 
     wayland.windowManager.sway = {
-      enable = true;
+      enable = false;
       wrapperFeatures.gtk = true;
       # Sway-specific Configuration
       config = rec {

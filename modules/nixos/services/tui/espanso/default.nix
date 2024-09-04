@@ -20,7 +20,7 @@ in
 
   config = mkIf cfg.enable {
     services.espanso = {
-      enable = true;
+      enable = false;
       wayland = true;
     };
     # security.wrappers.espanso = {

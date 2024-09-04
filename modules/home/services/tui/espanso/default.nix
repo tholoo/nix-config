@@ -21,7 +21,7 @@ in
 
   config = mkIf cfg.enable {
     services.espanso = {
-      enable = true;
+      enable = false;
       package = pkgs.espanso-wayland;
       configs = {
         default = {
