@@ -8,7 +8,7 @@
   };
 
   inputs = {
-    # nixpkgs.url = "github:nixos/nixpkgs/nixos-23.05";
+    nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-24.05";
     # nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     # Also see the 'unstable-packages' overlay at 'overlays/default.nix'.
@@ -67,6 +67,11 @@
     nix-alien.url = "github:thiagokokada/nix-alien";
 
     wezterm-nightly.url = "github:wez/wezterm?dir=nix";
+
+    nix-index-database = {
+      url = "github:nix-community/nix-index-database";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -112,6 +117,7 @@
       homes.modules = with inputs; [
         nixvim.homeManagerModules.nixvim
         agenix.homeManagerModules.default
+        nix-index-database.hmModules.nix-index
       ];
 
       # homes.users."my-user@my-host".specialArgs = {

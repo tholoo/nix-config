@@ -20,5 +20,9 @@ in
     ];
   };
 
-  config = mkIf cfg.enable { programs.nix-index.enable = true; };
+  config = mkIf cfg.enable {
+    programs.nix-index = {
+      enable = true;
+    };
+  };
 }
