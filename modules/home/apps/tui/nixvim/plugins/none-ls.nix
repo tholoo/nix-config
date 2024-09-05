@@ -4,6 +4,7 @@
     enableLspFormat = true;
     sources = {
       formatting = {
+        prettierd.enable = true;
         # nixfmt.enable = true;
         # nixpkgs_fmt.enable = true;
       };
