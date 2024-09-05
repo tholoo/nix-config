@@ -5,6 +5,9 @@
     nixvimInjections = true;
 
     folding = false;
+    settings = {
+      highlight.enable = true;
+    };
   };
 
   treesitter-refactor = {
