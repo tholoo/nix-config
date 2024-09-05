@@ -12,7 +12,11 @@
     };
 
     tui.enable = true;
-    tags.exclude = [ "game" ];
+    tags.exclude = [
+      "game"
+      "editor"
+      "gui"
+    ];
 
     systemd-boot.enable = false;
   };

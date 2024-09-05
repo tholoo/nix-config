@@ -29,9 +29,9 @@ in
           ".git"
           ".direnv"
         ];
-        tre_cmd = "${pkgs.tre-command}/bin/tre --color always {} --limit 5 --all ${excludes}";
-        bat_cmd = "${pkgs.bat}/bin/bat --color always {}";
-        fd_cmd = "${pkgs.fd}/bin/fd --hidden --follow ${excludes}";
+        tre_cmd = "${lib.getExe pkgs.tre-command} --color always {} --limit 5 --all ${excludes}";
+        bat_cmd = "${lib.getExe pkgs.bat} --color always {}";
+        fd_cmd = "${lib.getExe pkgs.fd} --hidden --color always --follow ${excludes} . \\$dir";
       in
       {
         enable = true;
@@ -39,12 +39,11 @@ in
 
         # changeDirWidgetCommand = "${fd_cmd} --type d";
         # changeDirWidgetOptions = [ "--preview '${tre_cmd} | head -100'" ];
-        #
-        # fileWidgetCommand = fd_cmd;
-        # fileWidgetOptions =
-        #   [ "--preview '${bat_cmd} 2> /dev/null || ${tre_cmd} | head -100'" ];
-        #
-        # historyWidgetOptions = [ "--reverse" ];
+
+        fileWidgetCommand = fd_cmd;
+        fileWidgetOptions = [ "--ansi --preview '${bat_cmd} 2> /dev/null || ${tre_cmd} | head -100'" ];
+
+        historyWidgetOptions = [ "--reverse" ];
 
         tmux.enableShellIntegration = false;
       };
