@@ -15,6 +15,11 @@ or
 nix run home-manager/master -- switch --flake .
 ```
 
+## nixos
+```bash
+nixos-rebuild switch --flake . --accept-flake-config
+```
+
 
 ## tips
 Check the size with: 
