@@ -10,6 +10,12 @@ let
   inherit (lib.mine) mkEnable;
   cfg = config.mine.${name};
   name = "hyprland";
+
+  screenshot = pkgs.writeShellScriptBin "myhyprshot" (
+    with lib;
+    with pkgs;
+    "${getExe wayshot} -s $(${getExe slurp} -o) --stdout | ${getExe satty} --filename - --fullscreen --initial-tool line"
+  );
 in
 {
   options.mine.${name} = mkEnable config {
@@ -55,8 +61,8 @@ in
 
         # See https://wiki.hyprland.org/Configuring/Keywords/
 
-        # Set programs that you use
-        "$terminal" = lib.getExe' pkgs.wezterm "wezterm";
+        # "$terminal" = lib.getExe' pkgs.wezterm "wezterm";
+        "$terminal" = lib.getExe pkgs.kitty;
         "$fileManager" = lib.getExe' pkgs.dolphin "dolphin";
         "$menu" = "${lib.getExe pkgs.wofi} --show drun,run";
         "$browser" = lib.getExe' pkgs.vivaldi "vivaldi";
@@ -76,8 +82,11 @@ in
           "[workspace 2 silent] $browser"
           "[workspace 3 silent] ${lib.getExe pkgs.telegram-desktop}"
           "[workspace 4 silent] ${lib.getExe pkgs.nekoray}"
+
           "${lib.getExe' pkgs.swww "swww-daemon"}"
           "${lib.getExe pkgs.wl-clip-persist} --clipboard both"
+          "${lib.getExe' pkgs.kdePackages.kdeconnect-kde "kdeconnectd"}"
+          "${lib.getExe pkgs.clipse} -listen"
         ];
 
         exec = [
@@ -300,9 +309,11 @@ in
             "$mainMod, mouse_down, workspace, e+1"
             "$mainMod, mouse_up, workspace, e-1"
 
-            ", Print, exec, ${getExe wayshot} -s $(${getExe slurp} -o) --stdout | ${getExe satty} --filename - --fullscreen --initial-tool line"
+            # ", Print, exec, sh ${screenshot}"
+            ", Print, exec, $terminal -e '${getExe wayshot} -s $(${getExe slurp} -o) --stdout | ${getExe satty} --filename - --fullscreen --initial-tool line'"
             ", Insert, exec, ${getExe wayshot} --stdout | ${getExe satty} --filename - --fullscreen --initial-tool brush"
-            "$mainMod, Y, exec, ${getExe cliphist} list | ${getExe wofi} --show dmenu | ${getExe cliphist} decode | ${getExe' wl-clipboard "wl-copy"}"
+            # "$mainMod, Y, exec, ${getExe cliphist} list | ${getExe wofi} --show dmenu | ${getExe cliphist} decode | ${getExe' wl-clipboard "wl-copy"}"
+            "$mainMod, Y, exec, $terminal --class clipse -e '${lib.getExe pkgs.clipse}'"
             "$mainMod SHIFT, Z, exec, ${getExe wlogout}"
             "$mainMod, period, exec, ${getExe' swaynotificationcenter "swaync-client"} --hide-latest"
 
@@ -339,6 +350,16 @@ in
             "ALT, bracketright , exec, sh ${./gaps.sh} --dec_gaps_in"
             "ALT, equal        , exec, sh ${./gaps.sh} --inc_gaps_out"
             "ALT, minus        , exec, sh ${./gaps.sh} --dec_gaps_out"
+
+            "$mainMod SHIFT, l, movewindow, r"
+            "$mainMod SHIFT, h, movewindow, l"
+            "$mainMod SHIFT, k, movewindow, u"
+            "$mainMod SHIFT, j, movewindow, d"
+
+            "$mainMod ALT, l, resizeactive, 10 0"
+            "$mainMod ALT, h, resizeactive, -10 0"
+            "$mainMod ALT, k, resizeactive, 0 -10"
+            "$mainMod ALT, j, resizeactive, 0 10"
           ];
 
         # Move/resize windows with mainMod + LMB/RMB and dragging
@@ -364,6 +385,9 @@ in
           "suppressevent maximize, class:.*" # You'll probably like this.
           "float,class:^(org.telegram.desktop|telegramdesktop)$,title:^(Media viewer)$"
           "noanim,class:^(org.telegram.desktop|telegramdesktop)$,title:^(Media viewer)$"
+
+          "float,class:(clipse)"
+          "size 622 652,class:(clipse)"
         ];
       };
     };
