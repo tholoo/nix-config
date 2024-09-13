@@ -13,5 +13,12 @@ in
 {
   options.mine.${name} = mkEnable config { tags = [ "tui" ]; };
 
-  config = mkIf cfg.enable { xdg.enable = true; };
+  config = mkIf cfg.enable {
+    xdg = {
+      enable = true;
+      mimeApps.defaultApplications = {
+        "application/pdf" = "${pkgs.zathura}/share/application/org.pwmt.zathura.desktop";
+      };
+    };
+  };
 }
