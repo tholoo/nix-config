@@ -22,11 +22,29 @@ in
   config = mkIf cfg.enable {
     programs.mpv = {
       enable = true;
+      # https://raw.githubusercontent.com/mpv-player/mpv/master/etc/input.conf
+      bindings = {
+        # speed
+        "z" = "set speed 1.0";
+        "c" = "add speed 0.1";
+        "x" = "add speed -0.1";
+        # move
+        "h" = "seek -5";
+        "l" = "seek 5";
+        "shift+h" = "seek -60";
+        "shift+l" = "seek -60";
+        "k" = "add volume 2";
+        "j" = "add volume -2";
+      };
       config = {
         # profile = "gpu-hq";
         ytdl-format = "bestvideo+bestaudio";
         # cache-default = 4000000;
         speed = 2;
+        sub-auto = "fuzzy";
+        sub-visibility = "yes";
+        audio-file-auto = "fuzzy";
+        save-position-on-quit = "yes";
       };
       scripts = with pkgs.mpvScripts; [
         mpris
@@ -34,7 +52,7 @@ in
         seekTo
         thumbnail
         thumbfast
-        mpvacious
+        mpvacious # for creating anki cards
         # Youtube
         sponsorblock
         quality-menu
