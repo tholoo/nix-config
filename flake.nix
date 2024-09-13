@@ -1,7 +1,10 @@
 {
   description = "Tholo's Nix Config";
   nixConfig = {
-    extra-substituters = [ "https://nix-community.cachix.org" ];
+    extra-substituters = [
+      # "https://aseipp-nix-cache.global.ssl.fastly.net"
+      "https://nix-community.cachix.org"
+    ];
     extra-trusted-public-keys = [
       "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
     ];
@@ -72,6 +75,11 @@
       url = "github:nix-community/nix-index-database";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    dedsec-grub-theme = {
+      url = "gitlab:VandalByte/dedsec-grub-theme";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -103,6 +111,7 @@
         disko.nixosModules.disko
         home-manager.nixosModules.home-manager
         nixos-generators.nixosModules.all-formats
+        dedsec-grub-theme.nixosModule
       ];
 
       # Add a module to a specific host.
@@ -130,7 +139,7 @@
         "granite" = {
           hostname = "granite";
           sshUser = "root";
-          remoteBuild = true;
+          remoteBuild = false;
           profiles.system = {
             user = "root";
             path = inputs.deploy-rs.lib.x86_64-linux.activate.nixos inputs.self.nixosConfigurations.granite;

@@ -106,7 +106,7 @@
   # lspsaga.enable = true;
   navic = {
     enable = true;
-    lsp.autoAttach = true;
+    settings.lsp.auto_attach = true;
   };
   # lsp-lines.enable = true;
 }
