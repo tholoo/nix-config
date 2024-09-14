@@ -23,9 +23,9 @@ in
       enable = true;
       xdgOpenUsePortal = true;
       extraPortals = with pkgs; [
+        xdg-desktop-portal-hyprland
         xdg-desktop-portal-wlr
         xdg-desktop-portal-gtk
-        xdg-desktop-portal-hyprland
       ];
       config = {
         common = {
@@ -37,6 +37,21 @@ in
           ];
           "org.freedesktop.impl.portal.Secret" = [ "gnome-keyring" ];
         };
+      };
+    };
+    gtk = {
+      enable = true;
+      theme = {
+        package = pkgs.arc-theme;
+        name = "Arc";
+      };
+      iconTheme = {
+        package = pkgs.papirus-icon-theme;
+        name = "Papirus";
+      };
+      cursorTheme = {
+        package = pkgs.bibata-cursors;
+        name = "Bibata-Modern-Ice";
       };
     };
   };
