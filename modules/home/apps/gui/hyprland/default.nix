@@ -26,6 +26,7 @@ in
   };
 
   config = mkIf cfg.enable {
+    home.packages = with pkgs; [ bibata-cursors ];
     # programs.hyprlock = {
     #   enable = true;
     #   settings = {
@@ -87,6 +88,8 @@ in
           "${lib.getExe pkgs.wl-clip-persist} --clipboard both"
           "${lib.getExe' pkgs.kdePackages.kdeconnect-kde "kdeconnectd"}"
           "${lib.getExe pkgs.clipse} -listen"
+
+          ''hyprctl setcursor "Bibata-Modern-Ice" 22''
         ];
 
         exec = [
