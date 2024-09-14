@@ -25,6 +25,7 @@
     gui.enable = true;
     tui.enable = true;
 
-    grub.enable = false;
+    grub.enable = true;
+    systemd-boot.enable = false;
   };
 }
