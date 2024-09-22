@@ -44,13 +44,13 @@ in
             user = "tholo";
             checkHostIP = false;
             # get the ip from secrets
-            proxyCommand = "${nc} $(${cat} ${ip-granite.path}) %p";
+            proxyCommand = "bash -c '${nc} $(${cat} ${ip-granite.path}) %p'";
           };
           ahm = {
             user = "root";
             checkHostIP = false;
             # get the ip from secrets. first line is ip and the second is the port
-            proxyCommand = "${nc} $(${sed} -n '1p' ${ip-ahm.path}) $(${sed} -n '2p' ${ip-ahm.path})";
+            proxyCommand = "bash -c \"${nc} $(${sed} -n '1p' ${ip-ahm.path}) $(${sed} -n '2p' ${ip-ahm.path})\"";
           };
         };
     };
