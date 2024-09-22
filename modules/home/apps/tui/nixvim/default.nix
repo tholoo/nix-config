@@ -423,6 +423,10 @@ in
         vim.cmd([[autocmd FileType * set formatoptions-=ro]])
         -- change line number coloring
         vim.api.nvim_set_hl(0, "LineNr", { fg = "gray" })
+
+        require('eyeliner').setup({
+          highlight_on_key = true
+        })
       '';
       extraPlugins = with pkgs.vimPlugins; [
         LazyVim
@@ -448,6 +452,7 @@ in
             LazyVim
             copilot-vim
             copilot-lua
+            yanky-nvim
           ];
         };
       };
