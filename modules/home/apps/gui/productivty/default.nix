@@ -8,21 +8,19 @@ let
   inherit (lib) mkIf;
   inherit (lib.mine) mkEnable;
   cfg = config.mine.${name};
-  name = "productivity";
+  name = "gui-productivity";
 in
 {
   options.mine.${name} = mkEnable config {
     tags = [
-      "tui"
-      "cli-tools"
+      "gui"
     ];
   };
 
   config = mkIf cfg.enable {
     home.packages = with pkgs; [
-      # learning
-      tldr
-      cht-sh
+      obsidian
+      calibre
     ];
   };
 }
