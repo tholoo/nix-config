@@ -1,4 +1,5 @@
 {
+  pkgs,
   config,
   lib,
   ...
@@ -13,16 +14,12 @@ in
   options.mine.${name} = mkEnable config {
     tags = [
       "gui"
-      "bluetooth"
     ];
   };
 
   config = mkIf cfg.enable {
-    hardware = {
-      bluetooth = {
-        enable = true;
-        powerOnBoot = true;
-      };
-    };
+    home.packages = with pkgs; [
+      (pkgs.writeShellScriptBin "blue" "exec -a $0 ${lib.getExe overskride} $@")
+    ];
   };
 }
