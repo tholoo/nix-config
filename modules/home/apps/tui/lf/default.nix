@@ -21,7 +21,7 @@ in
   config = mkIf cfg.enable {
     xdg.configFile."lf/icons".source = ./icons;
     programs.lf = {
-      enable = true;
+      enable = false;
       commands = {
         mkdir = ''
           ''${{
