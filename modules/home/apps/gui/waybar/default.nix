@@ -53,7 +53,7 @@ in
               if config.wayland.windowManager.sway.enable then [ "sway/language" ] else [ "hyprland/language" ]
             )
             ++ [
-              # "network"
+              "network"
               "cpu"
               "memory"
               "wireplumber"
@@ -61,21 +61,24 @@ in
               "tray"
             ];
           battery = {
-            format = "{capacity}% {icon}";
-            format-alt = "{time} {icon}";
-            format-charging = "{capacity}% ";
-            format-icons = [
-              ""
-              ""
-              ""
-              ""
-              ""
-            ];
-            format-plugged = "{capacity}% ";
             states = {
-              critical = 15;
               warning = 30;
+              critical = 15;
             };
+            max-length = 20;
+            format = "{icon} {capacity}%";
+            format-warning = "{icon} {capacity}%";
+            format-critical = "{icon} {capacity}%";
+            format-charging = "<span font-family='Font Awesome 6 Free'></span> {capacity}%";
+            format-plugged = " Plugged";
+
+            format-alt = "{icon} {time}";
+            format-full = "";
+            format-icons = [
+              "󱊡"
+              "󱊢"
+              "󱊣"
+            ];
           };
 
           wireplumber = {
@@ -115,7 +118,7 @@ in
           clock = {
             # format-alt = "{:%Y-%m-%d}";
             format = "{:%Y-%m-%d | %H:%M}";
-            tooltip-format = "{:%Y-%m-%d | %H:%M}";
+            tooltip-format = "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>";
           };
           cpu = {
             format = "{usage}% ({load}) {icon} ";
@@ -132,17 +135,25 @@ in
             ];
           };
           memory = {
-            format = "{}% ";
+            interval = 30;
+            format = " {}%";
+            format-alt = " {used:0.1f}GB";
+            max-length = 10;
           };
           network = {
-            # interval = 1;
-            format-alt = "{ifname}: {ipaddr}/{cidr}";
-            format-disconnected = "Disconnected ⚠";
-            format-ethernet = "{ifname}: {ipaddr}/{cidr} ";
-            # format-ethernet =
-            #   "{ifname}: {ipaddr}/{cidr}   up: {bandwidthUpBits} down: {bandwidthDownBits}";
-            format-linked = "{ifname} (No IP) ";
-            format-wifi = "{essid} ({signalStrength}%) ";
+            # "format-wifi" = "直",
+            format-wifi = "{icon} {essid}";
+            format-ethernet = "󰛳 Online";
+            format-disconnected = "󰅛 Offline";
+            tooltip-format = "{essid}";
+            on-click = "kitty -e nmtui";
+            format-icons = [
+              "󰤯"
+              "󰤟"
+              "󰤢"
+              "󰤥"
+              "󰤨"
+            ];
           };
           "sway/mode" = {
             format = ''<span style="italic">{}</span>'';
