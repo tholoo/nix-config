@@ -16,9 +16,11 @@ in
 
   config = mkIf cfg.enable {
     services = {
-      devmon.enable = true;
-      gvfs.enable = true;
-      udisks2.enable = true;
+      udiskie = {
+        enable = true;
+        automount = true;
+        notify = true;
+      };
     };
   };
 }
