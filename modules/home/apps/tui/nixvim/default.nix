@@ -428,6 +428,7 @@ in
         LazyVim
         vim-unimpaired
         webapi-vim
+        eyeliner-nvim
       ];
       extraPackages = with pkgs; [
         rustfmt
