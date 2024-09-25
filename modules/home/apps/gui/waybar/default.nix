@@ -57,6 +57,7 @@ in
               "cpu"
               "memory"
               "wireplumber"
+              "battery"
               "clock"
               "tray"
             ];
