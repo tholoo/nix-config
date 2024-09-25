@@ -20,6 +20,7 @@ in
 
   config = mkIf cfg.enable {
     home.packages = with pkgs; [
+      jnv # interactive jq
       yq-go # yaml processor https://github.com/mikefarah/yq
       watchexec # Run commands based on file change
       satty # Screen annotatiaon tool
@@ -33,6 +34,8 @@ in
       inetutils # commands like telnet
       sd # better sed
       lazydocker # like lazygit but for docker
+      hyperfine # measuring and comparing execution speed of commands
+      gnumeric # converting csv and excel
     ];
   };
 }
