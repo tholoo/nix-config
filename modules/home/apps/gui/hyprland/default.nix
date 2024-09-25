@@ -324,6 +324,10 @@ in
 
             "$mainMod, F, fullscreen"
             "$mainMod, z, exec, swaylock"
+
+            "$SUPERCTRL, h, movecurrentworkspacetomonitor, l"
+            "$SUPERCTRL, l, movecurrentworkspacetomonitor, r"
+
           ];
 
         bindl =
