@@ -293,24 +293,34 @@ in
         # };
         kshell = {
           description = "execute python shell in the kube shell pod";
-          argumentNames = [ "filter" ];
           body =
             let
               kubectl = lib.getExe' pkgs.kubectl "kubectl";
             in
+            # fish
             ''
+              argparse 's/l' -- $argv
+
+              set cmd ipython -i --no-banner --TerminalInteractiveShell.editing_mode=vi --TerminalInteractiveShell.emacs_bindings_in_vi_insert_mode=False --TerminalInteractiveShell.auto_match=True --InteractiveShellApp.exec_lines="""${builtins.readFile ./ipython-smart.py}"""
+
               # Find the pod name that contains "shell" in its name
-              set pod_name (${kubectl} get pods --no-headers -o custom-columns=":metadata.name" | grep "shell")
+              set filter ""
+              if test -n "$argv[1]"
+                set filter $argv[1]
+              end
+
+              set pod_name (${kubectl} get pods --no-headers -o custom-columns=":metadata.name" | grep "$filter" | grep "shell")
 
               if test -z "$pod_name"
-                  echo "No pod found with 'shell' in its name."
+                  echo "No pod found with '$filter' in its name."
                   return 1
               end
 
+              set namespace (${kubectl} config view --minify --output 'jsonpath={..namespace}')
+              set cluster (${kubectl} config view --minify --output 'jsonpath={..context.cluster}')
               # Check if multiple pods were found
               if test (count $pod_name) -gt 1
                   # Get the namespace name from the context
-                  set namespace (${kubectl} config view --minify --output 'jsonpath={..namespace}')
 
                   # Filter pods by the namespace
                   set pod_name (${kubectl} get pods --no-headers -o custom-columns=":metadata.name" | grep shell | grep "$namespace")
@@ -328,9 +338,23 @@ in
                   end
               end
 
-              # ${kubectl} exec -it $pod_name -- /bin/bash -c "python -c 'import django; django.setup(); from IPython import start_ipython; start_ipython(argv=[\"--no-banner\", \"--TerminalInteractiveShell.editing_mode=vi\", \"--TerminalInteractiveShell.emacs_bindings_in_vi_insert_mode=False\"])'"
-              ${kubectl} exec -it $pod_name -- ipython -i --no-banner --TerminalInteractiveShell.editing_mode=vi --TerminalInteractiveShell.emacs_bindings_in_vi_insert_mode=False -c "${builtins.readFile ./ipython-smart.bash}"
+              echo "$cluster $namespace $pod_name"
+              if set -q _flag_s
+                ${kubectl} exec -it $pod_name -- /bin/bash
+              else
+                ${kubectl} exec -it $pod_name -- $cmd
+              end
             '';
+        };
+
+        gerrit = {
+          description = "gerrit fetch";
+          body = ''
+            set argv_split (string split "/" $argv[1])
+            set last_two_digits (string sub -s -2 -- $argv_split[1])
+            git fetch origin refs/changes/$last_two_digits/$argv[1]
+            echo (git rev-parse FETCH_HEAD)
+          '';
         };
       };
 
@@ -395,6 +419,7 @@ in
         "l." = ''${lib.getExe pkgs.eza} -la | egrep "^\."'';
 
         lg = lib.getExe pkgs.lazygit;
+        ld = lib.getExe pkgs.lazydocker;
 
         grep = "grep --color=auto";
         egrep = "egrep --color=auto";
@@ -422,6 +447,10 @@ in
           name = "fzf";
           src = fzf.src;
         }
+        # {
+        #   name = "fifc";
+        #   src = fifc.src;
+        # }
 
         # Manually packaging and enable a plugin
         # {
