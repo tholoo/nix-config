@@ -427,6 +427,12 @@ in
         require('eyeliner').setup({
           highlight_on_key = true
         })
+
+        if vim.g.started_by_firenvim == true then
+          vim.o.laststatus = 0
+        else
+          vim.o.laststatus = 2
+        end
       '';
       extraPlugins = with pkgs.vimPlugins; [
         LazyVim
@@ -453,6 +459,7 @@ in
             copilot-vim
             copilot-lua
             yanky-nvim
+            firenvim
           ];
         };
       };

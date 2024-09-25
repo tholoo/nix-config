@@ -1,0 +1,3 @@
+{
+  firenvim.enable = true;
+}
