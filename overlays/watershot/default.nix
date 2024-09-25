@@ -4,8 +4,8 @@ final: prev: {
     src = final.fetchFromGitHub {
       owner = "Liassica";
       repo = "watershot";
-      rev = "17225900e909a1d499f7534e4056cea7418a60d0";
-      hash = "sha256-mnBBxFwpw4KBnioCF2RG0eHSjtgRnSDxxDuaYt+T5Uk=";
+      rev = "tmp-hyprland-fix";
+      hash = "sha256-/FV9WUdM8JSTX5w/JXVA7ymTJEHyovo0Fz2F1PVO/hU=";
     };
   });
 }

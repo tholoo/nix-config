@@ -74,6 +74,7 @@ in
           lg = "log --oneline --graph --decorate --all --abbrev-commit --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset'";
           clone-bare = "!${lib.getExe pkgs.bash} ${./git-clone-bare.sh}";
           info = "!${lib.getExe pkgs.onefetch}";
+          done = "!${lib.getExe pkgs.bash} ${./git-done.sh}";
         };
       };
     };
