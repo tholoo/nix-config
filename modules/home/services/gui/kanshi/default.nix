@@ -22,6 +22,8 @@ in
   config = mkIf cfg.enable {
     services.kanshi = {
       enable = true;
+      systemdTarget = "hyprland-session.target";
+
       settings = [
         {
           profile = {
