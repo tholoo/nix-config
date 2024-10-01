@@ -19,9 +19,8 @@ in
     ];
   };
   config = mkIf cfg.enable {
-
-    # for sway
     systemd.user.services.kanshi = {
+      enable = true;
       description = "kanshi daemon";
       serviceConfig = {
         Type = "simple";

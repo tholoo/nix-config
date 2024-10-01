@@ -27,12 +27,6 @@ in
       settings = [
         {
           profile = {
-            name = "undocked";
-            outputs = [ { criteria = "eDP-1"; } ];
-          };
-        }
-        {
-          profile = {
             name = "docked";
             outputs = [
               {
@@ -44,6 +38,12 @@ in
                 position = "0,0";
               }
             ];
+          };
+        }
+        {
+          profile = {
+            name = "undocked";
+            outputs = [ { criteria = "eDP-1"; } ];
           };
         }
       ];
