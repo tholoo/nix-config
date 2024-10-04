@@ -19,6 +19,7 @@
     ];
 
     systemd-boot.enable = false;
+    syncthing.enable = false;
   };
 
   security.sudo.wheelNeedsPassword = false;
