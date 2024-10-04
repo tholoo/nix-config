@@ -23,9 +23,10 @@ in
       enable = true;
       xdgOpenUsePortal = true;
       extraPortals = with pkgs; [
+        mine.xdg-desktop-portal-termfilechooser
         xdg-desktop-portal-hyprland
-        xdg-desktop-portal-wlr
-        xdg-desktop-portal-gtk
+        # xdg-desktop-portal-wlr
+        # xdg-desktop-portal-gtk
       ];
       config = {
         common = {
@@ -35,7 +36,8 @@ in
             "qt5"
             "qtwayland"
           ];
-          "org.freedesktop.impl.portal.Secret" = [ "gnome-keyring" ];
+          "org.freedesktop.impl.portal.FileChooser" = [ "xdg-desktop-portal-termfilechooser" ];
+          # "org.freedesktop.impl.portal.Secret" = [ "gnome-keyring" ];
         };
       };
     };
