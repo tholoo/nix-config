@@ -66,8 +66,8 @@
 
           "lua-ls"
 
-          "ruff-lsp"
           "pyright"
+          "ruff"
           # NOTE: Broken because of rust version
           # "pylyzer"
           # "pylsp"
