@@ -135,7 +135,7 @@ in
         }
         {
           key = "<leader>w";
-          action = "<CMD>update<CR>";
+          action = "<CMD>write<CR>";
           options = {
             silent = true;
             noremap = true;
@@ -439,6 +439,7 @@ in
         vim-unimpaired
         webapi-vim
         eyeliner-nvim
+        cellular-automaton-nvim
       ];
       extraPackages = with pkgs; [
         rustfmt
