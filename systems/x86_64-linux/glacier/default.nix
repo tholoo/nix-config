@@ -12,7 +12,7 @@
     gui.enable = true;
     tui.enable = true;
 
-    grub.enable = false;
-    systemd-boot.enable = true;
+    grub.enable = true;
+    systemd-boot.enable = false;
   };
 }
