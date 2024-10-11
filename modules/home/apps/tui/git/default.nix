@@ -54,7 +54,8 @@ in
         extraConfig = {
           core.editor = "nvim";
           init.defaultBranch = "main";
-          pull.rebase = false;
+          pull.rebase = true;
+          rebase.autostash = true;
           # Cache git credentials for 15 minutes
           credential.helper = "cache";
           # always use --update-refs
