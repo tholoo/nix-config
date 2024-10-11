@@ -3,9 +3,11 @@
   nixConfig = {
     extra-substituters = [
       # "https://aseipp-nix-cache.global.ssl.fastly.net"
+      "https://anyrun.cachix.org"
       "https://nix-community.cachix.org"
     ];
     extra-trusted-public-keys = [
+      "anyrun.cachix.org-1:pqBobmOjI7nKlsUMV25u9QHa9btJK65/C8vnO3p346s="
       "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
     ];
   };
@@ -76,8 +78,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    dedsec-grub-theme = {
-      url = "gitlab:VandalByte/dedsec-grub-theme";
+    # dedsec-grub-theme = {
+    #   url = "gitlab:VandalByte/dedsec-grub-theme";
+    #   inputs.nixpkgs.follows = "nixpkgs";
+    # };
+    anyrun = {
+      url = "github:anyrun-org/anyrun";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
@@ -111,7 +117,7 @@
         disko.nixosModules.disko
         home-manager.nixosModules.home-manager
         nixos-generators.nixosModules.all-formats
-        dedsec-grub-theme.nixosModule
+        # dedsec-grub-theme.nixosModule
       ];
 
       # Add a module to a specific host.
@@ -127,6 +133,7 @@
         nixvim.homeManagerModules.nixvim
         agenix.homeManagerModules.default
         nix-index-database.hmModules.nix-index
+        anyrun.homeManagerModules.default
       ];
 
       # homes.users."my-user@my-host".specialArgs = {

@@ -32,12 +32,12 @@ in
         useOSProber = true;
         device = "nodev";
 
-        dedsec-theme = {
-          enable = if cfg.server then false else true;
-          style = "wannacry";
-          icon = "color";
-          resolution = "1080p";
-        };
+        # dedsec-theme = {
+        #   enable = if cfg.server then false else true;
+        #   style = "wannacry";
+        #   icon = "color";
+        #   resolution = "1080p";
+        # };
       };
     };
   };

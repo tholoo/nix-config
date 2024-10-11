@@ -6,4 +6,5 @@
   inc-rename.enable = true;
   indent-blankline.enable = true;
   wtf.enable = true;
+  web-devicons.enable = true;
 }
