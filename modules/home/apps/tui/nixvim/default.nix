@@ -416,6 +416,14 @@ in
             noremap = true;
           };
         }
+        {
+          key = "<leader>\\r";
+          action = ''<CMD>CellularAutomaton make_it_rain<CR>'';
+          mode = "n";
+          options = {
+            noremap = true;
+          };
+        }
       ];
       extraConfigLua = ''
         vim.api.nvim_set_hl(0, "WinSeparator", {guibg=False})
