@@ -22,6 +22,7 @@
       frecency.enable = true;
       fzf-native.enable = true;
       undo.enable = true;
+      live-grep-args.enable = true;
     };
 
     settings.defaults = {
