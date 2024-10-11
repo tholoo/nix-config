@@ -86,6 +86,7 @@ in
             sort_reverse = true;
             sort_dir_first = true;
             show_symlink = true;
+            linemode = "size";
           };
           plugin = {
             prepend_previewers = [
