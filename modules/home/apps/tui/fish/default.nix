@@ -301,7 +301,7 @@ in
             ''
               argparse 's/l' -- $argv
 
-              set cmd ipython -i --no-banner --TerminalInteractiveShell.editing_mode=vi --TerminalInteractiveShell.emacs_bindings_in_vi_insert_mode=False --TerminalInteractiveShell.auto_match=True --InteractiveShellApp.exec_lines="""${builtins.readFile ./ipython-smart.py}"""
+              set cmd env PYTHONBREAKPOINT='IPython.core.debugger.set_trace' ipython -i --no-banner --TerminalInteractiveShell.editing_mode=vi --TerminalInteractiveShell.emacs_bindings_in_vi_insert_mode=False --TerminalInteractiveShell.auto_match=True --InteractiveShellApp.exec_lines="""${builtins.readFile ./ipython-smart.py}"""
 
               # Find the pod name that contains "shell" in its name
               set filter ""

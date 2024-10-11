@@ -30,6 +30,9 @@ try:
 except Exception:
     pass
 
+import datetime
+from datetime import timedelta, date
+from collections import defaultdict
 
 from django.db import connection as django_db_connection
 
