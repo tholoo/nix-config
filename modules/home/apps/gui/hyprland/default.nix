@@ -11,10 +11,22 @@ let
   cfg = config.mine.${name};
   name = "hyprland";
 
-  screenshot = pkgs.writeShellScriptBin "myhyprshot" (
+  # for some reason pipes don't work
+  screenshot = pkgs.writeShellScript "myhyprshot" (
     with lib;
     with pkgs;
-    "${getExe wayshot} -s $(${getExe slurp} -o) --stdout | ${getExe satty} --filename - --fullscreen --initial-tool line"
+    ''
+      selection=$(${getExe slurp} -o)
+
+      tempfile=$(mktemp /tmp/screenshot-XXXXXX.png)
+      ${getExe wayshot} -s "$selection" --file "$tempfile"
+
+      cat "$tempfile" | ${getExe' wl-clipboard "wl-copy"} --type image/png
+
+      ${getExe satty} --filename "$tempfile" --fullscreen --initial-tool line
+
+      rm "$tempfile"
+    ''
   );
 in
 {
@@ -312,8 +324,9 @@ in
             "$mainMod, mouse_down, workspace, e+1"
             "$mainMod, mouse_up, workspace, e-1"
 
-            # ", Print, exec, sh ${screenshot}"
-            ", Print, exec, $terminal -e '${getExe wayshot} -s $(${getExe slurp} -o) --stdout | ${getExe satty} --filename - --fullscreen --initial-tool line'"
+            # ", Print, exec, $terminal -e '${getExe wayshot} -s $(${getExe slurp} -o) --stdout | ${getExe satty} --filename - --fullscreen --initial-tool line'"
+            # TODO: switch to watershot?
+            ", Print, exec, ${screenshot}"
             ", Insert, exec, ${getExe wayshot} --stdout | ${getExe satty} --filename - --fullscreen --initial-tool brush"
             # "$mainMod, Y, exec, ${getExe cliphist} list | ${getExe wofi} --show dmenu | ${getExe cliphist} decode | ${getExe' wl-clipboard "wl-copy"}"
             "$mainMod, Y, exec, $terminal --class clipse -e '${lib.getExe pkgs.clipse}'"
