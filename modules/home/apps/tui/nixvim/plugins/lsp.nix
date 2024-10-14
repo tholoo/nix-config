@@ -61,7 +61,7 @@
           };
         }
         [
-          "tsserver"
+          "ts-ls"
           "volar"
 
           "lua-ls"
@@ -75,12 +75,13 @@
           # "nixd"
 
           "html"
-          "htmx"
+          # "htmx"
+
+          "dockerls"
+          "docker-compose-language-service"
 
           "jsonls"
           "yamlls"
-
-          "dockerls"
 
           "eslint"
 
