@@ -1,6 +1,6 @@
 {
   none-ls = {
-    enable = true;
+    enable = false;
     enableLspFormat = true;
     sources = {
       formatting = {

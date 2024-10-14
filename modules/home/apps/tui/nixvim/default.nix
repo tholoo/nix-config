@@ -469,6 +469,7 @@ in
             copilot-lua
             yanky-nvim
             firenvim
+            conform-nvim
           ];
         };
       };
