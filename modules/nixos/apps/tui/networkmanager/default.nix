@@ -16,7 +16,10 @@ in
   config = mkIf cfg.enable {
     networking = {
       # Pick only one of the below networking options.
-      wireless.enable = false; # Enables wireless support via wpa_supplicant.
+      wireless = {
+        enable = false; # Enables wireless support via wpa_supplicant.
+        iwd.enable = true;
+      };
       networkmanager.enable = true; # Easiest to use and most distros use this by default.
       firewall.enable = true;
     };
