@@ -2,7 +2,7 @@
 current_branch=$(git symbolic-ref --short HEAD)
 default_branch=$(git remote show origin | grep "HEAD branch" | cut -d' ' -f5)
 
-output=$(git push origin "$current_branch" -o merge_request.create -o merge_request.target="$default_branch" -o merge_request.remove_source_branch 2>&1)
+output=$(git push --set-upstream origin "$current_branch" -o merge_request.create -o merge_request.target="$default_branch" -o merge_request.remove_source_branch 2>&1)
 
 echo "$output"
 
