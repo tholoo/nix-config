@@ -4,17 +4,28 @@
     enable = true;
     # formatters = {inherit }
     settings = {
-      formatters = {
-        prettierd = {
-          command = lib.getExe pkgs.prettierd;
-        };
-        codespell = {
-          command = lib.getExe pkgs.codespell;
-        };
-        ruff_format = {
-          command = lib.getExe pkgs.ruff;
-        };
-      };
+      formatters =
+        lib.fold
+          (
+            pkg_name: c:
+            {
+              ${pkg_name} = {
+                command = lib.getExe pkgs.${pkg_name};
+              };
+            }
+            // c
+          )
+          {
+            ruff_format = {
+              command = lib.getExe pkgs.ruff;
+            };
+          }
+          [
+            "prettierd"
+            "codespell"
+            "ruff_format"
+            "sqlfluff"
+          ];
 
       format_on_save = {
         lspFallback = true;
@@ -35,6 +46,7 @@
           "prettier"
         ];
         typescriptreact = [ "prettier" ];
+        sql = [ "sqlfluff" ];
 
         # asm = ["asmfmt"];
         # c = ["astyle"];

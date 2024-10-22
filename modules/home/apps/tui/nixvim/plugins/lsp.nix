@@ -49,7 +49,7 @@
     servers =
       lib.fold (name: c: { "${name}".enable = true; } // c)
         {
-          nil-ls = {
+          nil_ls = {
             enable = true;
             settings = {
               formatting.command = [ "${lib.getExe pkgs.nixfmt-rfc-style}" ];
@@ -59,15 +59,31 @@
               };
             };
           };
+          # pylyzer = {
+          # enable = true;
+          # };
+          pyright = {
+            enable = true;
+            # package = pkgs.basedpyright;
+            # extraOptions = {
+            #   typeCheckingMode = "basic";
+            #   reportAny = false;
+            #   reportUnusedCallResult = false;
+            # };
+            # cmd = [
+            #   "basedpyright-langserver"
+            #   "--stdio"
+            # ];
+          };
         }
         [
-          "ts-ls"
+          "ts_ls"
           "volar"
 
-          "lua-ls"
+          "lua_ls"
 
-          "pyright"
           "ruff"
+          # "pyright"
           # NOTE: Broken because of rust version
           # "pylyzer"
           # "pylsp"
@@ -78,7 +94,7 @@
           # "htmx"
 
           "dockerls"
-          "docker-compose-language-service"
+          "docker_compose_language_service"
 
           "jsonls"
           "yamlls"
@@ -90,7 +106,9 @@
           # NOTE: Broken
           # "graphql"
 
-          "typos-lsp"
+          "typos_lsp"
+
+          "sqls"
         ];
 
     onAttach = # lua

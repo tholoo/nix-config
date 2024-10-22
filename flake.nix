@@ -86,6 +86,12 @@
       url = "github:anyrun-org/anyrun";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    nur.url = "github:nix-community/NUR";
+
+    zjstatus = {
+      url = "github:dj95/zjstatus";
+    };
   };
 
   outputs =
@@ -110,13 +116,20 @@
         allowUnfreePredicate = _: true;
       };
 
-      overlays = with inputs; [ neovim-nightly-overlay.overlays.default ];
+      overlays = with inputs; [
+        neovim-nightly-overlay.overlays.default
+        nur.overlay
+        (final: prev: {
+          zjstatus = zjstatus.packages.${prev.system}.default;
+        })
+      ];
 
       systems.modules.nixos = with inputs; [
         agenix.nixosModules.default
         disko.nixosModules.disko
         home-manager.nixosModules.home-manager
         nixos-generators.nixosModules.all-formats
+        nur.nixosModules.nur
         # dedsec-grub-theme.nixosModule
       ];
 

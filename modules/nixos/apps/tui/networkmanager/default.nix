@@ -17,8 +17,9 @@ in
     networking = {
       # Pick only one of the below networking options.
       wireless = {
-        enable = false; # Enables wireless support via wpa_supplicant.
-        iwd.enable = true;
+        # mutually exclusive
+        # enable = true; # Enables wireless support via wpa_supplicant.
+        # iwd.enable = true;
       };
       networkmanager.enable = true; # Easiest to use and most distros use this by default.
       firewall.enable = true;
