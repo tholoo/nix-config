@@ -122,7 +122,33 @@ in
         complete -c cht.sh -xa '(curl -s cheat.sh/:list)'
 
         source "${pkgs.asdf-vm}/share/asdf-vm/asdf.fish"
+
+        # https://haseebmajid.dev/posts/2024-07-26-how-i-configured-zellij-status-bar/
+        if type -q zellij
+            # Update the zellij tab name with the current process name or pwd.
+            function zellij_tab_name_update_pre --on-event fish_preexec
+                if set -q ZELLIJ
+                    set -l cmd_line (string split " " -- $argv)
+                    set -l process_name $cmd_line[1]
+                    if test -n "$process_name" -a "$process_name" != "z"
+                        command nohup zellij action rename-tab $process_name >/dev/null 2>&1
+                    end
+                end
+            end
+
+            function zellij_tab_name_update_post --on-event fish_postexec
+                if set -q ZELLIJ
+                    set -l cmd_line (string split " " -- $argv)
+                    set -l process_name $cmd_line[1]
+                    if test "$process_name" = "z"
+                        command nohup zellij action rename-tab (prompt_pwd) >/dev/null 2>&1
+                    end
+                end
+            end
+        end
+
       '';
+
       functions = {
         fish_user_key_bindings = ''
           bind -M insert \cn down-or-search
