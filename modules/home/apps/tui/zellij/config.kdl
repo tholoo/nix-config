@@ -160,8 +160,6 @@ keybinds clear-defaults=true {
             SwitchToMode "Normal"
         }
 
-        bind "n"     { NewTab ; }
-
 
         bind "1"     { GoToTab 1 ; SwitchToMode "Normal" ; }
         bind "2"     { GoToTab 2 ; SwitchToMode "Normal" ; }

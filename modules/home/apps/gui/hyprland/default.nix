@@ -102,6 +102,7 @@ in
           "${lib.getExe pkgs.clipse} -listen"
 
           ''hyprctl setcursor "Bibata-Modern-Ice" 22''
+          ''${lib.getExe' pkgs.systemd "systemctl"} --user reload-or-restart kanshi.service''
         ];
 
         exec = [
@@ -341,6 +342,8 @@ in
             "$SUPERCTRL, h, movecurrentworkspacetomonitor, l"
             "$SUPERCTRL, l, movecurrentworkspacetomonitor, r"
 
+            ''$mainMod, r, exec, ${getExe wl-screenrec} -g "$(${getExe slurp})" -f ~/Documents/screen_record.mp4''
+            "$mainMod SHIFT, r, exec, ${getExe wl-screenrec} -f ~/Documents/screen_record.mp4"
           ];
 
         bindl =
@@ -407,6 +410,7 @@ in
           "noanim,class:^(org.telegram.desktop|telegramdesktop)$,title:^(Media viewer)$"
 
           "float,class:(clipse)"
+          "float,class:(floatingAppFocus)"
           "size 622 652,class:(clipse)"
         ];
       };
