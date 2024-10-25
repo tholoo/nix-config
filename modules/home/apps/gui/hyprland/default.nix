@@ -411,6 +411,7 @@ in
 
           "float,class:(clipse)"
           "float,class:(floatingAppFocus)"
+          "noanim,class:^(clipse|floatingAppFocus)$"
           "size 622 652,class:(clipse)"
         ];
       };
