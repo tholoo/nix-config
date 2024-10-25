@@ -1,4 +1,9 @@
-{ config, lib, ... }:
+{
+  inputs,
+  config,
+  lib,
+  ...
+}:
 let
   inherit (lib) mkIf;
   inherit (lib.mine) mkEnable;
@@ -40,6 +45,7 @@ in
       # This will additionally add your inputs to the system's legacy channels
       # Making legacy nix commands consistent as well, awesome!
       # nix.nixPath = [ "/etc/nix/path" ];
+      nixPath = [ "nixpkgs=${inputs.nixpkgs}" ];
       # environment.etc = (
       #   lib.mapAttrs' (name: value: {
       #     name = "nix/path/${name}";
