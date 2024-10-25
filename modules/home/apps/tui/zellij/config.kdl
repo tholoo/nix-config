@@ -1,3 +1,5 @@
+// DEFAULT: https://github.com/zellij-org/zellij/blob/main/zellij-utils/assets/config/default.kdl
+
 default_shell "fish"
 
 plugins {
@@ -76,6 +78,9 @@ keybinds clear-defaults=true {
         bind "n"     { NewTab ; SwitchToMode "Normal" ; }
         bind "r"     { SwitchToMode "RenameTab" ; TabNameInput 0 ; }
         bind "x"     { CloseTab ; SwitchToMode "Normal" ; }
+
+        bind "]" { BreakPaneRight; SwitchToMode "Normal"; }
+        bind "[" { BreakPaneLeft; SwitchToMode "Normal"; }
     }
     scroll {
         bind "Alt s"    { SwitchToMode "Normal" ; }
