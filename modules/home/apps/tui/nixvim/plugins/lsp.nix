@@ -1,4 +1,11 @@
-{ pkgs, lib, ... }:
+{
+  inputs,
+  pkgs,
+  lib,
+  host,
+  config,
+  ...
+}:
 {
   rustaceanvim.enable = true;
   lsp = {
@@ -59,6 +66,28 @@
               };
             };
           };
+          # nixd = {
+          # enable = true;
+          # settings = {
+          # nixpkgs = {
+          # expr = "import <nixpkgs> { }";
+          # };
+          # formatting = {
+          # command = [ "nixfmt" ];
+          # };
+          # options = {
+          # nixos = {
+          # expr = ''(builtins.getFlake "${inputs.self}").nixosConfigurations.${host}.options'';
+          # };
+          # home-manager = {
+          # expr = ''(builtins.getFlake "${inputs.self}").homeConfigurations."${config.mine.user.name}@${host}".options'';
+          # };
+          # # snowfall = {
+          # # expr = ''(builtins.getFlake "${inputs.self}").snowfall."${config.mine.user.name}@${host}".options'';
+          # # };
+          # };
+          # };
+          # };
           # pylyzer = {
           # enable = true;
           # };

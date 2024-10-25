@@ -4,6 +4,7 @@
   options,
   config,
   lib,
+  host,
   ...
 }:
 let
@@ -23,6 +24,8 @@ in
         if builtins.isFunction importedFile then
           importedFile {
             inherit
+              inputs
+              host
               pkgs
               lib
               options
