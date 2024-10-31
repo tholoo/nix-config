@@ -76,6 +76,7 @@ in
           clone-bare = "!${lib.getExe pkgs.bash} ${./git-clone-bare.sh}";
           info = "!${lib.getExe pkgs.onefetch}";
           done = "!${lib.getExe pkgs.bash} ${./git-done.sh}";
+          mr = "!sh -c 'git fetch $1 merge-requests/$2/head:mr-$1-$2 && git checkout mr-$1-$2' -";
         };
       };
     };
