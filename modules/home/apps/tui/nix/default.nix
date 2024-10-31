@@ -27,12 +27,21 @@ in
       nix-output-monitor
       nix-prefetch-github
       nix-tree
-      nh
       devenv
       manix
       nurl
       inputs.nix-alien.packages.${system}.nix-alien
     ];
+
+    programs.nh = {
+      enable = true;
+      flake = inputs.self;
+      clean = {
+        enable = false;
+        extraArgs = "--keep 5 --keep-since 3d";
+        dates = "weekly";
+      };
+    };
 
     nix = {
       # package = pkgs.nix;
