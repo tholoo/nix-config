@@ -1,6 +1,6 @@
 {
   harpoon = {
-    enable = false;
+    enable = true;
 
     keymapsSilent = true;
     enableTelescope = true;
@@ -8,7 +8,7 @@
 
     keymaps = {
       addFile = "<leader>a";
-      toggleQuickMenu = "<C-e>";
+      toggleQuickMenu = "<leader>e";
       navFile = {
         "1" = "<leader>j";
         "2" = "<leader>k";
