@@ -95,6 +95,11 @@ in
           }
         }
 
+        let abbreviations = {
+          "..": "cd .."
+          "k": "kubectl"
+        }
+
         $env.config = {
            show_banner: false,
            edit_mode: vi,
@@ -104,26 +109,69 @@ in
               completer: $external_completer
            }
           }
-         }
-         {
-           name: fuzzy_history,
-           modifier: control,
-           keycode: char_r,
-           mode: emacs,
-           event: {
-             send: executehostcommand,
-             cmd: "commandline edit --replace (history | each { |it| $it.command } | uniq | reverse | str collect (char nl) | fzf --layout=reverse --height=40% -q (commandline) | decode utf-8 | str trim)"
-           }
-         }
-         {
-           name: fuzzy_file,
-           modifier: control,
-           keycode: char_t,
-           mode: [emacs, vi_normal, vi_insert],
-           event: {
-             send: executehostcommand,
-             cmd: "commandline edit --replace (fzf --layout=reverse)"
-           }
+
+          menus: [
+            {
+                name: abbr_menu
+                only_buffer_difference: false
+                marker: none
+                type: {
+                    layout: columnar
+                    columns: 1
+                    col_width: 20
+                    col_padding: 2
+                }
+                style: {
+                    text: green
+                    selected_text: green_reverse
+                    description_text: yellow
+                }
+                source: { |buffer, position|
+                    let match = $abbreviations | columns | where $it == $buffer
+                    if ($match | is-empty) {
+                        { value: $buffer }
+                    } else {
+                        { value: ($abbreviations | get $match.0) }
+                    }
+                }
+            }
+          ]
+
+
+          # https://www.nushell.sh/book/line_editor.html#customizing-your-prompt
+          # https://github.com/selfagency/nushell-config/blob/main/keybindings.nu
+          keybindings: [
+            {
+              name: fuzzy_file,
+              modifier: control,
+              keycode: char_t,
+              mode: [emacs, vi_normal, vi_insert],
+              event: {
+                send: executehostcommand,
+                cmd: "commandline edit --replace (fzf --layout=reverse)"
+              }
+            },
+            {
+              name: abbr_menu
+              modifier: none
+              keycode: enter
+              mode: [emacs, vi_normal, vi_insert]
+              event: [
+                  { send: menu name: abbr_menu }
+                  { send: enter }
+              ]
+            },
+            {
+              name: abbr_menu
+              modifier: none
+              keycode: space
+              mode: [emacs, vi_normal, vi_insert]
+              event: [
+                  { send: menu name: abbr_menu }
+                  { edit: insertchar value: ' '}
+              ]
+            },
+          ]
          }
       '';
       shellAliases = {
