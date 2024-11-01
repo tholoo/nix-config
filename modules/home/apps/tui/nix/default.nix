@@ -54,12 +54,12 @@ in
 
         # The maximum number of parallel TCP connections used to fetch files from binary caches and by other downloads.
         # It defaults to 25. 0 means no limit.
-        # http-connections = 128;
+        http-connections = 128;
 
         # This option defines the maximum number of substitution jobs that Nix will try to run in
         # parallel. The default is 16. The minimum value one can choose is 1 and lower values will be
         # interpreted as 1.
-        # max-substitution-jobs = 128;
+        max-substitution-jobs = 128;
 
         # The number of lines of the tail of the log to show if a build fails.
         log-lines = 25;
@@ -81,6 +81,21 @@ in
 
         # Whether to warn about dirty Git/Mercurial trees.
         warn-dirty = false;
+
+        substituters = [
+          "https://mirrors.tuna.tsinghua.edu.cn/nix-channels/store?priority=1"
+          "https://cache.nixos.org?priority=2"
+        ];
+        extra-substituters = [
+          # "https://aseipp-nix-cache.global.ssl.fastly.net"
+          "https://nix-community.cachix.org?priority=3"
+          "https://anyrun.cachix.org?priority=4"
+        ];
+
+        extra-trusted-public-keys = [
+          "anyrun.cachix.org-1:pqBobmOjI7nKlsUMV25u9QHa9btJK65/C8vnO3p346s="
+          "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+        ];
       };
     };
   };

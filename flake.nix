@@ -1,10 +1,14 @@
 {
   description = "Tholo's Nix Config";
   nixConfig = {
+    substituters = [
+      "https://mirrors.tuna.tsinghua.edu.cn/nix-channels/store?priority=1"
+      "https://cache.nixos.org?priority=2"
+    ];
     extra-substituters = [
       # "https://aseipp-nix-cache.global.ssl.fastly.net"
-      "https://anyrun.cachix.org"
-      "https://nix-community.cachix.org"
+      "https://nix-community.cachix.org?priority=3"
+      "https://anyrun.cachix.org?priority=4"
     ];
     extra-trusted-public-keys = [
       "anyrun.cachix.org-1:pqBobmOjI7nKlsUMV25u9QHa9btJK65/C8vnO3p346s="
@@ -147,6 +151,7 @@
         agenix.homeManagerModules.default
         nix-index-database.hmModules.nix-index
         anyrun.homeManagerModules.default
+        # stylix.homeManagerModules.stylix
       ];
 
       # homes.users."my-user@my-host".specialArgs = {
