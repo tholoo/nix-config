@@ -473,6 +473,9 @@ in
             yanky-nvim
             firenvim
             conform-nvim
+            neotest
+            neotest-python
+            neotest-golang
           ];
         };
       };
