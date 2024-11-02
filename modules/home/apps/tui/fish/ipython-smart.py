@@ -16,6 +16,7 @@ django.setup()
 from django.apps import apps
 from django.conf import settings
 from django.db.models import *
+from django.db.models.functions import *
 
 # Automatically import all models
 local_dict = locals()
