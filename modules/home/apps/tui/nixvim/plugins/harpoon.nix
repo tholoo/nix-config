@@ -10,10 +10,10 @@
       addFile = "<leader>a";
       toggleQuickMenu = "<leader>e";
       navFile = {
-        "1" = "<leader>j";
-        "2" = "<leader>k";
-        "3" = "<leader>l";
-        "4" = "<leader>m";
+        "1" = "<leader>h";
+        "2" = "<leader>j";
+        "3" = "<leader>k";
+        "4" = "<leader>l";
       };
     };
   };
