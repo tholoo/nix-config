@@ -106,14 +106,13 @@
           };
         }
         [
-          "ts_ls"
+          # "ts_ls"
           "volar"
 
           "lua_ls"
 
           "ruff"
           # "pyright"
-          # NOTE: Broken because of rust version
           # "pylyzer"
           # "pylsp"
 
