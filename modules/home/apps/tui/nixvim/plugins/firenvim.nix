@@ -1,3 +1,3 @@
 {
-  firenvim.enable = true;
+  firenvim.enable = false;
 }
