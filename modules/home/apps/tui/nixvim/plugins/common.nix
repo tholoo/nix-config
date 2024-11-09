@@ -7,4 +7,6 @@
   indent-blankline.enable = true;
   wtf.enable = true;
   web-devicons.enable = true;
+  nvim-bqf.enable = true;
+  fzf-lua.enable = true;
 }
