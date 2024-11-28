@@ -20,7 +20,7 @@ in
 
   config = mkIf cfg.enable {
     programs.${name} = {
-      enable = true;
+      enable = false;
     };
   };
 }
