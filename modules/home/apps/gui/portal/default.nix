@@ -23,8 +23,10 @@ in
       enable = true;
       xdgOpenUsePortal = true;
       extraPortals = with pkgs; [
-        mine.xdg-desktop-portal-termfilechooser
+        # mine.xdg-desktop-portal-termfilechooser
+        pkgs.xdg-desktop-portal-gtk
         xdg-desktop-portal-hyprland
+        # xdg-desktop-portal-kde
         # xdg-desktop-portal-wlr
         # xdg-desktop-portal-gtk
       ];
@@ -33,12 +35,16 @@ in
           default = [
             "Hyprland"
             "gtk"
-            "qt5"
-            "qtwayland"
+            # "qt5"
+            # "qtwayland"
           ];
           "org.freedesktop.impl.portal.FileChooser" = [ "xdg-desktop-portal-termfilechooser" ];
           # "org.freedesktop.impl.portal.Secret" = [ "gnome-keyring" ];
         };
+        hyprland.default = [
+          "gtk"
+          "hyprland"
+        ];
       };
     };
     gtk = {
