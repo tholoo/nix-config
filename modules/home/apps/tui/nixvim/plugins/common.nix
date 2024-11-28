@@ -9,4 +9,5 @@
   web-devicons.enable = true;
   nvim-bqf.enable = true;
   fzf-lua.enable = true;
+  ccc.enable = true; # color picker
 }
