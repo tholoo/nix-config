@@ -22,7 +22,7 @@ nixos-rebuild switch --flake . --accept-flake-config
 
 
 ## tips
-Check the size with: 
+Check the size with:
 ```bash
 nix-shell -p nix-tree.out --run nix-tree
 ```
@@ -35,6 +35,11 @@ nix --extra-experimental-features repl-flake repl . --show-trace
 Generate specific output formats:
 ```bash
 nix build .#nixosConfigurations.glacier.config.formats.iso
+```
+
+Convert a server to nixos using nixos-anywhere
+```bash
+nix run github:nix-community/nixos-anywhere -- --flake .#granite root@granite --build-on-remote
 ```
 
 ## secrets
