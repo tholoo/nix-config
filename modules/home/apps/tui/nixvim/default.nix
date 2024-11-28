@@ -69,8 +69,9 @@ in
       enable = true;
       # package = inputs.neovim-nightly-overlay.packages.${pkgs.system}.default;
       defaultEditor = true;
-
-      colorschemes.ayu.enable = true;
+      colorschemes.cyberdream = {
+        enable = true;
+      };
 
       # extraPackages = with pkgs; [
       # ];
@@ -86,6 +87,7 @@ in
 
       globals = {
         mapleader = " ";
+        copilot_proxy = "http://localhost:2080";
       };
 
       opts = {
@@ -124,6 +126,7 @@ in
         smoothscroll = true;
         foldmethod = "expr";
         conceallevel = 2;
+        colorcolumn = "120";
       };
 
       keymaps = [
@@ -444,6 +447,54 @@ in
         else
           vim.o.laststatus = 2
         end
+
+
+        require("conform").setup({
+          format_on_save = function(bufnr)
+            -- Disable with a global or buffer-local variable
+            if vim.g.disable_autoformat or vim.b[bufnr].disable_autoformat then
+              return
+            end
+            return { timeout_ms = 500, lsp_format = "fallback" }
+          end,
+        })
+
+        vim.api.nvim_create_user_command("FormatDisable", function(args)
+          if args.bang then
+            -- FormatDisable! will disable formatting just for this buffer
+            vim.b.disable_autoformat = true
+          else
+            vim.g.disable_autoformat = true
+          end
+        end, {
+          desc = "Disable autoformat-on-save",
+          bang = true,
+        })
+
+        vim.api.nvim_create_user_command("FormatEnable", function()
+          vim.b.disable_autoformat = false
+          vim.g.disable_autoformat = false
+        end, {
+          desc = "Re-enable autoformat-on-save",
+        })
+
+        -- Toggle function
+        local function toggle_format()
+          if vim.g.disable_autoformat or vim.b.disable_autoformat then
+            vim.g.disable_autoformat = false
+            vim.b.disable_autoformat = false
+            print("Autoformat enabled")
+          else
+            vim.g.disable_autoformat = true
+            vim.b.disable_autoformat = true
+            print("Autoformat disabled")
+          end
+        end
+
+
+        -- Map to <leader>Ft
+        vim.api.nvim_set_keymap("n", "<leader>Ft", ":lua toggle_format()<CR>", { noremap = true, silent = true })
+
       '';
       extraPlugins = with pkgs.vimPlugins; [
         LazyVim
@@ -451,12 +502,17 @@ in
         webapi-vim
         eyeliner-nvim
         cellular-automaton-nvim
+        # himalaya-vim
+        pkgs.mine.processing-vim
+        asyncrun-vim
       ];
       extraPackages = with pkgs; [
         rustfmt
         rustc
         cargo
         lldb
+        shfmt
+        shellcheck
       ];
       performance = {
         byteCompileLua.enable = true;
@@ -473,9 +529,11 @@ in
             yanky-nvim
             firenvim
             conform-nvim
+            himalaya-vim
             neotest
             neotest-python
             neotest-golang
+            onedark-nvim
           ];
         };
       };
