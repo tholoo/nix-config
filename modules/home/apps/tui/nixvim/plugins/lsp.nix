@@ -137,6 +137,9 @@
           "typos_lsp"
 
           "sqls"
+          "java_language_server"
+
+          "bashls"
         ];
 
     onAttach = # lua
