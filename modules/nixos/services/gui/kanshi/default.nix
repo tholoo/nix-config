@@ -24,7 +24,7 @@ in
       description = "kanshi daemon";
       serviceConfig = {
         Type = "simple";
-        ExecStart = "${lib.getExe pkgs.kanshi} -c kanshi_config_file";
+        ExecStart = "${lib.getExe pkgs.kanshi} -c /home/tholo/.config/kanshi/config ";
       };
     };
   };
