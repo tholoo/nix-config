@@ -36,6 +36,7 @@ in
       lazydocker # like lazygit but for docker
       hyperfine # measuring and comparing execution speed of commands
       gnumeric # converting csv and excel
+      rainfrog # tui database management
     ];
   };
 }
