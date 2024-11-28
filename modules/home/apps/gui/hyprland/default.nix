@@ -105,7 +105,7 @@ in
 
           "${lib.getExe' pkgs.swww "swww-daemon"}"
           "${lib.getExe pkgs.wl-clip-persist} --clipboard both"
-          "${lib.getExe' pkgs.kdePackages.kdeconnect-kde "kdeconnectd"}"
+          "QT_QPA_PLATFORM=xcb ${lib.getExe' pkgs.kdePackages.kdeconnect-kde "kdeconnectd"}"
           "${lib.getExe pkgs.clipse} -listen"
 
           ''hyprctl setcursor "Bibata-Modern-Ice" 22''
@@ -115,6 +115,7 @@ in
         exec = [
           "${lib.getExe pkgs.swww} img ${inputs.self}/resources/wallpapers/wallhaven-fields-858z32.png -t none"
           "pkill waybar; sleep 0.5; ${lib.getExe pkgs.waybar}"
+          "pkill gammastep; sleep 0.5; ${lib.getExe pkgs.gammastep}"
         ];
 
         #############################
@@ -162,10 +163,12 @@ in
           active_opacity = 1.0;
           inactive_opacity = 1.0;
 
-          drop_shadow = true;
-          shadow_range = 4;
-          shadow_render_power = 3;
-          "col.shadow" = "rgba(1a1a1aee)";
+          shadow = {
+            enabled = true;
+            range = 4;
+            render_power = 3;
+            color = "rgba(1a1a1aee)";
+          };
 
           # https://wiki.hyprland.org/Configuring/Variables/#blur
           blur = {
@@ -199,13 +202,11 @@ in
         dwindle = {
           pseudotile = true; # Master switch for pseudotiling. Enabling is bound to mainMod + P in the keybinds section below
           preserve_split = true; # You probably want this
-          no_gaps_when_only = 1;
         };
 
         # See https://wiki.hyprland.org/Configuring/Master-Layout/ for more
         master = {
           new_status = "master";
-          no_gaps_when_only = 1;
         };
 
         # https://wiki.hyprland.org/Configuring/Variables/#misc
@@ -339,6 +340,7 @@ in
             # "$mainMod, Y, exec, ${getExe cliphist} list | ${getExe wofi} --show dmenu | ${getExe cliphist} decode | ${getExe' wl-clipboard "wl-copy"}"
             "$mainMod, Y, exec, $terminal --class clipse -e '${lib.getExe pkgs.clipse}'"
             "$mainMod SHIFT, Z, exec, ${getExe wlogout}"
+            "$mainMod SHIFT, n, exec, ${getExe' swaynotificationcenter "swaync-client"} --toggle-panel --skip-wait"
             "$mainMod, period, exec, ${getExe' swaynotificationcenter "swaync-client"} --hide-latest"
 
             # Special audio keys (piped into wob, using pipewire)
@@ -349,8 +351,8 @@ in
             "$SUPERCTRL, h, movecurrentworkspacetomonitor, l"
             "$SUPERCTRL, l, movecurrentworkspacetomonitor, r"
 
-            ''$mainMod, r, exec, ${getExe wl-screenrec} -g "$(${getExe slurp})" -f ~/Documents/screen_record.mp4''
-            "$mainMod SHIFT, r, exec, ${getExe wl-screenrec} -f ~/Documents/screen_record.mp4"
+            # ''$mainMod, r, exec, ${getExe wl-screenrec} -g "$(${getExe slurp})" -f ~/Documents/screen_record.mp4''
+            # "$mainMod SHIFT, r, exec, ${getExe wl-screenrec} -f ~/Documents/screen_record.mp4"
           ];
 
         bindl =
@@ -410,6 +412,16 @@ in
 
         # Example windowrule v2
         # windowrulev2 = float,class:^(kitty)$,title:^(kitty)$
+        windowrule = [
+          "nofocus,org.kde.kdeconnect.daemon"
+          "float,org.kde.kdeconnect.daemon"
+        ];
+
+        workspace = [
+          "w[t1], gapsout:0, gapsin:0"
+          "w[tg1], gapsout:0, gapsin:0"
+          "f[1], gapsout:0, gapsin:0"
+        ];
 
         windowrulev2 = [
           "suppressevent maximize, class:.*" # You'll probably like this.
@@ -420,6 +432,22 @@ in
           "float,class:(floatingAppFocus)"
           "noanim,class:^(clipse|floatingAppFocus)$"
           "size 622 652,class:(clipse)"
+
+          "nofocus,class:(org.kde.kdeconnect.daemon)"
+          "float,class:(org.kde.kdeconnect.daemon)"
+          "noanim,class:(org.kde.kdeconnect.daemon)"
+          "noblur,class:(org.kde.kdeconnect.daemon)"
+          "fullscreenstate 0 1, class:(org.kde.kdeconnect.daemon)"
+          "nomaxsize, class:(org.kde.kdeconnect.daemon)"
+          "pin, class:(org.kde.kdeconnect.daemon)"
+          "size 100% 100%, class:(org.kde.kdeconnect.daemon)"
+
+          "bordersize 0, floating:0, onworkspace:w[t1]"
+          "rounding 0, floating:0, onworkspace:w[t1]"
+          "bordersize 0, floating:0, onworkspace:w[tg1]"
+          "rounding 0, floating:0, onworkspace:w[tg1]"
+          "bordersize 0, floating:0, onworkspace:f[1]"
+          "rounding 0, floating:0, onworkspace:f[1]"
         ];
       };
     };
