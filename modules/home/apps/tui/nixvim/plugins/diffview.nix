@@ -1,0 +1,6 @@
+{ ... }:
+{
+  diffview = {
+    enable = true;
+  };
+}
