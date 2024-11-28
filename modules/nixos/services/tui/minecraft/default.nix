@@ -23,7 +23,7 @@ in
   config = mkIf cfg.enable {
     services.minecraft-server = {
       package = pkgs.minecraftServers.vanilla-1-20;
-      enable = true;
+      enable = false;
       openFirewall = true;
       declarative = true;
       eula = true;
