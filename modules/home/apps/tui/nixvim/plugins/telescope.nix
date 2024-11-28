@@ -25,22 +25,25 @@
       live-grep-args.enable = true;
     };
 
-    settings.defaults = {
-      file_ignore_patterns = [
-        "^.git/"
-        "^.mypy_cache/"
-        "^__pycache__/"
-        "^output/"
-        "^data/"
-        "%.ipynb"
-      ];
-      set_env.COLORTERM = "truecolor";
-      layout_strategy = "horizontal";
-      layout_config = {
-        prompt_position = "top";
+    settings = {
+      pickers.colorscheme.enable_preview = true;
+      defaults = {
+        file_ignore_patterns = [
+          "^.git/"
+          "^.mypy_cache/"
+          "^__pycache__/"
+          "^output/"
+          "^data/"
+          "%.ipynb"
+        ];
+        set_env.COLORTERM = "truecolor";
+        layout_strategy = "horizontal";
+        layout_config = {
+          prompt_position = "top";
+        };
+        sorting_strategy = "ascending";
+        winblend = 0;
       };
-      sorting_strategy = "ascending";
-      winblend = 0;
     };
   };
 }
