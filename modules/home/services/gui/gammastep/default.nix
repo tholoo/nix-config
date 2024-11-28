@@ -22,8 +22,8 @@ in
     services.${name} = {
       enable = true;
       provider = "manual";
-      latitude = 35.7219;
-      longitude = 51.3347;
+      dawnTime = "6:00-7:45";
+      duskTime = "18:35-20:15";
       settings = {
         general = {
           adjustment-method = "wayland";
