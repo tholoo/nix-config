@@ -43,6 +43,8 @@ in
       };
     };
 
+    programs.nix-your-shell.enable = true;
+
     nix = {
       # package = pkgs.nix;
       settings = {
