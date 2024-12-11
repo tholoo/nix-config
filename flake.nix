@@ -120,7 +120,7 @@
 
       overlays = with inputs; [
         neovim-nightly-overlay.overlays.default
-        nur.overlay
+        nur.overlays.default
         inputs.hyprpanel.overlay
       ];
 
@@ -129,7 +129,7 @@
         disko.nixosModules.disko
         home-manager.nixosModules.home-manager
         nixos-generators.nixosModules.all-formats
-        nur.nixosModules.nur
+        nur.modules.nixos.default
         # dedsec-grub-theme.nixosModule
       ];
 
