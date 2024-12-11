@@ -146,21 +146,6 @@
         "type": "github"
       }
     },
-    "crane": {
-      "locked": {
-        "lastModified": 1732906089,
-        "narHash": "sha256-NvYSSiKsC0rqn9yY0a9zglLXrFp92EwKhTFZC38voCQ=",
-        "owner": "ipetkov",
-        "repo": "crane",
-        "rev": "9ed3180f45c2d1499e5af98c4ab7ffee8e886f5f",
-        "type": "github"
-      },
-      "original": {
-        "owner": "ipetkov",
-        "repo": "crane",
-        "type": "github"
-      }
-    },
     "deploy-rs": {
       "inputs": {
         "flake-compat": "flake-compat",
@@ -537,24 +522,6 @@
         "owner": "numtide",
         "repo": "flake-utils",
         "rev": "c1dfcf08411b08f6b8615f7d8971a2bfa81d5e8a",
-        "type": "github"
-      },
-      "original": {
-        "owner": "numtide",
-        "repo": "flake-utils",
-        "type": "github"
-      }
-    },
-    "flake-utils_7": {
-      "inputs": {
-        "systems": "systems_11"
-      },
-      "locked": {
-        "lastModified": 1731533236,
-        "narHash": "sha256-l0KFg5HjrsfsO/JpG+r7fRrqm12kzFHyUHqHCVpMMbI=",
-        "owner": "numtide",
-        "repo": "flake-utils",
-        "rev": "11707dc2f618dd54ca8739b309ec4fc024de578b",
         "type": "github"
       },
       "original": {
@@ -1252,22 +1219,6 @@
         "type": "github"
       }
     },
-    "nixpkgs_9": {
-      "locked": {
-        "lastModified": 1732812356,
-        "narHash": "sha256-LNcgjOLArRlx2W6XSi0yc0xwLjrK3KF9LxAMqUgFDgw=",
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "581d7e4d23b91daf2afa0005a5d3d01d6a8884fe",
-        "type": "github"
-      },
-      "original": {
-        "owner": "NixOS",
-        "ref": "nixpkgs-unstable",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
     "nixvim": {
       "inputs": {
         "devshell": "devshell",
@@ -1354,8 +1305,7 @@
         "nur": "nur",
         "snowfall-lib": "snowfall-lib",
         "stylix": "stylix",
-        "wezterm-nightly": "wezterm-nightly",
-        "zjstatus": "zjstatus"
+        "wezterm-nightly": "wezterm-nightly"
       }
     },
     "rust-overlay": {
@@ -1371,27 +1321,6 @@
         "owner": "oxalica",
         "repo": "rust-overlay",
         "rev": "ada8266712449c4c0e6ee6fcbc442b3c217c79e1",
-        "type": "github"
-      },
-      "original": {
-        "owner": "oxalica",
-        "repo": "rust-overlay",
-        "type": "github"
-      }
-    },
-    "rust-overlay_2": {
-      "inputs": {
-        "nixpkgs": [
-          "zjstatus",
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1732933841,
-        "narHash": "sha256-dge02pUSe2QeC/B3PriA0R8eAX+EU3aDoXj9FcS3XDw=",
-        "owner": "oxalica",
-        "repo": "rust-overlay",
-        "rev": "c65e91d4a33abc3bc4a892d3c5b5b378bad64ea1",
         "type": "github"
       },
       "original": {
@@ -1468,21 +1397,6 @@
       }
     },
     "systems_10": {
-      "locked": {
-        "lastModified": 1681028828,
-        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
-        "owner": "nix-systems",
-        "repo": "default",
-        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nix-systems",
-        "repo": "default",
-        "type": "github"
-      }
-    },
-    "systems_11": {
       "locked": {
         "lastModified": 1681028828,
         "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
@@ -1729,27 +1643,6 @@
         "dir": "nix",
         "owner": "wez",
         "repo": "wezterm",
-        "type": "github"
-      }
-    },
-    "zjstatus": {
-      "inputs": {
-        "crane": "crane",
-        "flake-utils": "flake-utils_7",
-        "nixpkgs": "nixpkgs_9",
-        "rust-overlay": "rust-overlay_2"
-      },
-      "locked": {
-        "lastModified": 1732970864,
-        "narHash": "sha256-rTEdf4I4xVNhbn5vzMd/2e2Ai9E+Cra1e40GcaZT1Xw=",
-        "owner": "dj95",
-        "repo": "zjstatus",
-        "rev": "161d255f09b28421ba842b995ef39d395ab3e065",
-        "type": "github"
-      },
-      "original": {
-        "owner": "dj95",
-        "repo": "zjstatus",
         "type": "github"
       }
     },

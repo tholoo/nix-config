@@ -93,10 +93,6 @@
 
     nur.url = "github:nix-community/NUR";
 
-    zjstatus = {
-      url = "github:dj95/zjstatus";
-    };
-
     hyprpanel.url = "github:Jas-SinghFSU/HyprPanel";
   };
 
@@ -125,9 +121,6 @@
       overlays = with inputs; [
         neovim-nightly-overlay.overlays.default
         nur.overlay
-        (final: prev: {
-          zjstatus = zjstatus.packages.${prev.system}.default;
-        })
         inputs.hyprpanel.overlay
       ];
 
