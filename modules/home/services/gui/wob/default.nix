@@ -18,7 +18,7 @@ in
   config = mkIf cfg.enable {
     # progress bar
     services.wob = {
-      enable = true;
+      enable = false;
       systemd = true;
       settings = {
         "" = {
