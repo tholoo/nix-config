@@ -21,34 +21,52 @@ in
   config = mkIf cfg.enable {
     programs.helix = {
       enable = true;
-      # https://docs.helix-editor.com/languages.html
-      languages = {
-        language-server = {
-          typescript-language-server = with pkgs.nodePackages; {
-            command = "''${typescript-language-server}/bin/typescript-language-server";
-            args = [
-              "--stdio"
-              "--tsserver-path=''${typescript}/lib/node_modules/typescript/lib"
-            ];
-          };
-        };
-
-        language = [
-          { name = "rust"; }
-          { name = "python"; }
-        ];
-      };
-
+      extraPackages = with pkgs; [
+        # nix
+        nil
+        # yaml
+        yaml-language-server
+        # vue
+        vue-language-server
+        # toml
+        taplo
+        # protobuf
+        buf
+        # bash
+        bash-language-server
+        # docker
+        docker-compose-language-service
+        docker-ls
+        # go
+        gopls
+        delve # debugger
+        golangci-lint
+        golangci-lint-langserver
+        # helm
+        helm-ls
+        # json
+        nodePackages.vscode-json-languageserver
+      ];
       # https://docs.helix-editor.com/configuration.html
       settings = {
-        # theme = "base16";
+        theme = "ayu_dark";
         editor = {
+          true-color = true;
           auto-save = true;
           line-number = "relative";
+          cursor-shape = {
+            normal = "block";
+            insert = "bar";
+            select = "underline";
+          };
           lsp = {
             display-messages = true;
             display-inlay-hints = true;
           };
+          rulers = [
+            80
+            120
+          ];
         };
         keys.normal = {
           space.space = "file_picker";
@@ -58,6 +76,133 @@ in
             "keep_primary_selection"
           ];
         };
+      };
+      languages = {
+        language-server = {
+          typescript-language-server = with pkgs.nodePackages; {
+            command = lib.getExe typescript-language-server;
+            args = [
+              "--stdio"
+              "--tsserver-path=''${typescript}/lib/node_modules/typescript/lib"
+            ];
+          };
+          typos = {
+            command = lib.getExe pkgs.typos-lsp;
+          };
+          ruff = {
+            command = lib.getExe pkgs.ruff;
+            args = [ "server" ];
+            config.settings = {
+              exclude = [
+                ".bzr"
+                ".direnv"
+                ".eggs"
+                ".git"
+                ".git-rewrite"
+                ".hg"
+                ".ipynb_checkpoints"
+                ".mypy_cache"
+                ".nox"
+                ".pants.d"
+                ".pyenv"
+                ".pytest_cache"
+                ".pytype"
+                ".ruff_cache"
+                ".svn"
+                ".tox"
+                ".venv"
+                ".vscode"
+                "__pypackages__"
+                "_build"
+                "buck-out"
+                "build"
+                "dist"
+                "node_modules"
+                "site-packages"
+                "venv"
+                ".venv"
+              ];
+
+              lint = {
+                pydocstyle.convention = "google";
+                select = [
+                  # pydocstyle
+                  "D"
+                  # pyupgrade
+                  "UP"
+                  # flynt (convert old format to f string)
+                  "FLY"
+                  # tryceratops (try except)
+                  "TRY"
+                  # flake8-django
+                  "DJ"
+                ];
+
+                # Allow fix for all enabled rules (when `--fix`) is provided.
+                fixable = [ "ALL" ];
+                unfixable = [ ];
+
+                # Allow unused variables when underscore-prefixed.
+                dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$";
+
+                # On top of the Google convention, disable `D417`, which requires
+                # documentation for every function parameter.
+                ignore = [ "D417" ];
+              };
+            };
+          };
+          basedpyright = {
+            command = lib.getExe' pkgs.basedpyright "basedpyright-langserver";
+            args = [ "--stdio" ];
+            except-features = [ "format" ];
+            config.basedpyright.analysis = {
+              typeCheckingMode = "basic";
+              autoSearchPaths = true;
+            };
+          };
+          pylyzer = {
+            command = lib.getExe pkgs.pylyzer;
+            args = [ "--server" ];
+          };
+          godot = {
+            command = lib.getExe pkgs.netcat;
+            args = [
+              "127.0.0.1"
+              "6005"
+            ];
+          };
+          efm = {
+            command = lib.getExe pkgs.efm-langserver;
+            only-features = [
+              "diagnostics"
+              "format"
+            ];
+          };
+        };
+
+        language = [
+          {
+            name = "python";
+            language-servers = [
+              "basedpyright"
+              "ruff"
+              # "pylyzer"
+              "typos"
+            ];
+          }
+          {
+            name = "nix";
+            auto-format = true;
+            formatter.command = "${lib.getExe pkgs.nixfmt-rfc-style}";
+          }
+          {
+            name = "gdscript";
+            language-servers = [
+              "godot"
+              "typos"
+            ];
+          }
+        ];
       };
     };
   };
