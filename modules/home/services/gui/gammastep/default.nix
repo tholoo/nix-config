@@ -20,7 +20,7 @@ in
 
   config = mkIf cfg.enable {
     services.${name} = {
-      enable = true;
+      enable = false;
       provider = "manual";
       dawnTime = "6:00-7:45";
       duskTime = "18:35-20:15";
