@@ -5,6 +5,6 @@
   # };
 
   copilot-lua = {
-    enable = true;
+    enable = false;
   };
 }
