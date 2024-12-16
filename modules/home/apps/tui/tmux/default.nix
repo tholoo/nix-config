@@ -9,6 +9,27 @@ let
   inherit (lib.mine) mkEnable;
   cfg = config.mine.${name};
   name = "tmux";
+
+  tmux-window-name-python = pkgs.python311Packages.python.withPackages (
+    ppkgs: with ppkgs; [
+      libtmux
+      pip
+    ]
+  );
+
+  tmux-window-name = pkgs.tmuxPlugins.mkTmuxPlugin {
+    pluginName = "tmux-window-name";
+    version = "unstable";
+    src = pkgs.fetchFromGitHub {
+      owner = "ofirgall";
+      repo = "tmux-window-name";
+      rev = "28a2d277c8be8656b3c6dd45f79364583ae7c82c";
+      hash = "sha256-hc+xhmpdMG/QWqodndAwqg74TP6HbCotrTalQ9LC3aE=";
+    };
+    postInstall = ''
+      find $target -type f -print0 | xargs -0 sed -i -e 's|python3|${tmux-window-name-python}/bin/python|g'
+    '';
+  };
 in
 {
   options.mine.${name} = mkEnable config {
@@ -37,7 +58,7 @@ in
           bind-key & kill-window
           bind-key x kill-pane
 
-          bind T switchc -t 'terminal'
+          bind T switchc -t 'work'
 
           bind | split-window -h # vertical split
           bind - split-window -v # horizontal split
@@ -143,6 +164,17 @@ in
 
         yank
         # {
+        #   plugin = tmux-window-name;
+        #   extraConfig = # tmux
+        #     ''
+        #       set -g @tmux_window_name_shells "['bash', 'fish', 'sh', 'zsh']"
+        #       set -g @tmux_window_dir_programs "['nvim', 'vim', 'vi', 'git']"
+        #       set -g @tmux_window_name_use_tilde "True"
+        #
+        #       set -g @tmux_window_name_substitute_sets "[('.+ipython2', 'ipython2'), ('.+ipython3', 'ipython3')]"
+        #       set -g @tmux_window_name_substitute_sets "[('.+ipython([32])', 'ipython\g<1>'), ('^(/usr)?/bin/(.+)', '\g<2>'), ('(bash) (.+)/(.+[ $])(.+)', '\g<3>\g<4>'), ('.+nix-profile/bin/', '\'), (' --cmd .*?(?= [^ ]+$)', '\')]"
+        #       set -g @tmux_window_name_show_program_args "True"
+        #     '';
         # }
         # vim-tmux-navigator
         {
