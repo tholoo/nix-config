@@ -38,7 +38,12 @@ in
   };
 
   config = mkIf cfg.enable {
-    home.packages = with pkgs; [ bibata-cursors ];
+    home.packages = with pkgs; [
+      bibata-cursors
+      xsel
+      xclip
+      wl-clipboard
+    ];
     # programs.hyprlock = {
     #   enable = true;
     #   settings = {
@@ -114,8 +119,6 @@ in
 
         exec = [
           "${lib.getExe pkgs.swww} img ${inputs.self}/resources/wallpapers/wallhaven-fields-858z32.png -t none"
-          "pkill waybar; sleep 0.5; ${lib.getExe pkgs.waybar}"
-          "pkill gammastep; sleep 0.5; ${lib.getExe pkgs.gammastep}"
         ];
 
         #############################
@@ -127,6 +130,7 @@ in
         env = [
           "XCURSOR_SIZE,24"
           "HYPRCURSOR_SIZE,24"
+          "GDK_BACKEND,wayland"
         ];
 
         #####################
@@ -359,7 +363,7 @@ in
           with pkgs;
           with lib;
           [
-            ", XF86AudioMute, exec, wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle && (wpctl get-volume @DEFAULT_AUDIO_SINK@ | grep -q MUTED && echo 0 > $XDG_RUNTIME_DIR/wob.sock) || wpctl get-volume @DEFAULT_AUDIO_SINK@ > $XDG_RUNTIME_DIR/wob.sock"
+            ", XF86AudioMute, exec, wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"
             ", XF86AudioPlay, exec, ${getExe playerctl} play-pause"
             ", XF86AudioNext, exec, ${getExe playerctl} next"
             ", XF86AudioPrev, exec, ${getExe playerctl} previous"
@@ -371,11 +375,11 @@ in
           with lib;
           [
             # volume
-            ", XF86AudioRaiseVolume, exec, wpctl set-volume --limit 1.5 @DEFAULT_AUDIO_SINK@ 2%+ && wpctl get-volume @DEFAULT_AUDIO_SINK@ | sed 's/[^0-9]//g' > $XDG_RUNTIME_DIR/wob.sock"
-            ", XF86AudioLowerVolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 2%- && wpctl get-volume @DEFAULT_AUDIO_SINK@ | sed 's/[^0-9]//g' > $XDG_RUNTIME_DIR/wob.sock"
+            ", XF86AudioRaiseVolume, exec, wpctl set-volume --limit 2 @DEFAULT_AUDIO_SINK@ 2%+"
+            ", XF86AudioLowerVolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 2%-"
             # light
-            '', XF86MonBrightnessUp, exec, ${getExe light} -A 1 && echo $(printf "%.0f" $(light)) > $XDG_RUNTIME_DIR/wob.sock''
-            '', XF86MonBrightnessDown, exec, ${getExe light} -U 1 && echo $(printf "%.0f" $(light)) > $XDG_RUNTIME_DIR/wob.sock''
+            '', XF86MonBrightnessUp, exec, ${getExe light} -A 1''
+            '', XF86MonBrightnessDown, exec, ${getExe light} -U 1''
 
             # gaps
             "ALT, bracketleft  , exec, sh ${./gaps.sh} --inc_gaps_in"
@@ -427,6 +431,9 @@ in
           "suppressevent maximize, class:.*" # You'll probably like this.
           "float,class:^(org.telegram.desktop|telegramdesktop)$,title:^(Media viewer)$"
           "noanim,class:^(org.telegram.desktop|telegramdesktop)$,title:^(Media viewer)$"
+
+          "noanim, class:^(Godot)$"
+          "tile, class:^(Godot)$, initialTitle:^(Godot)$"
 
           "float,class:(clipse)"
           "float,class:(floatingAppFocus)"
