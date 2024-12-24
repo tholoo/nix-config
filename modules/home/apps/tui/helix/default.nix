@@ -46,6 +46,10 @@ in
         helm-ls
         # json
         nodePackages.vscode-json-languageserver
+        # typescript
+        typescript-language-server
+        vscode-langservers-extracted
+        biome
       ];
       # https://docs.helix-editor.com/configuration.html
       settings = {
@@ -79,12 +83,9 @@ in
       };
       languages = {
         language-server = {
-          typescript-language-server = with pkgs.nodePackages; {
-            command = lib.getExe typescript-language-server;
-            args = [
-              "--stdio"
-              "--tsserver-path=''${typescript}/lib/node_modules/typescript/lib"
-            ];
+          biome = {
+            command = "biome";
+            args = [ "lsp-proxy" ];
           };
           typos = {
             command = lib.getExe pkgs.typos-lsp;
@@ -200,6 +201,63 @@ in
             language-servers = [
               "godot"
               "typos"
+            ];
+          }
+          {
+            name = "javascript";
+            language-servers = [
+              {
+                name = "typescript-language-server";
+                except-features = [ "format" ];
+              }
+              "biome"
+            ];
+            auto-format = true;
+          }
+
+          {
+            name = "typescript";
+            language-servers = [
+              {
+                name = "typescript-language-server";
+                except-features = [ "format" ];
+              }
+              "biome"
+            ];
+            auto-format = true;
+          }
+
+          {
+            name = "tsx";
+            auto-format = true;
+            language-servers = [
+              {
+                name = "typescript-language-server";
+                except-features = [ "format" ];
+              }
+              "biome"
+            ];
+          }
+          {
+            name = "jsx";
+            auto-format = true;
+            language-servers = [
+              {
+                name = "typescript-language-server";
+                except-features = [ "format" ];
+              }
+              "biome"
+            ];
+
+          }
+          {
+            name = "json";
+            language-servers = [
+              {
+                name = "vscode-json-language-server";
+                except-features = [ "format" ];
+              }
+              "biome"
             ];
           }
         ];
