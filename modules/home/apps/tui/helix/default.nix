@@ -65,7 +65,7 @@ in
           };
           lsp = {
             display-messages = true;
-            display-inlay-hints = true;
+            display-inlay-hints = false;
           };
           rulers = [
             80
@@ -73,8 +73,11 @@ in
           ];
         };
         keys.normal = {
-          space.space = "file_picker";
-          # space.w = ":w";
+          space = {
+            space = "file_picker";
+            i = ":toggle lsp.display-inlay-hints";
+            o = ":write";
+          };
           esc = [
             "collapse_selection"
             "keep_primary_selection"
