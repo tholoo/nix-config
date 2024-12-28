@@ -21,12 +21,7 @@ in
   config = mkIf cfg.enable {
     services.espanso = {
       enable = false;
-      wayland = true;
+      package = pkgs.espanso-wayland;
     };
-    # security.wrappers.espanso = {
-    #   source = lib.getExe pkgs.espanso-wayland;
-    #   capabilities = "cap_dac_override=eip";
-    #   owner = "root";
-    # };
   };
 }
