@@ -86,6 +86,8 @@ with lib.mine;
       # accidentally delete configuration.nix.
       # system.copySystemConfiguration = true;
 
+      boot.kernelPackages = pkgs.linuxPackages_latest;
+
       # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
       system.stateVersion = lib.mkDefault "23.11";
     }
