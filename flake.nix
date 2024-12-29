@@ -39,6 +39,8 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    nixos-hardware.url = "github:NixOS/nixos-hardware/master";
+
     flake-utils.url = "github:numtide/flake-utils";
     # hardware.url = "github:nixos/nixos-hardware";
 
@@ -133,10 +135,13 @@
         # dedsec-grub-theme.nixosModule
       ];
 
-      # Add a module to a specific host.
-      # systems.hosts.my-host.modules = with inputs; [
-      # my-input.nixosModules.my-module
-      # ];
+      systems.hosts.glacier.modules = with inputs.nixos-hardware.nixosModules; [
+        # ideapad-ideapad-slim-5
+        common-gpu-amd
+        common-cpu-amd
+        common-pc-laptop
+        common-pc-laptop-ssd
+      ];
 
       # systems.hosts.my-host.specialArgs = {
       #   my-custom-value = "my-value";
