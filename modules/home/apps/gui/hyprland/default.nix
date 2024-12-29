@@ -73,7 +73,7 @@ in
         # See https://wiki.hyprland.org/Configuring/Monitors/
         monitor = [
           ", preferred, auto, auto"
-          "eDP-1, 1920x1080@60, 1920x0, 1.00"
+          "eDP-1, 1920x1200@60, 1920x0, 1.00"
           "HDMI-A-1, 1920x1080@60, 0x0, 1.00"
         ];
 
