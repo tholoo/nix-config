@@ -19,6 +19,12 @@ in
   };
 
   config = mkIf cfg.enable {
+    home.sessionVariables = {
+      EDITOR = lib.mkForce "hx";
+      SUDO_EDITOR = lib.mkForce "hx";
+      VISUAL = lib.mkForce "hx";
+    };
+
     programs.helix = {
       enable = true;
       extraPackages = with pkgs; [
