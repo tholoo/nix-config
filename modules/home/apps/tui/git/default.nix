@@ -52,7 +52,7 @@ in
         delta.enable = true;
         # diff-so-fancy.enable = true;
         extraConfig = {
-          core.editor = "nvim";
+          core.editor = "hx";
           init.defaultBranch = "main";
           pull.rebase = true;
           rebase.autostash = true;
