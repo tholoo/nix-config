@@ -52,6 +52,7 @@ in
         noto-fonts
         # symbola
         codespell
+        hack-font
       ]
       ++ (with pkgs.nerd-fonts; [
         fira-code
