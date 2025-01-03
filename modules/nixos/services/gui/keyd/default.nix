@@ -25,6 +25,7 @@ in
               capslock = "esc";
               # leftbrace = "overload(meta, leftbrace)";
               leftbrace = "lettermod(meta, leftbrace, 100, 150)";
+              rightbrace = "lettermod(alt, rightbrace, 100, 150)";
               # leftbrace = "overloadi(leftbrace, overloadt2(meta, leftbrace, 150), 100)";
               # meta = "oneshot(meta)";
               # rightalt = "overload(meta, rightalt)";
