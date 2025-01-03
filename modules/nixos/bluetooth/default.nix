@@ -22,17 +22,6 @@ in
     hardware.bluetooth = {
       enable = true;
       powerOnBoot = true;
-      settings = {
-        General = {
-          Name = host;
-          ControllerMode = "dual";
-          FastConnectable = "true";
-          Experimental = "true";
-        };
-        Policy = {
-          AutoEnable = "true";
-        };
-      };
     };
   };
 }
