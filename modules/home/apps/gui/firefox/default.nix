@@ -20,8 +20,10 @@ in
 
   config = mkIf cfg.enable {
     # tridactyl looks inside .mozilla instead of .floorp
-    home.file.".mozilla/native-messaging-hosts/tridactyl.json".source = "${pkgs.tridactyl-native}/lib/mozilla/native-messaging-hosts/tridactyl.json";
-    # xdg.configFile.".tridactylrc".source = ./tridactylrc;
+    home.file.".mozilla/native-messaging-hosts/tridactyl.json".source =
+      "${pkgs.tridactyl-native}/lib/mozilla/native-messaging-hosts/tridactyl.json";
+
+    xdg.configFile."tridactyl/tridactylrc".source = ./tridactylrc;
 
     programs.floorp = {
       enable = true;
@@ -339,6 +341,7 @@ in
           tridactyl
           # istilldontcareaboutcookies
           bitwarden
+          switchyomega
         ];
         settings = {
           "extensions.autoDisableScopes" = 0; # auto activate extensions
