@@ -49,6 +49,10 @@ in
     };
     gtk = {
       enable = true;
+      font = {
+        name = "DejaVu Sans";
+        package = pkgs.dejavu_fonts;
+      };
       theme = {
         package = pkgs.arc-theme;
         name = "Arc";
