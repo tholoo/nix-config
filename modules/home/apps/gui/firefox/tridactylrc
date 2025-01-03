@@ -21,6 +21,13 @@ bind x composite tabprev; tabclose #
 
 bind d scrollpage 0.5
 bind u scrollpage -0.5
+bind U undo
+
+bind / fillcmdline find
+bind ? fillcmdline find -?
+bind n findnext 1
+bind N findnext -1
+bind ,<Space> nohlsearch
 
 " " make t open the selection with tabopen
 " bind --mode=visual t composite js document.getSelection().toString() | fillcmdline tabopen
