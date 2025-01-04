@@ -10,12 +10,21 @@ let
   cfg = config.mine.${name};
   name = "helix";
 in
+with lib;
+with lib.mine;
 {
   options.mine.${name} = mkEnable config {
     tags = [
       "tui"
       "editor"
     ];
+
+    enableLSP = mkOption {
+      type = types.bool;
+      default = true;
+      description = "Whether to enable language servers.";
+    };
+
   };
 
   config = mkIf cfg.enable {
@@ -27,36 +36,41 @@ in
 
     programs.helix = {
       enable = true;
-      extraPackages = with pkgs; [
-        # nix
-        nil
-        # yaml
-        yaml-language-server
-        # vue
-        vue-language-server
-        # toml
-        taplo
-        # protobuf
-        buf
-        # bash
-        bash-language-server
-        # docker
-        docker-compose-language-service
-        docker-ls
-        # go
-        gopls
-        delve # debugger
-        golangci-lint
-        golangci-lint-langserver
-        # helm
-        helm-ls
-        # json
-        nodePackages.vscode-json-languageserver
-        # typescript
-        typescript-language-server
-        vscode-langservers-extracted
-        biome
-      ];
+      extraPackages = mkIf cfg.enable (
+        with pkgs;
+        [
+          # nix
+          nil
+          # yaml
+          yaml-language-server
+          # vue
+          vue-language-server
+          # toml
+          taplo
+          # protobuf
+          buf
+          # bash
+          bash-language-server
+          # docker
+          docker-compose-language-service
+          docker-ls
+          # go
+          gopls
+          delve # debugger
+          golangci-lint
+          golangci-lint-langserver
+          # helm
+          helm-ls
+          # json
+          nodePackages.vscode-json-languageserver
+          # typescript
+          typescript-language-server
+          vscode-langservers-extracted
+          biome
+          # kotlin
+          kotlin-language-server
+        ]
+      );
       # https://docs.helix-editor.com/configuration.html
       settings = {
         theme = "ayu_dark";
