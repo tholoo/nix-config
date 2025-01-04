@@ -23,11 +23,15 @@ bind d scrollpage 0.5
 bind u scrollpage -0.5
 bind U undo
 
-bind / fillcmdline find
-bind ? fillcmdline find -?
-bind n findnext 1
-bind N findnext -1
-bind ,<Space> nohlsearch
+ bind / fillcmdline find
+ bind ? fillcmdline find --reverse
+ bind n findnext --search-from-view
+ bind N findnext --search-from-view --reverse
+ bind gn findselect
+ bind gN composite findnext --search-from-view --reverse; findselect
+ bind ,<Space> nohlsearch
+
+ bind ' fillcmdline markjumpglobal
 
 " " make t open the selection with tabopen
 " bind --mode=visual t composite js document.getSelection().toString() | fillcmdline tabopen
@@ -44,7 +48,7 @@ bindurl www.google.com F hint -Jbc #search a
 
 
 " " Make `gi` on GitHub take you to the search box
-bindurl ^https://github.com gi hint -Vc .AppHeader-searchButton
+" " bindurl ^https://github.com gi hint -Vc .AppHeader-searchButton
 
 " " Allow Ctrl-a to select all in the commandline
 " unbind --mode=ex <C-a>
@@ -146,3 +150,15 @@ set hintdelay 100
 "
 " " For syntax highlighting see https://github.com/tridactyl/vim-tridactyl
 " " vim: set filetype=tridactyl
+
+" " ---------------- Bookmarks
+bmark https://chatgpt.com/ chatgpt
+bmark https://youtube.com/ youtube
+bmark https://home-manager-options.extranix.com/?query=&release=master home-manager
+bmark https://search.nixos.org/packages?channel=unstable&from=0&size=50&sort=relevance&type=packages&query= nixos-packages
+bmark https://search.nixos.org/options?channel=unstable&from=0&size=50&sort=relevance&type=packages&query= nixos-options
+
+
+" " ---------------- Search Engines
+:set searchurls.nixpkgs https://search.nixos.org/packages?channel=unstable&from=0&size=50&sort=relevance&type=packages&query=
+:set searchurls.nixopts https://search.nixos.org/options?channel=unstable&from=0&size=50&sort=relevance&type=packages&query=
