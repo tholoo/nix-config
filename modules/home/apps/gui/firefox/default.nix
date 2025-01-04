@@ -342,6 +342,7 @@ in
           # istilldontcareaboutcookies
           bitwarden
           switchyomega
+          pkgs.nur.repos.meain.firefox-addons.global-speed
         ];
         settings = {
           "extensions.autoDisableScopes" = 0; # auto activate extensions
