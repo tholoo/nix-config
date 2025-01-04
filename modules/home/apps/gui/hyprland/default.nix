@@ -87,7 +87,7 @@ in
         "$terminal" = lib.getExe pkgs.kitty;
         "$fileManager" = lib.getExe' pkgs.dolphin "dolphin";
         "$menu" = "pgrep wofi >/dev/null 2>&1 || ${lib.getExe pkgs.wofi} --dmenu --show drun";
-        "$browser" = lib.getExe' pkgs.vivaldi "vivaldi";
+        "$browser" = lib.getExe pkgs.floorp;
 
         #################
         ### AUTOSTART ###
