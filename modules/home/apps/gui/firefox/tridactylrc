@@ -160,5 +160,6 @@ bmark https://search.nixos.org/options?channel=unstable&from=0&size=50&sort=rele
 
 
 " " ---------------- Search Engines
-:set searchurls.nixpkgs https://search.nixos.org/packages?channel=unstable&from=0&size=50&sort=relevance&type=packages&query=
-:set searchurls.nixopts https://search.nixos.org/options?channel=unstable&from=0&size=50&sort=relevance&type=packages&query=
+set searchurls.nixpkgs https://search.nixos.org/packages?channel=unstable&from=0&size=50&sort=relevance&type=packages&query=
+set searchurls.nixopts https://search.nixos.org/options?channel=unstable&from=0&size=50&sort=relevance&type=packages&query=
+set searchurls.github https//github.com/search?utf8=✓&q=
