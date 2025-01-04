@@ -79,8 +79,8 @@ let
     }
 
     select_project() {
-    	list=$(find ~/projects/ -maxdepth 1 -type d)
-      project_dir=$({ zellij list-sessions -s | awk '{ print "("NR")\t[Session]\t"$1 }'; echo $list | tr --truncate-set1 " /" "\n" | awk '{ print "("NR")\t[Directory]\t"$1 }' ; } | fzf_window)
+    	list=$(${lib.getExe pkgs.zoxide} query --list |  sed "s|^$HOME/|~/|")
+      project_dir=$({ zellij list-sessions -s | awk '{ print "("NR")\t[Sesion]\t"$1 }'; echo $list | tr --truncate-set1 " /" "\n" | awk '{ print "("NR")\t[Directory]\t"$1 }' ; } | fzf_window)
       if [ "$project_dir" = "" ]; then
           exit
       fi
@@ -103,7 +103,6 @@ let
         session_name=$(echo "$directory" | tr ' .:' '_')
         echo "$session_name"
     }
-
     if [[ -n "$1" ]]; then
     	selected=$(realpath $1)
     else
