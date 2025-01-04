@@ -37,26 +37,28 @@ in
         hidePluginInfo = true;
         closeOnClick = true;
         showResultsImmediately = true;
-        width.fraction = 0.25;
+        width.fraction = 0.35;
         y.fraction = 0.3;
       };
       extraCss = # css
         ''
-                  #window {
+          #window {
             background-color: rgba(0, 0, 0, 0);
           }
 
           box#main {
-            border-radius: 20px;
-            background-color: rgba(38, 38, 38, 0.8);
+            border-radius: 15px;
+            background-color: rgba(30, 30, 30, 1);
+            font-size: 20px;
             border: 2px solid #7e9cd8;
           }
 
           entry#entry {
-            min-height: 40px;
+            min-height: 50px;
             border-radius: 20px;
             background: transparent;
             box-shadow: none;
+            color: #E5EBF7;
             border: none;
           }
 
@@ -105,7 +107,7 @@ in
           }
 
           label#match-desc {
-            font-size: 10px;
+            font-size: 15px;
             color: #b0b0b0;
           }
 
