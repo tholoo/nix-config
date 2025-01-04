@@ -57,15 +57,7 @@ in
         end
         set -g fish_vi_force_cursor 1
 
-
-        if not set -q TMUX
-            if tmux has-session -t terminal
-                # exec tmux attach-session -t terminal
-                exec tmux attach-session
-            else
-                tmux new-session -s terminal
-            end
-        end
+        eval (zellij setup --generate-auto-start fish | string collect)
 
         # Functions needed for !! and !$
         function __history_previous_command

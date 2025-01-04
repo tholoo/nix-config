@@ -41,7 +41,7 @@ in
 
   config = mkIf cfg.enable {
     programs.tmux = {
-      enable = true;
+      enable = false;
       baseIndex = 1;
       clock24 = true;
       historyLimit = 10000;
