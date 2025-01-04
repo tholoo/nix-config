@@ -27,11 +27,11 @@ bind U undo
  bind ? fillcmdline find --reverse
  bind n findnext --search-from-view
  bind N findnext --search-from-view --reverse
- bind gn findselect
+ " " bind gn findselect
  bind gN composite findnext --search-from-view --reverse; findselect
  bind ,<Space> nohlsearch
 
- bind ' fillcmdline markjumpglobal
+ bind ' gobble 1 markjumpglobal
 
 " " make t open the selection with tabopen
 " bind --mode=visual t composite js document.getSelection().toString() | fillcmdline tabopen
@@ -151,15 +151,22 @@ set hintdelay 100
 " " For syntax highlighting see https://github.com/tridactyl/vim-tridactyl
 " " vim: set filetype=tridactyl
 
-" " ---------------- Bookmarks
+" " ---------------- Bookmarks & Marks
 bmark https://chatgpt.com/ chatgpt
 bmark https://youtube.com/ youtube
 bmark https://home-manager-options.extranix.com/?query=&release=master home-manager
 bmark https://search.nixos.org/packages?channel=unstable&from=0&size=50&sort=relevance&type=packages&query= nixos-packages
 bmark https://search.nixos.org/options?channel=unstable&from=0&size=50&sort=relevance&type=packages&query= nixos-options
 
+quickmark c https://chatgpt.com/
+quickmark y https://youtube.com/
+quickmark h https://home-manager-options.extranix.com/?query=&release=master
+quickmark g https://gmail.com/
 
 " " ---------------- Search Engines
+set searchurls.y youtube
 set searchurls.nixpkgs https://search.nixos.org/packages?channel=unstable&from=0&size=50&sort=relevance&type=packages&query=
+set searchurls.np nixpkgs
 set searchurls.nixopts https://search.nixos.org/options?channel=unstable&from=0&size=50&sort=relevance&type=packages&query=
+set searchurls.no nixopts
 set searchurls.github https//github.com/search?utf8=✓&q=
