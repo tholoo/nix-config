@@ -69,6 +69,12 @@ with lib.mine;
           biome
           # kotlin
           kotlin-language-server
+          # rust
+          rustup
+          rust-analyzer
+          clippy
+          lldb
+          rustfmt
         ]
       );
       # https://docs.helix-editor.com/configuration.html
@@ -106,6 +112,17 @@ with lib.mine;
       };
       languages = {
         language-server = {
+          rust-analyzer = {
+            command = lib.getExe pkgs.rust-analyzer;
+            config = {
+              check = {
+                command = "clippy";
+              };
+              cargo = {
+                allFeatures = true;
+              };
+            };
+          };
           biome = {
             command = "biome";
             args = [ "lsp-proxy" ];
