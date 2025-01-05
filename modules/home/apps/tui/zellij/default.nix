@@ -28,27 +28,6 @@ let
   base0E = "c678dd";
   base0F = "be5046";
 
-  zellij-switch = pkgs.stdenvNoCC.mkDerivation rec {
-    pname = "zellij-switch";
-    name = pname;
-
-    executable = pkgs.fetchurl {
-      url = "https://github.com/mostafaqanbaryan/zellij-switch/releases/download/v0.1.1/zellij-switch.wasm";
-      hash = "sha256-jLzpmFzzNL3m5q8u4fgB+NOti5nAPOpaESAhEaxTm5E";
-    };
-
-    phases = [ "installPhase" ]; # Removes all phases except installPhase
-
-    dontBuild = true;
-
-    installPhase = ''
-      runHook preInstall
-      mkdir -p $out
-      cp $executable $out/zellij-switch.wasm
-      runHook postInstall
-    '';
-  };
-
   zellij-switch-script = pkgs.writeShellScript "zellij-switch-script" (''
     if [ "$(command -v zellij)" = "" ]; then
         echo "Zellij is not installed"
@@ -120,7 +99,7 @@ let
 
     # If we're inside of zellij, detach
     if [[ -n "$ZELLIJ" ]]; then
-    	zellij pipe --plugin file://${zellij-switch}/zellij-switch.wasm -- "$session_name::$cwd"
+    	zellij pipe --plugin file://${pkgs.mine.zellij-switch}/zellij-switch.wasm -- "$session_name::$cwd"
     elsjjke
     	if [[ -n "$session" ]]; then
     		zellij attach $session_name -c
@@ -145,6 +124,10 @@ in
       enable = true;
     };
     # xdg.configFile."zellij/config.kdl".source = ./config.kdl;
+    xdg.configFile."zellij/plugins/monocle.wasm".source =
+      "${pkgs.mine.zellij-monocle}/zellij-monocle.wasm";
+    xdg.configFile."zellij/plugins/room.wasm".source = "${pkgs.mine.zellij-room}/zellij-room.wasm";
+
     xdg.configFile."zellij/config.kdl".text = ''
       // DEFAULT: https://github.com/zellij-org/zellij/blob/main/zellij-utils/assets/config/default.kdl
 
@@ -305,6 +288,13 @@ in
               bind "Alt =" "Alt +" { Resize "Increase"; }
               bind "Alt -" { Resize "Decrease"; }
 
+              bind "Alt d" {
+                  LaunchPlugin "filepicker" {
+                      // floating true
+                      close_on_selection true
+                  };
+              }
+
               bind "Alt o" {
                   LaunchOrFocusPlugin "session-manager" {
                       floating true
@@ -319,6 +309,30 @@ in
                 }
               }
 
+              // open monocle in a new floating pane and open any results in a new tiled/floating pane
+              bind "Alt '" {
+                  LaunchOrFocusPlugin "file:~/.config/zellij/plugins/monocle.wasm" {
+                      floating true
+                  };
+                  SwitchToMode "Normal"
+              }
+              // open monocle on top of the current pane and open any results on top of itself
+              bind "Alt ;" {
+                  LaunchPlugin "file:~/.config/zellij/plugins/monocle.wasm" {
+                      in_place true
+                      kiosk true
+                  };
+                  SwitchToMode "Normal"
+              }
+
+              // open room
+              bind "Alt space" {
+                  LaunchOrFocusPlugin "file:~/.config/zellij/plugins/room.wasm" {
+                      floating true
+                      ignore_case true
+                      quick_jump true
+                  }
+              }
 
               bind "Alt 1"     { GoToTab 1 ; SwitchToMode "Normal" ; }
               bind "Alt 2"     { GoToTab 2 ; SwitchToMode "Normal" ; }
