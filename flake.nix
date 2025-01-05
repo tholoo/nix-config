@@ -77,8 +77,6 @@
 
     nix-alien.url = "github:thiagokokada/nix-alien";
 
-    wezterm-nightly.url = "github:wez/wezterm?dir=nix";
-
     nix-index-database = {
       url = "github:nix-community/nix-index-database";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -118,6 +116,9 @@
       channels-config = {
         allowUnfree = true;
         allowUnfreePredicate = _: true;
+        permittedInsecurePackages = [
+          "dotnet-sdk-6.0.428" # godot
+        ];
       };
 
       overlays = with inputs; [
