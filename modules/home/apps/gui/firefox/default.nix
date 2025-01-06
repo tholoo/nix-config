@@ -332,14 +332,14 @@ in
 
       profiles.Default = {
         extensions = with pkgs.nur.repos.rycee.firefox-addons; [
-          # consent-o-matic # automatically fill out consent popups
+          istilldontcareaboutcookies # removes cookie popup from websites
+          consent-o-matic # automatically fill out consent popups
           sponsorblock
+          ublock-origin
           # leechblock-ng # block websites
           # darkreader
           # browserpass
-          ublock-origin
           tridactyl
-          # istilldontcareaboutcookies
           bitwarden
           switchyomega
           pkgs.nur.repos.meain.firefox-addons.global-speed

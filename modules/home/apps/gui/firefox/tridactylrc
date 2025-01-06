@@ -30,7 +30,7 @@ bind U undo
  bind n findnext --search-from-view
  bind N findnext --search-from-view --reverse
  " " bind gn findselect
- bind gN composite findnext --search-from-view --reverse; findselect
+ " " bind gN composite findnext --search-from-view --reverse; findselect
  bind ,<Space> nohlsearch
 
  bind ' gobble 1 markjumpglobal
