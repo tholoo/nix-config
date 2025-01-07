@@ -13,7 +13,6 @@
     cli-cool.enable = false;
     kube.enable = false;
     nixvim.enable = false;
-    nushell.enable = false;
     proxy.enable = false;
     translate-shell.enable = false;
 
