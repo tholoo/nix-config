@@ -67,6 +67,18 @@ def laa [path?] {
   }
 }
 
+
+# zellij
+
+def start_zellij [] {
+  if 'ZELLIJ' not-in ($env | columns) {
+      zellij attach --create --index 0
+  }
+}
+
+start_zellij
+
+
 # https://github.com/nushell/nu_scripts/blob/main/modules/data_extraction/ultimate_extractor.nu
 # Function to extract archives with different extensions.
 export def extract [name:string] {
