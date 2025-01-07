@@ -50,7 +50,7 @@ with lib.mine;
         "${cfg.name}" = {
           initialPassword = "1234";
           isNormalUser = true;
-          shell = pkgs.fish;
+          shell = pkgs.nushell;
           openssh.authorizedKeys.keys = cfg.authorizedKeys;
           extraGroups = [
             "wheel"

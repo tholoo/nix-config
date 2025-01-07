@@ -131,7 +131,7 @@ in
     xdg.configFile."zellij/config.kdl".text = ''
       // DEFAULT: https://github.com/zellij-org/zellij/blob/main/zellij-utils/assets/config/default.kdl
 
-      default_shell "fish"
+      default_shell "nu"
 
       plugins {
           compact-bar location="zellij:compact-bar"
