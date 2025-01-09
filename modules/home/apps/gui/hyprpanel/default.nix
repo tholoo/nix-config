@@ -35,7 +35,7 @@ in
       "pkill hyprpanel; sleep 0.5; ${lib.getExe pkgs.hyprpanel}"
     ];
 
-    home.file.".cache/ags/hyprpanel/options.json" = {
+    xdg.configFile."hyprpanel/config.json" = {
       text = # json
         ''
           {
