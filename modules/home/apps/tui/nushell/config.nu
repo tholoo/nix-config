@@ -45,17 +45,17 @@ alias core-ls = ls;
 # Shadow the ls command so that you always have the sort type you want
 def ls [path?] {
   if $path == null {
-    core-ls -d . | sort-by type name -i
+    core-ls . | sort-by type name -i
   } else {
-    core-ls -d $path | sort-by type name -i
+    core-ls $path | sort-by type name -i
   }
 }
 
 def la [path?] {
   if $path == null {
-    core-ls --all -d . | sort-by type name -i
+    core-ls --all . | sort-by type name -i
   } else {
-    core-ls --all -d $path | sort-by type name -i
+    core-ls --all $path | sort-by type name -i
   }
 }
 
