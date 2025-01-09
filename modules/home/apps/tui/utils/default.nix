@@ -19,6 +19,10 @@ in
   };
 
   config = mkIf cfg.enable {
+    home.sessionVariables = {
+      RIP_GRAVEYARD = "~/.local/share/Trash";
+    };
+
     home.packages = with pkgs; [
       jnv # interactive jq
       yq-go # yaml processor https://github.com/mikefarah/yq
@@ -37,6 +41,7 @@ in
       hyperfine # measuring and comparing execution speed of commands
       gnumeric # converting csv and excel
       rainfrog # tui database management
+      rip2 # RM Improved
     ];
   };
 }
