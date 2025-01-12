@@ -89,6 +89,8 @@ with lib.mine;
             insert = "bar";
             select = "underline";
           };
+          end-of-line-diagnostics = "hint";
+          inline-diagnostics.cursor-line = "error";
           lsp = {
             display-messages = true;
             display-inlay-hints = false;
