@@ -342,6 +342,7 @@ in
           tridactyl
           bitwarden
           switchyomega
+          auto-tab-discard
           pkgs.nur.repos.meain.firefox-addons.global-speed
         ];
         settings = {
