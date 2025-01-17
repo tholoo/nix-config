@@ -31,6 +31,7 @@ in
       manix
       nurl
       inputs.nix-alien.packages.${system}.nix-alien
+      comma
     ];
 
     programs.nh = {
