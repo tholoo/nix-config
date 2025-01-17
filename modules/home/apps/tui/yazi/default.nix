@@ -24,8 +24,8 @@ in
       glow-plugin = pkgs.fetchFromGitHub {
         owner = "Reledia";
         repo = "glow.yazi";
-        rev = "536185a4e60ac0adc11d238881e78678fdf084ff";
-        hash = "sha256-NcMbYjek99XgWFlebU+8jv338Vk1hm5+oW5gwH+3ZbI=";
+        rev = "5ce76dc92ddd0dcef36e76c0986919fda3db3cf5";
+        hash = "sha256-UljcrXXO5DZbufRfavBkiNV3IGUNct31RxCujRzC9D4=";
       };
     in
     {
@@ -40,12 +40,12 @@ in
           }
           {
             on = [ "<Enter>" ];
-            run = "plugin --sync smart-enter";
+            run = "plugin smart-enter";
             desc = "Enter the child directory, or open the file";
           }
           {
             on = [ "T" ];
-            run = "plugin --sync max-preview";
+            run = "plugin max-preview";
             desc = "Maximize preview";
           }
           {
@@ -113,6 +113,7 @@ in
           ${mkYaziPlugin' "smart-enter.yazi/init.lua"}.source =
             builtins.toFile "init.lua" # lua
               ''
+                --- @sync entry
                 return {
                 	entry = function()
                 		local h = cx.active.current.hovered
@@ -124,6 +125,7 @@ in
           ${mkYaziPlugin' "max-preview.yazi/init.lua"}.source =
             builtins.toFile "init.lua" # lua
               ''
+                --- @sync entry
                 local function entry(st)
                   if st.old then
                     Manager.layout, st.old = st.old, nil
