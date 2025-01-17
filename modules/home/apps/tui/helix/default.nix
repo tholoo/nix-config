@@ -101,15 +101,22 @@ with lib.mine;
           ];
         };
         keys.normal = {
+          L = "extend_to_line_end";
+          H = "extend_to_line_start";
+          G = "goto_word";
+          V = [
+            "goto_first_nonwhitespace"
+            "extend_to_line_end"
+          ];
+          esc = [
+            "collapse_selection"
+            "keep_primary_selection"
+          ];
           space = {
             space = "file_picker";
             i = ":toggle lsp.display-inlay-hints";
             o = ":write";
           };
-          esc = [
-            "collapse_selection"
-            "keep_primary_selection"
-          ];
         };
       };
       languages = {
