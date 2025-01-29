@@ -23,7 +23,7 @@ in
       enable = true;
       xdgOpenUsePortal = true;
       extraPortals = with pkgs; [
-        # mine.xdg-desktop-portal-termfilechooser
+        mine.xdg-desktop-portal-termfilechooser
         pkgs.xdg-desktop-portal-gtk
         xdg-desktop-portal-hyprland
         # xdg-desktop-portal-kde
@@ -46,6 +46,12 @@ in
           "hyprland"
         ];
       };
+    };
+    home.pointerCursor = {
+      gtk.enable = true;
+      hyprcursor.enable = true;
+      package = pkgs.bibata-cursors;
+      name = "Bibata-Modern-Ice";
     };
     gtk = {
       enable = true;
