@@ -45,6 +45,11 @@ in
         sub-visibility = "yes";
         audio-file-auto = "fuzzy";
         save-position-on-quit = "yes";
+
+        gpu-context = "wayland";
+        hwdec = "auto-safe";
+        vo = "gpu";
+        profile = "gpu-hq";
       };
       scripts = with pkgs.mpvScripts; [
         mpris

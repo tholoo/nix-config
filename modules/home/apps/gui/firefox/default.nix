@@ -403,6 +403,9 @@ in
           # "browser.compactmode.show" = true;
           # change from ctrl to alt to not interfere
           "ui.key.accelKey" = 18;
+
+          "gfx.webrender.all" = true;
+          "media.ffmpeg.vaapi.enabled" = true;
         };
 
         search = {
