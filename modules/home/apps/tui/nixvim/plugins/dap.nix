@@ -4,29 +4,27 @@
     debugprint.enable = true;
     dap = {
       enable = true;
-      extensions = {
-        dap-python = {
-          enable = true;
-          customConfigurations = [
-            {
-              type = "python";
-              request = "launch";
-              name = "DAP Django";
-              program = "vim.loop.cwd() .. '/manage.py'";
-              args = [
-                "runserver"
-                "--noreload"
-              ];
-              justMyCode = true;
-              django = true;
-              console = "integratedTerminal";
-            }
-          ];
-        };
-        dap-ui.enable = true;
-        dap-virtual-text.enable = true;
-      };
     };
+    dap-python = {
+      enable = true;
+      customConfigurations = [
+        {
+          type = "python";
+          request = "launch";
+          name = "DAP Django";
+          program = "vim.loop.cwd() .. '/manage.py'";
+          args = [
+            "runserver"
+            "--noreload"
+          ];
+          justMyCode = true;
+          django = true;
+          console = "integratedTerminal";
+        }
+      ];
+    };
+    dap-ui.enable = true;
+    dap-virtual-text.enable = true;
   };
 
   extraConfigLua = # lua
