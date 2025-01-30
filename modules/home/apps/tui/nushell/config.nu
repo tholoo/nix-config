@@ -174,3 +174,11 @@ $env.config = {
     },
   ]
  }
+
+def e_completer [] {
+    core-ls -la | get name
+}
+
+export def e [path: string@e_completer = "."] {
+    env $env.EDITOR $path
+}

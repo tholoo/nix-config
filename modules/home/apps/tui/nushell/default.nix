@@ -59,7 +59,6 @@ in
         );
 
       shellAliases = {
-        e = "env $env.EDITOR";
         f = "${lib.getExe pkgs.yazi}";
         lg = lib.getExe pkgs.lazygit;
         ld = lib.getExe pkgs.lazydocker;
