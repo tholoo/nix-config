@@ -182,3 +182,8 @@ def e_completer [] {
 export def e [path: string@e_completer = "."] {
     env $env.EDITOR $path
 }
+
+export def shell [...pkgs: string] {
+  let nix_pkgs = $pkgs | each { |pkg| $"nixpkgs#($pkg)" }
+  exec nix shell ...$nix_pkgs
+}
