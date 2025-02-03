@@ -67,6 +67,8 @@ with lib.mine;
           typescript-language-server
           vscode-langservers-extracted
           biome
+          # html
+          superhtml
           # kotlin
           kotlin-language-server
           # rust
@@ -75,6 +77,8 @@ with lib.mine;
           clippy
           lldb
           rustfmt
+          # c
+          clang-tools
         ]
       );
       # https://docs.helix-editor.com/configuration.html
@@ -103,7 +107,7 @@ with lib.mine;
         keys.normal = {
           L = "extend_to_line_end";
           H = "extend_to_line_start";
-          G = "goto_word";
+          "ret" = "goto_word";
           V = [
             "goto_first_nonwhitespace"
             "extend_to_line_end"
