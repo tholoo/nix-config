@@ -94,7 +94,7 @@ with lib.mine;
             select = "underline";
           };
           end-of-line-diagnostics = "hint";
-          inline-diagnostics.cursor-line = "error";
+          inline-diagnostics.cursor-line = "warning";
           lsp = {
             display-messages = true;
             display-inlay-hints = false;
