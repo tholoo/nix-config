@@ -42,6 +42,7 @@ in
       gnumeric # converting csv and excel
       rainfrog # tui database management
       rip2 # RM Improved
+      serpl # search and replace
     ];
   };
 }
