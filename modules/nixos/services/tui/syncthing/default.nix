@@ -21,7 +21,6 @@ in
       dataDir = "/home/tholo/syncs";
       configDir = "/home/tholo/.config/syncthing/";
       overrideDevices = true;
-      overrideFolders = true;
       settings = {
         devices = {
           "phone" = {
