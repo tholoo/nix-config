@@ -54,8 +54,6 @@ with lib.mine;
         curl
 
         home-manager
-
-        qemu
       ];
 
       environment.variables = {
