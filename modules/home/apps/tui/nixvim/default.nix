@@ -66,7 +66,7 @@ in
     };
 
     programs.nixvim = {
-      enable = true;
+      enable = false;
       # package = inputs.neovim-nightly-overlay.packages.${pkgs.system}.default;
       defaultEditor = true;
       colorschemes.cyberdream = {
