@@ -25,9 +25,9 @@ in
       # https://raw.githubusercontent.com/mpv-player/mpv/master/etc/input.conf
       bindings = {
         # speed
-        "z" = "set speed 1.0";
-        "c" = "add speed 0.1";
-        "x" = "add speed -0.1";
+        "'" = "set speed 1.0";
+        "]" = "add speed 0.1";
+        "[" = "add speed -0.1";
         # move
         "h" = "seek -5";
         "l" = "seek 5";
@@ -61,6 +61,7 @@ in
         # Youtube
         sponsorblock
         quality-menu
+        mpv-slicing # cut with c
       ];
     };
   };
