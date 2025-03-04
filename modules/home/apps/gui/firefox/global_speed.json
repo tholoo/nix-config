@@ -1,0 +1,168 @@
+{
+	"audioFx": {
+		"pitch": 0,
+		"volume": 1,
+		"delay": 0,
+		"eq": {
+			"enabled": false,
+			"factor": 1,
+			"values": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+		}
+	},
+	"backdropFx": {
+		"filters": [
+			{ "name": "sepia", "value": 0 },
+			{ "name": "hueRotate", "value": 0 },
+			{ "name": "grayscale", "value": 0 },
+			{ "name": "contrast", "value": 1 },
+			{ "name": "brightness", "value": 1 },
+			{ "name": "saturate", "value": 1 },
+			{ "name": "invert", "value": 0 },
+			{ "name": "blur", "value": 0 },
+			{ "name": "opacity", "value": 1 }
+		],
+		"transforms": [
+			{ "name": "scaleX", "value": 1 },
+			{ "name": "scaleY", "value": 1 },
+			{ "name": "translateX", "value": 0 },
+			{ "name": "translateY", "value": 0 },
+			{ "name": "rotateX", "value": 0 },
+			{ "name": "rotateY", "value": 0 },
+			{ "name": "rotateZ", "value": 0 }
+		]
+	},
+	"darkTheme": false,
+	"elementFx": {
+		"filters": [
+			{ "name": "sepia", "value": 0 },
+			{ "name": "hueRotate", "value": 0 },
+			{ "name": "grayscale", "value": 0 },
+			{ "name": "contrast", "value": 1 },
+			{ "name": "brightness", "value": 1 },
+			{ "name": "saturate", "value": 1 },
+			{ "name": "invert", "value": 0 },
+			{ "name": "blur", "value": 0 },
+			{ "name": "opacity", "value": 1 }
+		],
+		"transforms": [
+			{ "name": "scaleX", "value": 1 },
+			{ "name": "scaleY", "value": 1 },
+			{ "name": "translateX", "value": 0 },
+			{ "name": "translateY", "value": 0 },
+			{ "name": "rotateX", "value": 0 },
+			{ "name": "rotateY", "value": 0 },
+			{ "name": "rotateZ", "value": 0 }
+		]
+	},
+	"enabled": true,
+	"firstUse": 1738148633262,
+	"gptWebsiteCounter": 5,
+	"initialContext": 2,
+	"keybinds": [
+		{
+			"id": "5844091733",
+			"command": "speed",
+			"enabled": true,
+			"greedy": true,
+			"adjustMode": 2,
+			"key": {
+				"ctrlKey": false,
+				"altKey": false,
+				"shiftKey": true,
+				"metaKey": false,
+				"code": "KeyA"
+			},
+			"valueNumber": -0.1
+		},
+		{
+			"id": "859371349",
+			"command": "speed",
+			"enabled": true,
+			"greedy": true,
+			"adjustMode": 1,
+			"key": {
+				"ctrlKey": false,
+				"altKey": false,
+				"shiftKey": true,
+				"metaKey": false,
+				"code": "KeyS"
+			},
+			"valueNumber": 1
+		},
+		{
+			"id": "2192074524",
+			"command": "speed",
+			"enabled": true,
+			"greedy": true,
+			"adjustMode": 2,
+			"key": {
+				"ctrlKey": false,
+				"altKey": false,
+				"shiftKey": true,
+				"metaKey": false,
+				"code": "KeyD"
+			},
+			"spacing": 1,
+			"valueNumber": 0.1
+		},
+		{
+			"id": "5245432113",
+			"command": "seek",
+			"enabled": true,
+			"greedy": true,
+			"valueNumber": -1,
+			"key": {
+				"ctrlKey": false,
+				"altKey": false,
+				"shiftKey": true,
+				"metaKey": false,
+				"code": "KeyL"
+			},
+			"autoPause": true,
+			"adjustMode": 2,
+			"duration": 2
+		},
+		{
+			"id": "8419062279",
+			"command": "seek",
+			"enabled": true,
+			"greedy": true,
+			"valueNumber": 1,
+			"key": {
+				"ctrlKey": false,
+				"altKey": false,
+				"shiftKey": true,
+				"metaKey": false,
+				"code": "KeyH"
+			},
+			"spacing": 1,
+			"autoPause": true,
+			"adjustMode": 2,
+			"duration": 2
+		}
+	],
+	"lastSpeed": 2.000000000000001,
+	"latestViaShortcut": true,
+	"rules": [
+		{
+			"id": "3299013761",
+			"enabled": true,
+			"type": "SPEED",
+			"overrideSpeed": 1,
+			"overrideJs": "// code here\n",
+			"condition": {
+				"parts": [
+					{
+						"type": "CONTAINS",
+						"valueContains": "music.youtube.com",
+						"valueStartsWith": "https://example.com",
+						"valueRegex": "example\\.com",
+						"id": "2667952134"
+					}
+				]
+			}
+		}
+	],
+	"speed": 1,
+	"version": 12
+}

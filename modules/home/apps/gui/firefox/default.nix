@@ -331,20 +331,29 @@ in
       # };
 
       profiles.Default = {
-        extensions = with pkgs.nur.repos.rycee.firefox-addons; [
-          istilldontcareaboutcookies # removes cookie popup from websites
-          consent-o-matic # automatically fill out consent popups
-          sponsorblock
-          ublock-origin
-          # leechblock-ng # block websites
-          # darkreader
-          # browserpass
-          tridactyl
-          bitwarden
-          switchyomega
-          auto-tab-discard
-          pkgs.nur.repos.meain.firefox-addons.global-speed
-        ];
+        extensions = {
+          force = true;
+          packages = with pkgs.nur.repos.rycee.firefox-addons; [
+            istilldontcareaboutcookies # removes cookie popup from websites
+            consent-o-matic # automatically fill out consent popups
+            sponsorblock
+            ublock-origin
+            # leechblock-ng # block websites
+            # darkreader
+            # browserpass
+            tridactyl
+            bitwarden
+            switchyomega
+            auto-tab-discard
+            pkgs.nur.repos.meain.firefox-addons.global-speed
+          ];
+          settings = {
+            "{f4961478-ac79-4a18-87e9-d2fb8c0442c4}".settings = builtins.fromJSON (
+              builtins.readFile ./global_speed.json
+            );
+            "uBlock0@raymondhill.net".settings = builtins.fromJSON (builtins.readFile ./ublock.json);
+          };
+        };
         settings = {
           "extensions.autoDisableScopes" = 0; # auto activate extensions
           "floorp.browser.sidebar.enable" = false;
