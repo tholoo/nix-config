@@ -36,7 +36,7 @@ in
 
     programs.nh = {
       enable = true;
-      flake = inputs.self;
+      flake = "${inputs.self}";
       clean = {
         enable = false;
         extraArgs = "--keep 5 --keep-since 3d";
