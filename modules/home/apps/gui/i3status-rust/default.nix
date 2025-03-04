@@ -20,7 +20,7 @@ in
 
   config = mkIf cfg.enable {
     programs.i3status-rust = {
-      enable = true;
+      enable = false;
     };
   };
 }
