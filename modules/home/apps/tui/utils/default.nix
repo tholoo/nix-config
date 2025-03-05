@@ -27,7 +27,6 @@ in
       jnv # interactive jq
       yq-go # yaml processor https://github.com/mikefarah/yq
       watchexec # Run commands based on file change
-      satty # Screen annotatiaon tool
       dust # a better du
       duf # a better df
       gping # ping but with a graph
