@@ -20,7 +20,7 @@ in
 
   config = mkIf cfg.enable {
     programs.fish = {
-      enable = true;
+      enable = false;
       interactiveShellInit = ''
         set fish_greeting # Disable greeting
 
