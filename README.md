@@ -27,6 +27,11 @@ Check the size with:
 nix-shell -p nix-tree.out --run nix-tree
 ```
 
+```bash
+nix build --print-out-paths --no-link '.#nixosConfigurations.granite.config.system.build.toplevel'
+nix-tree '.#nixosConfigurations.granite.config.system.build.toplevel'
+```
+
 Repl:
 ```bash
 nix --extra-experimental-features repl-flake repl . --show-trace
