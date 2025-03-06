@@ -22,7 +22,7 @@ in
           registry-mirrors = [ "https://registry.docker.ir" ];
           log-driver = "json-file";
           log-opts = {
-            "max-size" = "10m";
+            "max-size" = "100m";
             "max-file" = "3";
           };
         };
