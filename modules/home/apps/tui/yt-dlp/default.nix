@@ -23,7 +23,7 @@ in
       enable = true;
       settings = {
         embed-thumbnail = true;
-        proxy = "127.0.0.1:2080";
+        proxy = "http://127.0.0.1:20171";
       };
     };
   };
