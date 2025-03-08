@@ -1,0 +1,91 @@
+{
+	"window-size": {
+		"width": 1920,
+		"height": 1080
+	},
+	"window-maximized": true,
+	"window-position": {
+		"x": 0,
+		"y": 0
+	},
+	"url": "https://music.youtube.com/",
+	"options": {
+		"tray": false,
+		"appVisible": true,
+		"autoUpdates": true,
+		"alwaysOnTop": false,
+		"hideMenu": false,
+		"hideMenuWarned": false,
+		"startAtLogin": false,
+		"disableHardwareAcceleration": false,
+		"removeUpgradeButton": true,
+		"restartOnConfigChanges": false,
+		"trayClickPlayPause": false,
+		"autoResetAppCache": false,
+		"resumeOnStart": true,
+		"likeButtons": "",
+		"proxy": "http://127.0.0.1:20171",
+		"startingPage": "",
+		"overrideUserAgent": false,
+		"usePodcastParticipantAsArtist": false,
+		"themes": []
+	},
+	"plugins": {
+		"notifications": {
+			"enabled": true
+		},
+		"video-toggle": {
+			"mode": "custom"
+		},
+		"precise-volume": {
+			"globalShortcuts": {}
+		},
+		"discord": {
+			"listenAlong": true
+		},
+		"album-actions": {
+			"enabled": true
+		},
+		"album-color-theme": {
+			"enabled": true
+		},
+		"ambient-mode": {
+			"enabled": true
+		},
+		"amuse": {
+			"enabled": true
+		},
+		"blur-nav-bar": {
+			"enabled": true
+		},
+		"bypass-age-restrictions": {
+			"enabled": true
+		},
+		"crossfade": {
+			"enabled": true
+		},
+		"downloader": {
+			"enabled": true
+		},
+		"lyrics-genius": {
+			"enabled": true
+		},
+		"shortcuts": {
+			"enabled": true
+		},
+		"synced-lyrics": {
+			"enabled": true
+		},
+		"skip-disliked-songs": {
+			"enabled": true
+		},
+		"disable-autoplay": {
+			"enabled": true
+		}
+	},
+	"__internal__": {
+		"migrations": {
+			"version": "3.7.2"
+		}
+	}
+}
