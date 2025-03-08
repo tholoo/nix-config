@@ -37,7 +37,7 @@ in
 
   config = mkIf cfg.enable {
     services.swaync = {
-      enable = true;
+      enable = false;
     };
 
     programs.swaylock = {
@@ -127,13 +127,16 @@ in
             # "Print+Shift" = "exec ${pkgs.shotman}/bin/shotman -c region";
             # "Print+Shift+Control" = "exec ${pkgs.shotman}/bin/shotman -c window";
             # "Print" = ''exec --no-startup-id "${pkgs.flameshot}/bin/flameshot"'';
-            "Print" = ''exec ${getExe wayshot} -s "$(${getExe slurp} -o -c '#ff0000ff')" --stdout | ${getExe satty} --filename - --fullscreen --initial-tool line'';
+            "Print" =
+              ''exec ${getExe wayshot} -s "$(${getExe slurp} -o -c '#ff0000ff')" --stdout | ${getExe satty} --filename - --fullscreen --initial-tool line'';
 
-            "Insert" = "exec ${getExe wayshot} --stdout | ${getExe satty} --filename - --fullscreen --initial-tool brush";
+            "Insert" =
+              "exec ${getExe wayshot} --stdout | ${getExe satty} --filename - --fullscreen --initial-tool brush";
 
             "${modifier}+period" = "exec ${getExe' swaynotificationcenter "swaync-client"} --hide-latest";
 
-            "${modifier}+y" = "exec ${getExe cliphist} list | ${getExe wofi} --show dmenu | ${getExe cliphist} decode | ${getExe' wl-clipboard "wl-copy"}";
+            "${modifier}+y" =
+              "exec ${getExe cliphist} list | ${getExe wofi} --show dmenu | ${getExe cliphist} decode | ${getExe' wl-clipboard "wl-copy"}";
             # "Insert" =
             #   "exec ${pkgs.grim}/bin/grim -o $(swaymsg -t get_outputs | ${pkgs.jq}/bin/jq -r '.[] | select(.focused) | .name') - | ${pkgs.satty}/bin/satty --filename - --fullscreen";
             # Screen recording
@@ -159,12 +162,16 @@ in
             # "${modifier}+shift+period" = "exec makoctl dismiss -a";
             "${modifier}+z" = "exec swaylock";
             "${modifier}+Shift+z" = "exec ${getExe wlogout}";
-            "XF86AudioMute" = "exec wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle && (wpctl get-volume @DEFAULT_AUDIO_SINK@ | grep -q MUTED && echo 0 > $XDG_RUNTIME_DIR/wob.sock) || wpctl get-volume @DEFAULT_AUDIO_SINK@ > $XDG_RUNTIME_DIR/wob.sock";
-            "XF86AudioRaiseVolume" = "exec wpctl set-volume --limit 1.5 @DEFAULT_AUDIO_SINK@ 2%+ && wpctl get-volume @DEFAULT_AUDIO_SINK@ | sed 's/[^0-9]//g' > $XDG_RUNTIME_DIR/wob.sock";
-            "XF86AudioLowerVolume" = "exec wpctl set-volume @DEFAULT_AUDIO_SINK@ 2%- && wpctl get-volume @DEFAULT_AUDIO_SINK@ | sed 's/[^0-9]//g' > $XDG_RUNTIME_DIR/wob.sock";
+            "XF86AudioMute" =
+              "exec wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle && (wpctl get-volume @DEFAULT_AUDIO_SINK@ | grep -q MUTED && echo 0 > $XDG_RUNTIME_DIR/wob.sock) || wpctl get-volume @DEFAULT_AUDIO_SINK@ > $XDG_RUNTIME_DIR/wob.sock";
+            "XF86AudioRaiseVolume" =
+              "exec wpctl set-volume --limit 1.5 @DEFAULT_AUDIO_SINK@ 2%+ && wpctl get-volume @DEFAULT_AUDIO_SINK@ | sed 's/[^0-9]//g' > $XDG_RUNTIME_DIR/wob.sock";
+            "XF86AudioLowerVolume" =
+              "exec wpctl set-volume @DEFAULT_AUDIO_SINK@ 2%- && wpctl get-volume @DEFAULT_AUDIO_SINK@ | sed 's/[^0-9]//g' > $XDG_RUNTIME_DIR/wob.sock";
 
             # Toggle control center
-            "${modifier}+Shift+n" = "exec ${getExe' swaynotificationcenter "swaync-client"} --toggle-panel --skip-wait";
+            "${modifier}+Shift+n" =
+              "exec ${getExe' swaynotificationcenter "swaync-client"} --toggle-panel --skip-wait";
             # Move focused container to next output
             "${modifier}+o" = "exec '${lib.getExe pkgs.swaysome} next-output'";
             # Move focused container to previous output
