@@ -85,6 +85,7 @@ with lib.mine;
       settings = {
         theme = "ayu_dark";
         editor = {
+          auto-format = true;
           true-color = true;
           auto-save = true;
           line-number = "relative";
@@ -94,7 +95,7 @@ with lib.mine;
             select = "underline";
           };
           end-of-line-diagnostics = "hint";
-          inline-diagnostics.cursor-line = "warning";
+          inline-diagnostics.cursor-line = "hint";
           lsp = {
             display-messages = true;
             display-inlay-hints = false;
@@ -235,6 +236,20 @@ with lib.mine;
         };
 
         language = [
+          {
+            name = "toml";
+            language-servers = [
+              "taplo"
+            ];
+            auto-format = true;
+            formatter = {
+              command = "taplo";
+              args = [
+                "fmt"
+                "-"
+              ];
+            };
+          }
           {
             name = "python";
             language-servers = [
