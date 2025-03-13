@@ -20,5 +20,5 @@ in
     ];
   };
 
-  config = mkIf cfg.enable { services.v2raya.enable = true; };
+  # config = mkIf cfg.enable { services.v2raya.enable = true; };
 }

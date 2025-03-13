@@ -24,7 +24,6 @@
 		"autoResetAppCache": false,
 		"resumeOnStart": true,
 		"likeButtons": "",
-		"proxy": "http://127.0.0.1:20171",
 		"startingPage": "",
 		"overrideUserAgent": false,
 		"usePodcastParticipantAsArtist": false,
