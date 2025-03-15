@@ -20,6 +20,7 @@ in
       git = true;
       icons = "auto";
       extraOptions = [ "--group-directories-first" ];
+      enableNushellIntegration = false;
     };
   };
 }
