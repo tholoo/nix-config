@@ -20,5 +20,8 @@ in
       # since 64gram and telegram-desktop share the same bin name:
       # (pkgs.writeShellScriptBin "64gram" "exec -a $0 ${lib.getExe _64gram} $@")
     ];
+
+    xdg.dataFile."share/AyuGramDesktop/tdata/ayu_settings.json".source = ./ayu_settings.json;
+    xdg.dataFile."share/AyuGramDesktop/tdata/shortcuts-custom.json".source = ./telegram_shortcuts.json;
   };
 }

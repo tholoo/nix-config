@@ -1,0 +1,42 @@
+// This is a list of your own shortcuts for Telegram Desktop
+// You can see full list of commands in the 'shortcuts-default.json' file
+// Place a null value instead of a command string to switch the shortcut off
+
+[
+  {
+      "command": "account1",
+      "keys": "ctrl+shift+1"
+  },
+  {
+      "command": "account2",
+      "keys": "ctrl+shift+2"
+  },
+  {
+      "command": "account3",
+      "keys": "ctrl+shift+3"
+  },
+  {
+      "command": "account4",
+      "keys": "ctrl+shift+4"
+  },
+  {
+      "command": "account5",
+      "keys": "ctrl+shift+5"
+  },
+  {
+      "command": "account6",
+      "keys": "ctrl+shift+6"
+  },
+  {
+      "command": "account7",
+      "keys": "ctrl+shift+7"
+  },
+  {
+      "command": "account8",
+      "keys": "ctrl+shift+8"
+  },
+  {
+      "command": "account9",
+      "keys": "ctrl+shift+9"
+  }
+]
