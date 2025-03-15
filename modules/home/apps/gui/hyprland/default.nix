@@ -105,7 +105,7 @@ in
 
           "[workspace 1 silent] $terminal"
           "[workspace 2 silent] $browser"
-          "[workspace 3 silent] ${lib.getExe pkgs.telegram-desktop}"
+          "[workspace 3 silent] ${lib.getExe pkgs.ayugram-desktop}"
           "[workspace 4 silent] sudo -E ${lib.getExe pkgs.hiddify-app}"
           "[workspace 5 silent] ${lib.getExe pkgs.youtube-music}"
 

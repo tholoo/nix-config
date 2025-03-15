@@ -43,11 +43,15 @@ in
         };
       };
     };
-    environment.systemPackages = with pkgs; [ xdg-desktop-portal-termfilechooser ];
+    environment.systemPackages = with pkgs; [
+      xdg-desktop-portal-termfilechooser
+      qt6ct
+    ];
     environment.sessionVariables = {
       GTK_USE_PORTAL = 1;
       GDK_DEBUG = "portals";
       XDG_CURRENT_DESKTOP = "Hyprland";
+      QT_QPA_PLATFORMTHEME = "qt5ct:qt6ct";
     };
   };
 }
