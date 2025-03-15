@@ -14,15 +14,17 @@
     tui.enable = true;
     tags.exclude = [
       "game"
-      "editor"
       "gui"
+      "develop"
     ];
+
+    helix.enableLSP = false;
 
     systemd-boot.enable = false;
     syncthing.enable = false;
   };
 
   security.sudo.wheelNeedsPassword = false;
-  services.minecraft-server.serverProperties.jvmOpts = "-Xmx512M -Xms512M";
+  # services.minecraft-server.serverProperties.jvmOpts = "-Xmx512M -Xms512M";
   virtualisation.docker.daemon.settings.registry-mirrors = [ ]; # disable ir mirror
 }
