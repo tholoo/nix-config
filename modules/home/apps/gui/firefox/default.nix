@@ -415,6 +415,8 @@ in
 
           "gfx.webrender.all" = true;
           "media.ffmpeg.vaapi.enabled" = true;
+
+          "widget.use-xdg-desktop-portal.file-picker" = 1;
         };
 
         search = {

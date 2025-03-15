@@ -19,39 +19,25 @@ in
   };
 
   config = mkIf cfg.enable {
-    xdg.portal = {
-      enable = true;
-      xdgOpenUsePortal = true;
-      extraPortals = with pkgs; [
-        mine.xdg-desktop-portal-termfilechooser
-        pkgs.xdg-desktop-portal-gtk
-        xdg-desktop-portal-hyprland
-        # xdg-desktop-portal-kde
-        # xdg-desktop-portal-wlr
-        # xdg-desktop-portal-gtk
-      ];
-      config = {
-        common = {
-          default = [
-            "Hyprland"
-            "gtk"
-            # "qt5"
-            # "qtwayland"
-          ];
-          "org.freedesktop.impl.portal.FileChooser" = [ "xdg-desktop-portal-termfilechooser" ];
-          # "org.freedesktop.impl.portal.Secret" = [ "gnome-keyring" ];
-        };
-        hyprland.default = [
-          "gtk"
-          "hyprland"
-        ];
-      };
-    };
+    xdg.configFile."xdg-desktop-portal-termfilechooser/config".text = ''
+      [filechooser]
+      cmd=${pkgs.xdg-desktop-portal-termfilechooser}/share/xdg-desktop-portal-termfilechooser/yazi-wrapper.sh
+      default_dir=$HOME
+      env=TERMCMD=kitty
+    '';
     home.pointerCursor = {
       gtk.enable = true;
       hyprcursor.enable = true;
       package = pkgs.bibata-cursors;
       name = "Bibata-Modern-Ice";
+    };
+    qt = {
+      enable = true;
+      platformTheme.name = "adwaita";
+      style = {
+        name = "adwaita-dark";
+        package = pkgs.adwaita-qt6;
+      };
     };
     gtk = {
       enable = true;
