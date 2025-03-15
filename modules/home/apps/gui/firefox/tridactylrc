@@ -171,4 +171,4 @@ set searchurls.nixpkgs https://search.nixos.org/packages?channel=unstable&from=0
 set searchurls.np nixpkgs
 set searchurls.nixopts https://search.nixos.org/options?channel=unstable&from=0&size=50&sort=relevance&type=packages&query=
 set searchurls.no nixopts
-set searchurls.github https//github.com/search?utf8=✓&q=
+set searchurls.git https//github.com/search?utf8=✓&q=
