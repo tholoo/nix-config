@@ -1,67 +1,10 @@
 {
-	"audioFx": {
-		"pitch": 0,
-		"volume": 1,
-		"delay": 0,
-		"eq": {
-			"enabled": false,
-			"factor": 1,
-			"values": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-		}
-	},
-	"backdropFx": {
-		"filters": [
-			{ "name": "sepia", "value": 0 },
-			{ "name": "hueRotate", "value": 0 },
-			{ "name": "grayscale", "value": 0 },
-			{ "name": "contrast", "value": 1 },
-			{ "name": "brightness", "value": 1 },
-			{ "name": "saturate", "value": 1 },
-			{ "name": "invert", "value": 0 },
-			{ "name": "blur", "value": 0 },
-			{ "name": "opacity", "value": 1 }
-		],
-		"transforms": [
-			{ "name": "scaleX", "value": 1 },
-			{ "name": "scaleY", "value": 1 },
-			{ "name": "translateX", "value": 0 },
-			{ "name": "translateY", "value": 0 },
-			{ "name": "rotateX", "value": 0 },
-			{ "name": "rotateY", "value": 0 },
-			{ "name": "rotateZ", "value": 0 }
-		]
-	},
-	"darkTheme": false,
-	"elementFx": {
-		"filters": [
-			{ "name": "sepia", "value": 0 },
-			{ "name": "hueRotate", "value": 0 },
-			{ "name": "grayscale", "value": 0 },
-			{ "name": "contrast", "value": 1 },
-			{ "name": "brightness", "value": 1 },
-			{ "name": "saturate", "value": 1 },
-			{ "name": "invert", "value": 0 },
-			{ "name": "blur", "value": 0 },
-			{ "name": "opacity", "value": 1 }
-		],
-		"transforms": [
-			{ "name": "scaleX", "value": 1 },
-			{ "name": "scaleY", "value": 1 },
-			{ "name": "translateX", "value": 0 },
-			{ "name": "translateY", "value": 0 },
-			{ "name": "rotateX", "value": 0 },
-			{ "name": "rotateY", "value": 0 },
-			{ "name": "rotateZ", "value": 0 }
-		]
-	},
-	"enabled": true,
-	"firstUse": 1738148633262,
-	"gptWebsiteCounter": 5,
-	"initialContext": 2,
+	"version": 10,
+	"firstUse": 1742037274472,
 	"keybinds": [
 		{
-			"id": "5844091733",
-			"command": "speed",
+			"id": "839636136",
+			"command": "adjustSpeed",
 			"enabled": true,
 			"greedy": true,
 			"adjustMode": 2,
@@ -72,11 +15,11 @@
 				"metaKey": false,
 				"code": "KeyA"
 			},
-			"valueNumber": -0.1
+			"valueNumberAlt": -0.1
 		},
 		{
-			"id": "859371349",
-			"command": "speed",
+			"id": "4810528454",
+			"command": "adjustSpeed",
 			"enabled": true,
 			"greedy": true,
 			"adjustMode": 1,
@@ -90,8 +33,8 @@
 			"valueNumber": 1
 		},
 		{
-			"id": "2192074524",
-			"command": "speed",
+			"id": "4844923073",
+			"command": "adjustSpeed",
 			"enabled": true,
 			"greedy": true,
 			"adjustMode": 2,
@@ -102,67 +45,149 @@
 				"metaKey": false,
 				"code": "KeyD"
 			},
-			"spacing": 1,
-			"valueNumber": 0.1
+			"valueNumberAlt": 0.1,
+			"spacing": 1
 		},
 		{
-			"id": "5245432113",
-			"command": "seek",
+			"id": "2287073732",
+			"command": "setState",
 			"enabled": true,
 			"greedy": true,
-			"valueNumber": -1,
+			"valueState": "toggle",
 			"key": {
 				"ctrlKey": false,
 				"altKey": false,
 				"shiftKey": true,
 				"metaKey": false,
-				"code": "KeyL"
+				"code": "KeyC"
 			},
-			"autoPause": true,
-			"adjustMode": 2,
-			"duration": 2
+			"spacing": 2
 		},
 		{
-			"id": "8419062279",
+			"id": "9156083089",
 			"command": "seek",
 			"enabled": true,
 			"greedy": true,
-			"valueNumber": 1,
+			"valueNumber": -5,
 			"key": {
 				"ctrlKey": false,
 				"altKey": false,
 				"shiftKey": true,
 				"metaKey": false,
-				"code": "KeyH"
+				"code": "KeyZ"
+			},
+			"valueBool": true
+		},
+		{
+			"id": "1932856237",
+			"command": "seek",
+			"enabled": true,
+			"greedy": true,
+			"valueNumber": 5,
+			"key": {
+				"ctrlKey": false,
+				"altKey": false,
+				"shiftKey": true,
+				"metaKey": false,
+				"code": "KeyX"
 			},
 			"spacing": 1,
-			"autoPause": true,
-			"adjustMode": 2,
-			"duration": 2
+			"valueBool": true
+		},
+		{
+			"id": "668031708",
+			"command": "fullscreen",
+			"enabled": true,
+			"greedy": true,
+			"key": {
+				"ctrlKey": false,
+				"altKey": false,
+				"shiftKey": true,
+				"metaKey": false,
+				"code": "KeyQ"
+			},
+			"valueBool": false,
+			"spacing": 2
 		}
 	],
-	"lastSpeed": 2.000000000000001,
-	"latestViaShortcut": true,
+	"common": {
+		"speed": 2.6,
+		"enabled": false,
+		"backdropFx": {
+			"filters": [
+				{ "name": "sepia", "value": 0 },
+				{ "name": "hueRotate", "value": 0 },
+				{ "name": "grayscale", "value": 0 },
+				{ "name": "contrast", "value": 1 },
+				{ "name": "brightness", "value": 1 },
+				{ "name": "saturate", "value": 1 },
+				{ "name": "invert", "value": 0 },
+				{ "name": "blur", "value": 0 },
+				{ "name": "opacity", "value": 1 }
+			],
+			"transforms": [
+				{ "name": "scaleX", "value": 1 },
+				{ "name": "scaleY", "value": 1 },
+				{ "name": "translateX", "value": 0 },
+				{ "name": "translateY", "value": 0 },
+				{ "name": "rotateX", "value": 0 },
+				{ "name": "rotateY", "value": 0 },
+				{ "name": "rotateZ", "value": 0 }
+			]
+		},
+		"elementFx": {
+			"filters": [
+				{ "name": "sepia", "value": 0 },
+				{ "name": "hueRotate", "value": 0 },
+				{ "name": "grayscale", "value": 0 },
+				{ "name": "contrast", "value": 1 },
+				{ "name": "brightness", "value": 1 },
+				{ "name": "saturate", "value": 1 },
+				{ "name": "invert", "value": 0 },
+				{ "name": "blur", "value": 0 },
+				{ "name": "opacity", "value": 1 }
+			],
+			"transforms": [
+				{ "name": "scaleX", "value": 1 },
+				{ "name": "scaleY", "value": 1 },
+				{ "name": "translateX", "value": 0 },
+				{ "name": "translateY", "value": 0 },
+				{ "name": "rotateX", "value": 0 },
+				{ "name": "rotateY", "value": 0 },
+				{ "name": "rotateZ", "value": 0 }
+			]
+		},
+		"audioFx": {
+			"pitch": 0,
+			"volume": 1,
+			"delay": 0,
+			"eq": {
+				"enabled": false,
+				"factor": 1,
+				"values": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+			}
+		},
+		"lastSpeed": 2.5,
+		"enabledLatestViaPopup": false
+	},
 	"rules": [
 		{
-			"id": "3299013761",
+			"id": "772513886",
 			"enabled": true,
-			"type": "SPEED",
-			"overrideSpeed": 1,
-			"overrideJs": "// code here\n",
 			"condition": {
 				"parts": [
+					{ "type": "CONTAINS", "value": "twitch.tv", "id": "3790168863" },
 					{
 						"type": "CONTAINS",
-						"valueContains": "music.youtube.com",
-						"valueStartsWith": "https://example.com",
-						"valueRegex": "example\\.com",
-						"id": "2667952134"
+						"value": "music.youtube.com",
+						"id": "9391770287"
 					}
 				]
-			}
+			},
+			"type": "SPEED",
+			"overrideSpeed": 1,
+			"strict": true
 		}
 	],
-	"speed": 1,
-	"version": 12
+	"hideMediaView": null
 }
