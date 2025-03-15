@@ -84,7 +84,7 @@
 	},
 	"__internal__": {
 		"migrations": {
-			"version": "3.7.2"
+			"version": "3.7.4"
 		}
 	}
 }

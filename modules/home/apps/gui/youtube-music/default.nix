@@ -29,6 +29,9 @@ in
 
   config = mkIf cfg.enable {
     home.packages = with pkgs; [ youtube-music ];
-    xdg.configFile."YouTube Music/config.json".source = mkMutableSymlink ./config.json;
+    xdg.configFile."YouTube Music/config.json" = {
+      force = true;
+      source = mkMutableSymlink ./config.json;
+    };
   };
 }

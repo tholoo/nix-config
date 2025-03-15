@@ -36,6 +36,7 @@ in
     ];
 
     xdg.configFile."hyprpanel/config.json" = {
+      force = true;
       text = # json
         ''
           {
