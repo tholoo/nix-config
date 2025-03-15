@@ -124,8 +124,12 @@ with lib.mine;
       languages = {
         language-server = {
           rust-analyzer = {
+            auto-format = true;
             command = lib.getExe pkgs.rust-analyzer-nightly;
             config = {
+              cachePriming.enable = true;
+              diagnostics.experimental.enable = true;
+              procMacro.enable = true;
               check = {
                 command = "clippy";
               };
@@ -235,9 +239,8 @@ with lib.mine;
         language = [
           {
             name = "rust";
-            formatter = {
-              command = "rustfmt";
-            };
+            auto-format = true;
+            formatter.command = "rustfmt --edition 2024 --style-edition 2024";
           }
           {
             name = "toml";
