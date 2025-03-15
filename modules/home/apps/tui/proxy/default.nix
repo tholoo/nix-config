@@ -23,7 +23,6 @@ in
   config = mkIf cfg.enable {
     home.packages = with pkgs; [
       gg # for proxying commands
-      nekoray
     ];
   };
 }

@@ -15,4 +15,8 @@ in
 {
   "ip-granite.age".publicKeys = users.all ++ systems.all;
   "ip-ahm.age".publicKeys = users.all ++ systems.all;
+  "singbox-domain.age".publicKeys = users.all ++ systems.all;
+  "singbox-obfs-pass.age".publicKeys = users.all ++ systems.all;
+  "singbox-pass.age".publicKeys = users.all ++ systems.all;
+  "singbox-clash-pass.age".publicKeys = users.all ++ systems.all;
 }
