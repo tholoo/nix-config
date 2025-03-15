@@ -232,6 +232,27 @@
         "type": "github"
       }
     },
+    "fenix": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ],
+        "rust-analyzer-src": "rust-analyzer-src"
+      },
+      "locked": {
+        "lastModified": 1742020287,
+        "narHash": "sha256-/M2HtLqsUbhd88e8r7coPjakLzzQ6tKFwr7hcM6cArQ=",
+        "owner": "nix-community",
+        "repo": "fenix",
+        "rev": "429986f36b0d0b83d33d73b76358b00397c73fcd",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "repo": "fenix",
+        "type": "github"
+      }
+    },
     "firefox-gnome-theme": {
       "flake": false,
       "locked": {
@@ -1230,6 +1251,7 @@
         "anyrun": "anyrun",
         "deploy-rs": "deploy-rs",
         "disko": "disko",
+        "fenix": "fenix",
         "flake-utils": "flake-utils",
         "home-manager": "home-manager_2",
         "hyprpanel": "hyprpanel",
@@ -1245,6 +1267,23 @@
         "nur": "nur",
         "snowfall-lib": "snowfall-lib",
         "stylix": "stylix"
+      }
+    },
+    "rust-analyzer-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1741983722,
+        "narHash": "sha256-W7rOyDewNByWyjTR0e921tE8sOZc39+Qsa2JjlJiQKk=",
+        "owner": "rust-lang",
+        "repo": "rust-analyzer",
+        "rev": "e3b3d9ee594779f619005b287f6595417f9b5ab0",
+        "type": "github"
+      },
+      "original": {
+        "owner": "rust-lang",
+        "ref": "nightly",
+        "repo": "rust-analyzer",
+        "type": "github"
       }
     },
     "snowfall-lib": {

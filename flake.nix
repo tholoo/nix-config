@@ -94,6 +94,12 @@
     nur.url = "github:nix-community/NUR";
 
     hyprpanel.url = "github:Jas-SinghFSU/HyprPanel";
+
+    fenix = {
+      url = "github:nix-community/fenix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
   };
 
   outputs =
@@ -124,7 +130,8 @@
       overlays = with inputs; [
         neovim-nightly-overlay.overlays.default
         nur.overlays.default
-        inputs.hyprpanel.overlay
+        hyprpanel.overlay
+        fenix.overlays.default
       ];
 
       systems.modules.nixos = with inputs; [

@@ -17,6 +17,7 @@ with lib.mine;
     tags = [
       "tui"
       "editor"
+      "devleop"
     ];
 
     enableLSP = mkOption {
@@ -72,11 +73,7 @@ with lib.mine;
           # kotlin
           kotlin-language-server
           # rust
-          rustup
-          rust-analyzer
-          clippy
           lldb
-          rustfmt
           # c
           clang-tools
         ]
@@ -127,7 +124,7 @@ with lib.mine;
       languages = {
         language-server = {
           rust-analyzer = {
-            command = lib.getExe pkgs.rust-analyzer;
+            command = lib.getExe pkgs.rust-analyzer-nightly;
             config = {
               check = {
                 command = "clippy";
@@ -236,6 +233,12 @@ with lib.mine;
         };
 
         language = [
+          {
+            name = "rust";
+            formatter = {
+              command = "rustfmt";
+            };
+          }
           {
             name = "toml";
             language-servers = [
