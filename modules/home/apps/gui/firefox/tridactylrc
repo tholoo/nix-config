@@ -25,6 +25,8 @@ bind d scrollpage 0.5
 bind u scrollpage -0.5
 bind U undo
 
+unbind g?
+
  bind / fillcmdline find
  bind ? fillcmdline find --reverse
  bind n findnext --search-from-view
