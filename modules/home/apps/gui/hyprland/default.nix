@@ -433,6 +433,9 @@ in
           "float,class:^(org.telegram.desktop|telegramdesktop)$,title:^(Media viewer)$"
           "noanim,class:^(org.telegram.desktop|telegramdesktop)$,title:^(Media viewer)$"
 
+          "float,class:^(com.ayugram.desktop|ayugramdesktop)$,title:^(Media viewer)$"
+          "noanim,class:^(com.ayugram.desktop|ayugramdesktop)$,title:^(Media viewer)$"
+
           "noanim, class:^(Godot)$"
           "tile, class:^(Godot)$, initialTitle:^(Godot)$"
 
