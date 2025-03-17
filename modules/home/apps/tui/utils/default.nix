@@ -42,6 +42,7 @@ in
       rainfrog # tui database management
       rip2 # RM Improved
       serpl # search and replace
+      ncdu # see what's taking up space
     ];
   };
 }

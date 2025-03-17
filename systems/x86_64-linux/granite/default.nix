@@ -18,8 +18,6 @@
       "develop"
     ];
 
-    helix.enableLSP = false;
-
     systemd-boot.enable = false;
     syncthing.enable = false;
   };

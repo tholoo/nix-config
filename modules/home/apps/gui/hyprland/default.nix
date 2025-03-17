@@ -107,7 +107,7 @@ in
           "[workspace 2 silent] $browser"
           "[workspace 3 silent] ${lib.getExe pkgs.ayugram-desktop}"
           "[workspace 4 silent] sudo -E ${lib.getExe pkgs.hiddify-app}"
-          "[workspace 5 silent] ${lib.getExe pkgs.youtube-music}"
+          "[workspace 5 silent] ${lib.getExe pkgs.youtube-music}; sleep 1; pkill youtube-music; ${lib.getExe pkgs.youtube-music}"
 
           "${lib.getExe' pkgs.swww "swww-daemon"}"
           "${lib.getExe pkgs.wl-clip-persist} --clipboard both"
