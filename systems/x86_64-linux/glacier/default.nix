@@ -15,4 +15,9 @@
     grub.enable = true;
     systemd-boot.enable = false;
   };
+
+  # Disable speaker buzzing sound
+  boot.extraModprobeConfig = ''
+    snd_hda_intel power_save=0
+  '';
 }
