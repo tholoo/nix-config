@@ -15,6 +15,7 @@ in
     tags = [
       "tui"
       "cli-tools"
+      "download"
     ];
   };
 

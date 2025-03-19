@@ -15,6 +15,7 @@ in
     tags = [
       "tui"
       "tui-utils"
+      "download"
     ];
   };
 
