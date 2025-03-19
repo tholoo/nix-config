@@ -39,7 +39,7 @@ in
 
       distrobox
 
-      ffmpeg-full
+      ffmpeg_6-full
     ];
   };
 }
