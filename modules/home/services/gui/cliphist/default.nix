@@ -9,7 +9,7 @@ in
   options.mine.${name} = mkEnable config {
     tags = [
       "service"
-      "tui"
+      "gui"
       "clipboard"
     ];
   };

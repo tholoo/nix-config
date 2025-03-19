@@ -16,6 +16,8 @@
       "game"
       "gui"
       "develop"
+      "mount"
+      "proxy"
     ];
 
     systemd-boot.enable = false;

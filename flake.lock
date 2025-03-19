@@ -1266,6 +1266,7 @@
         "nixvim": "nixvim",
         "nur": "nur",
         "snowfall-lib": "snowfall-lib",
+        "srvos": "srvos",
         "stylix": "stylix"
       }
     },
@@ -1305,6 +1306,26 @@
       "original": {
         "owner": "snowfallorg",
         "repo": "lib",
+        "type": "github"
+      }
+    },
+    "srvos": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1742173155,
+        "narHash": "sha256-O+p7U0fepbze8lPKbGA5zjF+13ds0o7CdZJTj0j3FSU=",
+        "owner": "nix-community",
+        "repo": "srvos",
+        "rev": "73e2a272b180ff659777c7a7f369f5565a677473",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "repo": "srvos",
         "type": "github"
       }
     },

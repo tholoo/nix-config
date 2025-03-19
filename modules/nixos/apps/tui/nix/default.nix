@@ -22,7 +22,7 @@ in
       };
 
       settings = {
-        experimental-features = "nix-command flakes";
+        experimental-features = lib.mkDefault "nix-command flakes";
         # Deduplicate and optimize nix store
         auto-optimise-store = true;
         trusted-users = [
