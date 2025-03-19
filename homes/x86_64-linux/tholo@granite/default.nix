@@ -7,9 +7,21 @@
     };
 
     tui.enable = true;
+    tags.exclude = [
+      "game"
+      "gui"
+      "develop"
+      "mount"
+      "tui-misc"
+      "vpn"
+      "download"
+      "productivity"
+      "nix-index"
+      "mcfly"
+      "cli-cool"
+      "calender"
+    ];
 
-    cliphist.enable = false;
-    espanso.enable = false;
     cli-cool.enable = false;
     kube.enable = false;
     nixvim.enable = false;
@@ -20,5 +32,6 @@
       enable = true;
       enableLSP = false;
     };
+
   };
 }
