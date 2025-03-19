@@ -100,6 +100,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+
+    srvos = {
+      url = "github:nix-community/srvos";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -144,11 +149,20 @@
       ];
 
       systems.hosts.glacier.modules = with inputs.nixos-hardware.nixosModules; [
+        inputs.srvos.nixosModules.desktop
+
         # ideapad-ideapad-slim-5
         common-gpu-amd
         common-cpu-amd
         common-pc-laptop
         common-pc-laptop-ssd
+      ];
+
+      systems.hosts.granite.modules = with inputs.srvos; [
+        nixosModules.server
+        nixosModules.hardware-hetzner-cloud
+        nixosModules.mixins-terminfo
+        nixosModules.mixins-trusted-nix-caches
       ];
 
       # systems.hosts.my-host.specialArgs = {
