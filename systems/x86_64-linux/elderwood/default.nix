@@ -28,4 +28,8 @@
     grub.enable = true;
     systemd-boot.enable = false;
   };
+
+  environment.sessionVariables = {
+    LIBVA_DRIVER_NAME = "iHD";
+  }; # Force intel-media-driver
 }
