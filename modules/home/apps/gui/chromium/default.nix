@@ -21,7 +21,7 @@ in
 
   config = mkIf cfg.enable {
     programs.chromium = {
-      enable = true;
+      enable = false;
       dictionaries = with pkgs; [ hunspellDictsChromium.en_US ];
       extensions =
         [
