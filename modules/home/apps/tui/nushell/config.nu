@@ -198,6 +198,14 @@ $env.config = {
       ]
     },
   ]
+
+    hooks: {
+        env_change: {
+            PWD: [
+                { |before, after| zellij-update-tabname-git }
+            ]
+        }
+    }
  }
 
 def e_completer [] {
@@ -217,3 +225,39 @@ export def --env mkcd [name: path] {
   mkdir $name
   cd $name
 }
+
+
+def zellij-update-tabname-git [] {
+    if ("ZELLIJ" in $env) {
+        let current_dir = pwd;
+        
+        mut tab_name = if ($current_dir == $env.HOME) {
+            "~"
+        } else {
+            ($current_dir | path parse | get stem)
+        };
+
+        let in_git = (try { git rev-parse --is-inside-work-tree } catch { "false" });
+        if ($in_git | into bool) {
+            # Get the git superproject root if available.
+            let git_root_super = (try { git rev-parse --show-superproject-working-tree } catch { "" });
+            let git_root = if ($git_root_super == "") {
+                (try { git rev-parse --show-toplevel } catch { "" })
+            } else {
+                $git_root_super
+            };
+
+            # If current directory isn’t the same as the git root, prepend the repo’s basename.
+            if (($git_root | str downcase) != ($current_dir | str downcase)) {
+                let repo_name = ($git_root | path parse | get stem);
+                let subpath = $current_dir | str replace $git_root "";
+                $tab_name = $"($repo_name):($subpath)"
+            }
+        }
+
+        # Update the zellij tab name.
+        zellij action rename-tab $tab_name;
+    }
+}
+
+
