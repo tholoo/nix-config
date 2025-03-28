@@ -436,6 +436,11 @@ in
           "float,class:^(com.ayugram.desktop|ayugramdesktop)$,title:^(Media viewer)$"
           "noanim,class:^(com.ayugram.desktop|ayugramdesktop)$,title:^(Media viewer)$"
 
+          "noinitialfocus,class:^(nannou)$"
+          "noanim,class:^(nannou)$"
+          "float,class:^(nannou)$"
+          "move 100%-w-20 0%-w-20,class:^(nannou)$"
+
           "noanim, class:^(Godot)$"
           "tile, class:^(Godot)$, initialTitle:^(Godot)$"
 
