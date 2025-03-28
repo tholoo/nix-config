@@ -2,6 +2,7 @@
   pkgs,
   config,
   lib,
+  host,
   ...
 }:
 let
@@ -41,7 +42,7 @@ with lib.mine;
         with pkgs;
         [
           # nix
-          nil
+          nixd
           # yaml
           yaml-language-server
           # vue
@@ -137,6 +138,16 @@ with lib.mine;
               };
               cargo = {
                 allFeatures = true;
+              };
+            };
+          };
+          nixd = {
+            auto-format = true;
+            command = lib.getExe pkgs.nixd;
+            config = {
+              options = {
+                nixos.expr = ''(builtins.getFlake "/home/${config.mine.user.name}/nix-config").nixosConfigurations."${host}".options'';
+                home-manager.expr = ''(builtins.getFlake "/home/${config.mine.user.name}/nix-config").homeConfigurations."${config.mine.user.name}@${host}".options'';
               };
             };
           };
