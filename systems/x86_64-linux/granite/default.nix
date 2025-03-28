@@ -18,6 +18,7 @@
       "develop"
       "mount"
       "proxy"
+      "vpn"
     ];
 
     systemd-boot.enable = false;

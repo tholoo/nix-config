@@ -7,7 +7,7 @@ let
   };
 
   systems = mkAll {
-    granite = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKpiDbSSUP7ePiyzluQojQgmIzDjBdTE3tCnP3dSJNIO";
+    granite = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIA0okJ7bbZOM7BWgZ76dvO3VJp+ouPfosrBlXHsyumt6";
     glacier = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIN3a+4xjTkW2KPGTbGtZMhzS++0Tq9/7KFlMS96t8koi";
     ahm = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJrMl4Ne28Pl6LxsI/IsbSA4QK/wBzi/GfX4/jB/KbJt";
   };
