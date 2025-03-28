@@ -217,6 +217,10 @@ in
               outbound = "direct";
             }
             {
+              port = [ 22 ];
+              outbound = "direct";
+            }
+            {
               outbound = "direct";
               rule_set = [
                 "geoip-ir"
