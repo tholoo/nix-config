@@ -424,7 +424,6 @@ in
 
       shellAliases = {
         e = "$EDITOR";
-        f = "${lib.getExe pkgs.yazi}";
 
         ls = "${lib.getExe pkgs.eza} -la --group-directories-first --git";
         la = "${lib.getExe pkgs.eza} -la --group-directories-first --git --git-ignore -I .venv -I __pycache__ -I .git";

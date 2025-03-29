@@ -31,8 +31,7 @@ in
     {
       programs.yazi = {
         enable = true;
-        # disabled by default. Provides "ya" which allows for auto cding
-        enableFishIntegration = true;
+        shellWrapperName = "f";
         keymap.manager.prepend_keymap = [
           {
             on = [ "e" ];
@@ -110,7 +109,7 @@ in
           plugins = lib.mapAttrsToList (name: value: mkYaziPlugin name value) plugins-sources;
         in
         lib.fold (el: c: el // c) {
-          ${mkYaziPlugin' "smart-enter.yazi/init.lua"}.source =
+          ${mkYaziPlugin' "smart-enter.yazi/main.lua"}.source =
             builtins.toFile "init.lua" # lua
               ''
                 --- @sync entry

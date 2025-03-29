@@ -21,8 +21,11 @@ in
   config = mkIf cfg.enable {
     programs.nushell = {
       enable = true;
-      # envFile.text = ''
-      # '';
+      environmentVariables = {
+        EDITOR = "hx";
+        SUDO_EDITOR = "hx";
+      };
+
       configFile.text =
         builtins.readFile ./config.nu
         # nu
@@ -59,7 +62,6 @@ in
         );
 
       shellAliases = {
-        f = "${lib.getExe pkgs.yazi}";
         lg = lib.getExe pkgs.lazygit;
         ld = lib.getExe pkgs.lazydocker;
         # mysync = "${lib.getExe pkgs.rsync} --progress --partial --human-readable --archive --verbose --exclude-from='${./rsync-excludes.txt}'";
