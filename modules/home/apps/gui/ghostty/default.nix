@@ -3,7 +3,7 @@ let
   inherit (lib) mkIf;
   inherit (lib.mine) mkEnable;
   cfg = config.mine.${name};
-  name = "kitty";
+  name = "ghostty";
 in
 {
   options.mine.${name} = mkEnable config {
@@ -14,11 +14,15 @@ in
   };
 
   config = mkIf cfg.enable {
-    programs.kitty = {
+    programs.ghostty = {
       enable = true;
+      installBatSyntax = true;
+      installVimSyntax = true;
       settings = {
-        enable_audio_bell = false;
-        confirm_os_window_close = 0;
+        confirm-close-surface = false;
+        theme = "deep";
+        font-family = "JetBrainsMono Nerd Font";
+        font-size = 12.5;
       };
     };
   };

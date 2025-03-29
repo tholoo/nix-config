@@ -147,7 +147,7 @@ in
             format-ethernet = "󰛳 Online";
             format-disconnected = "󰅛 Offline";
             tooltip-format = "{essid}";
-            on-click = "kitty -e nmtui";
+            on-click = "ghostty -e nmtui";
             format-icons = [
               "󰤯"
               "󰤟"

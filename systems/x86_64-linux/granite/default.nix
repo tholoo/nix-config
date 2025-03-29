@@ -1,4 +1,4 @@
-{ modulesPath, ... }:
+{ pkgs, modulesPath, ... }:
 {
   imports = [
     (modulesPath + "/installer/scan/not-detected.nix")
@@ -24,6 +24,11 @@
     systemd-boot.enable = false;
     syncthing.enable = false;
   };
+
+  environment.systemPackages = with pkgs; [
+    ghostty.terminfo
+    kitty.terminfo
+  ];
 
   security.sudo.wheelNeedsPassword = false;
   # services.minecraft-server.serverProperties.jvmOpts = "-Xmx512M -Xms512M";

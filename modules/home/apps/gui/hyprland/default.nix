@@ -84,7 +84,7 @@ in
         # See https://wiki.hyprland.org/Configuring/Keywords/
 
         # "$terminal" = lib.getExe' pkgs.wezterm "wezterm";
-        "$terminal" = lib.getExe pkgs.kitty;
+        "$terminal" = lib.getExe pkgs.ghostty;
         "$fileManager" = lib.getExe' pkgs.kdePackages.dolphin "dolphin";
         "$menu" = "anyrun";
         "$browser" = lib.getExe pkgs.floorp;
