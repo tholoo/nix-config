@@ -54,6 +54,9 @@ with lib.mine;
         curl
 
         home-manager
+
+        ghostty.terminfo
+        kitty.terminfo
       ];
 
       environment.variables = {
