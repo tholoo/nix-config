@@ -23,12 +23,9 @@
 
     systemd-boot.enable = false;
     syncthing.enable = false;
-  };
 
-  environment.systemPackages = with pkgs; [
-    ghostty.terminfo
-    kitty.terminfo
-  ];
+    k8s.enable = false;
+  };
 
   security.sudo.wheelNeedsPassword = false;
   # services.minecraft-server.serverProperties.jvmOpts = "-Xmx512M -Xms512M";
