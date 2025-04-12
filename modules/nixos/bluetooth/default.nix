@@ -1,7 +1,7 @@
 {
   config,
   lib,
-  host,
+  pkgs,
   ...
 }:
 let
@@ -19,9 +19,16 @@ in
   };
 
   config = mkIf cfg.enable {
+    hardware.firmware = [ pkgs.linux-firmware ];
     hardware.bluetooth = {
       enable = true;
       powerOnBoot = true;
+      settings = {
+        General = {
+          Experimental = true;
+          MultiProfile = "multiple";
+        };
+      };
     };
   };
 }
