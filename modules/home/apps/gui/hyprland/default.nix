@@ -343,7 +343,7 @@ in
             ", Print, exec, ${screenshot}"
             ", Insert, exec, ${getExe wayshot} --stdout | ${getExe satty} --filename - --fullscreen --initial-tool brush"
             # "$mainMod, Y, exec, ${getExe cliphist} list | ${getExe wofi} --show dmenu | ${getExe cliphist} decode | ${getExe' wl-clipboard "wl-copy"}"
-            "$mainMod, Y, exec, $terminal --class clipse -e '${lib.getExe pkgs.clipse}'"
+            "$mainMod, Y, exec, $terminal --class=\"clipse\" -e '${lib.getExe pkgs.clipse}'"
             "$mainMod SHIFT, Z, exec, ${getExe wlogout}"
             "$mainMod SHIFT, n, exec, ${getExe' swaynotificationcenter "swaync-client"} --toggle-panel --skip-wait"
             "$mainMod, period, exec, ${getExe' swaynotificationcenter "swaync-client"} --hide-latest"
