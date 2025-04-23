@@ -127,7 +127,7 @@ in
             interrupt_exist_connections = true;
             outbounds = [
               "auto"
-              "hys2 § 0"
+              "proxy"
             ];
             tag = "select";
             type = "selector";
@@ -136,31 +136,35 @@ in
             idle_timeout = "3h0m0s";
             interrupt_exist_connections = true;
             interval = "1h0m0s";
-            outbounds = [ "hys2 § 0" ];
+            outbounds = [ "proxy" ];
             tag = "auto";
             tolerance = 1;
             type = "urltest";
             url = "http://cp.cloudflare.com";
           }
           {
-            obfs = {
-              password = {
-                _secret = config.age.secrets.singbox-obfs-pass.path;
-              };
-              type = "salamander";
-            };
-            password = {
-              _secret = config.age.secrets.singbox-pass.path;
-            };
+            type = "vmess";
+            tag = "proxy";
             server = {
               _secret = config.age.secrets.singbox-domain.path;
             };
-            server_port = 33735;
-            tag = "hys2 § 0";
-            tls = {
-              enabled = true;
+            server_port = 8080;
+            uuid = {
+              _secret = config.age.secrets.singbox-uuid.path;
             };
-            type = "hysteria2";
+            security = "auto";
+            authenticated_length = true;
+            packet_encoding = "xudp";
+            transport = {
+              type = "ws";
+              path = "/";
+              headers = {
+                Host = {
+                  _secret = config.age.secrets.singbox-header-domain.path;
+                };
+              };
+              early_data_header_name = "Sec-WebSocket-Protocol";
+            };
           }
           {
             tag = "dns-out";
@@ -218,6 +222,10 @@ in
             }
             {
               port = [ 22 ];
+              outbound = "direct";
+            }
+            {
+              ip_cidr = [ "65.109.213.20" ];
               outbound = "direct";
             }
             {
