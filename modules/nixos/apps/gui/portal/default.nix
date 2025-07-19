@@ -46,6 +46,9 @@ in
     environment.systemPackages = with pkgs; [
       xdg-desktop-portal-termfilechooser
       qt6ct
+      libadwaita
+      adwaita-icon-theme
+      gtk4
     ];
     environment.sessionVariables = {
       GTK_USE_PORTAL = 1;

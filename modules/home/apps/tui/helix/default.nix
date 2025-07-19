@@ -126,9 +126,9 @@ with lib.mine;
         language-server = {
           rust-analyzer = {
             auto-format = true;
-            # command = lib.getExe pkgs.rust-analyzer-nightly;
-            args = [ "client" ];
-            command = lib.getExe pkgs.ra-multiplex;
+            command = lib.getExe pkgs.rust-analyzer-nightly;
+            # args = [ "client" ];
+            # command = lib.getExe pkgs.ra-multiplex;
             config = {
               cachePriming.enable = true;
               diagnostics.experimental.enable = true;

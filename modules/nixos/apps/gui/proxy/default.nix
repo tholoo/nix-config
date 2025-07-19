@@ -24,6 +24,14 @@ in
     networking.firewall.trustedInterfaces = [ "tun0" ];
     # networking.proxy.default = "http://127.0.0.1:12334";
 
+    programs.nekoray = {
+      enable = true;
+      tunMode = {
+        enable = true;
+        setuid = true;
+      };
+    };
+
     services.sing-box = {
       enable = true;
       settings = {

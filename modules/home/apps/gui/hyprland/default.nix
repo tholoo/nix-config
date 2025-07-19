@@ -106,7 +106,7 @@ in
           "[workspace 1 silent] $terminal"
           "[workspace 2 silent] $browser"
           "[workspace 3 silent] ${lib.getExe pkgs.ayugram-desktop}"
-          "[workspace 4 silent] sudo -E ${lib.getExe pkgs.hiddify-app}"
+          # "[workspace 4 silent] sudo -E ${lib.getExe pkgs.hiddify-app}"
           "[workspace 5 silent] ${lib.getExe pkgs.youtube-music}; sleep 1; pkill youtube-music; ${lib.getExe pkgs.youtube-music}"
 
           "${lib.getExe' pkgs.swww "swww-daemon"}"
@@ -417,10 +417,10 @@ in
 
         # Example windowrule v2
         # windowrulev2 = float,class:^(kitty)$,title:^(kitty)$
-        windowrule = [
-          "nofocus,org.kde.kdeconnect.daemon"
-          "float,org.kde.kdeconnect.daemon"
-        ];
+        # windowrule = [
+        #   "nofocus,org.kde.kdeconnect.daemon"
+        #   "float,org.kde.kdeconnect.daemon"
+        # ];
 
         workspace = [
           "w[t1], gapsout:0, gapsin:0"
@@ -449,14 +449,14 @@ in
           "noanim,class:^(clipse|floatingAppFocus)$"
           "size 622 652,class:(clipse)"
 
-          "nofocus,class:(org.kde.kdeconnect.daemon)"
-          "float,class:(org.kde.kdeconnect.daemon)"
-          "noanim,class:(org.kde.kdeconnect.daemon)"
-          "noblur,class:(org.kde.kdeconnect.daemon)"
-          "fullscreenstate 0 1, class:(org.kde.kdeconnect.daemon)"
-          "nomaxsize, class:(org.kde.kdeconnect.daemon)"
-          "pin, class:(org.kde.kdeconnect.daemon)"
-          "size 100% 100%, class:(org.kde.kdeconnect.daemon)"
+          # "nofocus,class:(org.kde.kdeconnect.daemon)"
+          # "float,class:(org.kde.kdeconnect.daemon)"
+          # "noanim,class:(org.kde.kdeconnect.daemon)"
+          # "noblur,class:(org.kde.kdeconnect.daemon)"
+          # "fullscreenstate 0 1, class:(org.kde.kdeconnect.daemon)"
+          # "nomaxsize, class:(org.kde.kdeconnect.daemon)"
+          # "pin, class:(org.kde.kdeconnect.daemon)"
+          # "size 100% 100%, class:(org.kde.kdeconnect.daemon)"
 
           "bordersize 0, floating:0, onworkspace:w[t1]"
           "rounding 0, floating:0, onworkspace:w[t1]"

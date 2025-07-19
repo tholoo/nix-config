@@ -21,6 +21,7 @@ in
   config = mkIf cfg.enable {
     programs.${name} = {
       enable = true;
+      enableNushellIntegration = false; # broken
       settings = {
         modal = true;
         verbs = [

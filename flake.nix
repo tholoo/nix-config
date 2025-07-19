@@ -86,25 +86,25 @@
     #   url = "gitlab:VandalByte/dedsec-grub-theme";
     #   inputs.nixpkgs.follows = "nixpkgs";
     # };
-    anyrun = {
-      url = "github:anyrun-org/anyrun";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
 
     nur.url = "github:nix-community/NUR";
-
-    hyprpanel.url = "github:Jas-SinghFSU/HyprPanel";
 
     fenix = {
       url = "github:nix-community/fenix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    NixVirt = {
+      url = "github:AshleyYakeley/NixVirt";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     srvos = {
       url = "github:nix-community/srvos";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    zellij-switch.url = "github:mostafaqanbaryan/zellij-switch";
   };
 
   outputs =
@@ -135,8 +135,8 @@
       overlays = with inputs; [
         neovim-nightly-overlay.overlays.default
         nur.overlays.default
-        hyprpanel.overlay
         fenix.overlays.default
+        zellij-switch.overlays.default
       ];
 
       systems.modules.nixos = with inputs; [
@@ -146,6 +146,7 @@
         nixos-generators.nixosModules.all-formats
         nur.modules.nixos.default
         # dedsec-grub-theme.nixosModule
+        NixVirt.nixosModules.default
       ];
 
       systems.hosts.glacier.modules = with inputs.nixos-hardware.nixosModules; [
@@ -172,8 +173,7 @@
       homes.modules = with inputs; [
         nixvim.homeManagerModules.nixvim
         agenix.homeManagerModules.default
-        nix-index-database.hmModules.nix-index
-        anyrun.homeManagerModules.default
+        nix-index-database.homeModules.nix-index
         # stylix.homeManagerModules.stylix
       ];
 
@@ -187,7 +187,7 @@
         "granite" = {
           hostname = "granite";
           sshUser = "root";
-          remoteBuild = false;
+          remoteBuild = true;
           profiles.system = {
             user = "root";
             path = inputs.deploy-rs.lib.x86_64-linux.activate.nixos inputs.self.nixosConfigurations.granite;

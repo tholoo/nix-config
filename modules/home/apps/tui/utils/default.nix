@@ -43,6 +43,7 @@ in
       rip2 # RM Improved
       serpl # search and replace
       ncdu # see what's taking up space
+      gparted # disk management
     ];
   };
 }

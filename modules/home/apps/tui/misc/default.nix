@@ -24,7 +24,7 @@ in
       xdg-utils
       # gcc
       libgcc
-      libgccjit
+      # libgccjit
       clang
 
       # archives
