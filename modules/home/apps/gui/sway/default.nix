@@ -41,7 +41,7 @@ in
     };
 
     programs.swaylock = {
-      enable = true;
+      enable = false;
       settings = {
         image = "${inputs.self}/resources/wallpapers/wallhaven-car-swamp.png";
         ignore-empty-password = true;

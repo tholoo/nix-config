@@ -20,6 +20,7 @@ in
       pam.services.swaylock = {
         text = "auth include login";
       };
+      pam.services.hyprlock = { };
     };
   };
 }
