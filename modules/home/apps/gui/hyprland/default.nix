@@ -366,7 +366,7 @@ in
             # Special audio keys (piped into wob, using pipewire)
 
             "$mainMod, F, fullscreen"
-            "$mainMod, z, exec, hyprlock"
+            "$mainMod, z, exec, hyprctl switchxkblayout all 0 && hyprlock"
 
             "$SUPERCTRL, h, movecurrentworkspacetomonitor, l"
             "$SUPERCTRL, l, movecurrentworkspacetomonitor, r"
