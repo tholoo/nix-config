@@ -1,5 +1,4 @@
 {
-  pkgs,
   config,
   lib,
   ...
@@ -21,17 +20,14 @@ in
 
   config = mkIf cfg.enable {
     services.espanso = {
-      enable = false;
-      package = pkgs.espanso-wayland;
+      enable = true;
+      waylandSupport = true;
       configs = {
         default = {
           show_notification = false;
           search_shortcut = "ALT+SPACE";
           search_trigger = ";srch";
           # show_icon = false;
-          keyboard_layout = {
-            layout = "us";
-          };
         };
       };
       matches = {
@@ -48,6 +44,14 @@ in
             {
               trigger = ";time";
               replace = "{{currenttime}}";
+            }
+            {
+              trigger = ";name";
+              replace = config.mine.user.fullName;
+            }
+            {
+              trigger = ";mail";
+              replace = config.mine.user.email;
             }
           ];
         };
