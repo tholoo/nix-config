@@ -346,7 +346,7 @@ in
             switchyomega
             auto-tab-discard
             pkgs.nur.repos.meain.firefox-addons.global-speed
-            enhancer-for-youtube
+            # enhancer-for-youtube
           ];
           settings = {
             "{f4961478-ac79-4a18-87e9-d2fb8c0442c4}".settings = builtins.fromJSON (
