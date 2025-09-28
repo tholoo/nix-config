@@ -35,6 +35,9 @@ in
         "shift+l" = "seek -60";
         "k" = "add volume 2";
         "j" = "add volume -2";
+        # zoom
+        "-" = "add video-zoom -.25";
+        "+" = "add video-zoom .25";
       };
       config = {
         # profile = "gpu-hq";
