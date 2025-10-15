@@ -33,7 +33,7 @@ in
           # 1) Lock at 15 min
           {
             timeout = 900;
-            on-timeout = "hyprlock";
+            on-timeout = "hyprctl switchxkblayout all 0 && hyprlock";
           }
 
           # 2) Turn displays off ~30s after lock (only if actually locked)
