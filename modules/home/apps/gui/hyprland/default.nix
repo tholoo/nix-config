@@ -243,6 +243,8 @@ in
 
         # https://wiki.hyprland.org/Configuring/Variables/#input
         input = {
+          # kb_layout = "us,us,ir";
+          # kb_variant = ",colemak_dh,";
           kb_layout = "us,ir";
           kb_variant = "";
           # kb_model = "logitech_base";
@@ -261,7 +263,7 @@ in
 
         # https://wiki.hyprland.org/Configuring/Variables/#gestures
         gestures = {
-          workspace_swipe = true;
+          workspace_swipe_touch = true;
           workspace_swipe_invert = false;
           workspace_swipe_distance = 150;
           workspace_swipe_forever = true;
