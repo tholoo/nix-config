@@ -77,6 +77,9 @@ with lib.mine;
           lldb
           # c
           clang-tools
+          # typst
+          tinymist
+          typstyle
         ]
       );
       # https://docs.helix-editor.com/configuration.html
@@ -254,6 +257,11 @@ with lib.mine;
             name = "rust";
             auto-format = true;
             formatter.command = "rustfmt --edition 2024 --style-edition 2024";
+          }
+          {
+            name = "typst";
+            auto-format = true;
+            formatter.command = "typstyle";
           }
           {
             name = "toml";
