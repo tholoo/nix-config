@@ -22,7 +22,10 @@ in
     nixpkgs.config.packageOverrides = pkgs: {
       intel-vaapi-driver = pkgs.intel-vaapi-driver.override { enableHybridCodec = true; };
     };
-
+    services.xserver.videoDrivers = [
+      "amdgpu"
+      "ati"
+    ];
     hardware.graphics = {
       enable = true;
       extraPackages32 = with pkgs.pkgsi686Linux; [ intel-vaapi-driver ];
@@ -31,6 +34,8 @@ in
       extraPackages = with pkgs; [
         intel-media-driver # LIBVA_DRIVER_NAME=iHD
         intel-vaapi-driver # LIBVA_DRIVER_NAME=i965 (older but works better for Firefox/Chromium)
+        vulkan-loader
+        vulkan-tools
         libvdpau-va-gl
       ];
     };
