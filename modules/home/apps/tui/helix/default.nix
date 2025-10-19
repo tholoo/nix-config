@@ -285,6 +285,7 @@ with lib.mine;
               # "pylyzer"
               "typos"
             ];
+            auto-format = true;
           }
           {
             name = "nix";
