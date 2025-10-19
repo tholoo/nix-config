@@ -118,6 +118,7 @@ in
           ''${pkgs.dbus}/bin/dbus-update-activation-environment --systemd --all''
           "systemctl --user import-environment; systemctl --user start graphical-session.target"
 
+          "${lib.getExe pkgs.sunsetr}"
           "[workspace 1 silent] $terminal"
           "[workspace 2 silent] $browser"
           "[workspace 3 silent] ${lib.getExe pkgs.ayugram-desktop}"
