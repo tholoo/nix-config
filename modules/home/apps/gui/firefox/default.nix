@@ -24,6 +24,61 @@ in
       "${pkgs.tridactyl-native}/lib/mozilla/native-messaging-hosts/tridactyl.json";
 
     xdg.configFile."tridactyl/tridactylrc".source = ./tridactylrc;
+    programs.zen-browser = {
+      enable = true;
+      nativeMessagingHosts = with pkgs; [ tridactyl-native ];
+      languagePacks = [
+        "en-US"
+        "fa"
+      ];
+
+      policies =
+        let
+          mkExtensionSettings = builtins.mapAttrs (
+            _: pluginId: {
+              install_url = "https://addons.mozilla.org/firefox/downloads/latest/${pluginId}/latest.xpi";
+              installation_mode = "force_installed";
+            }
+          );
+        in
+        {
+          AutofillAddressEnabled = true;
+          AutofillCreditCardEnabled = false;
+          DisableAppUpdate = true;
+          DisableFeedbackCommands = true;
+          DisableFirefoxStudies = true;
+          DisablePocket = true;
+          DisableTelemetry = true;
+          DontCheckDefaultBrowser = true;
+          NoDefaultBookmarks = true;
+          OfferToSaveLogins = true;
+          EnableTrackingProtection = {
+            Value = true;
+            Locked = true;
+            Cryptomining = true;
+            Fingerprinting = true;
+          };
+          ExtensionSettings = mkExtensionSettings {
+            "idcac-pub@guus.ninja" = "istilldontcareaboutcookies";
+            "{85860b32-02a8-431a-b2b1-40fbd64c9c69}" = "github-file-icons";
+            "gdpr@cavi.au.dk" = "consent-o-matic";
+            "sponsorBlocker@ajay.app" = "sponsorBlocker@ajay.app";
+            "uBlock0@raymondhill.net" = "ublock-origin";
+            "tridactyl.vim@cmcaine.co.uk" = "tridactyl.vim@cmcaine.co.uk";
+            # auto tab discard
+            "{c2c003ee-bd69-42a2-b0e9-6f34222cb046}" = "{c2c003ee-bd69-42a2-b0e9-6f34222cb046}";
+            "{7be2ba16-0f1e-4d93-9ebc-5164397477a9}" = "videospeed";
+          };
+        };
+      profiles.default = {
+        extensions = {
+          force = true;
+          settings = {
+            "uBlock0@raymondhill.net".settings = builtins.fromJSON (builtins.readFile ./ublock.json);
+          };
+        };
+      };
+    };
 
     programs.floorp = {
       enable = true;
@@ -76,9 +131,9 @@ in
         # Suggested by t0b0 thank you <3 https://gitlab.com/engmark/root/-/blob/60468eb82572d9a663b58498ce08fafbe545b808/configuration.nix#L293-310
         # NOTE(Krey): Check if the addon is packaged on https://gitlab.com/rycee/nur-expressions/-/blob/master/pkgs/firefox-addons/addons.json
         ExtensionSettings = {
-          "*" = {
-            installation_mode = "blocked";
-          };
+          # "*" = {
+          #   installation_mode = "blocked";
+          # };
           # "addon@darkreader.org" = {
           # 	# Dark Reader
           # 	install_url = "file:///${self.inputs.firefox-addons.packages.x86_64-linux.darkreader}/share/mozilla/extensions/{ec8030f7-c20a-464f-9b0e-13a3a9e97384}/addon@darkreader.org.xpi";
@@ -345,7 +400,8 @@ in
             bitwarden
             switchyomega
             auto-tab-discard
-            pkgs.nur.repos.meain.firefox-addons.global-speed
+            # pkgs.nur.repos.meain.firefox-addons.global-speed
+            videospeed
             # enhancer-for-youtube
           ];
           settings = {
@@ -357,6 +413,9 @@ in
         };
         settings = {
           "extensions.autoDisableScopes" = 0; # auto activate extensions
+          "extensions.update.autoUpdateDefault" = false;
+          "extensions.update.enabled" = false;
+          "extensions.enabledScopes" = 3;
           "floorp.browser.sidebar.enable" = false;
           "floorp.browser.sidebar.is.displayed" = false;
           "floorp.browser.sidebar.right" = false;
