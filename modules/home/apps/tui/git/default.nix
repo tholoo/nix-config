@@ -45,6 +45,7 @@ in
       git-cliff.enable = true;
       git = {
         enable = true;
+        lfs.enable = true;
         userName = config.mine.user.fullName;
         userEmail = config.mine.user.email;
         # Install git with all the optional extras
