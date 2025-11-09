@@ -24,6 +24,7 @@
 		"autoResetAppCache": false,
 		"resumeOnStart": true,
 		"likeButtons": "",
+		"proxy": "socks5://127.0.0.1:2080",
 		"startingPage": "",
 		"overrideUserAgent": false,
 		"usePodcastParticipantAsArtist": false,
@@ -84,7 +85,7 @@
 	},
 	"__internal__": {
 		"migrations": {
-			"version": "3.7.4"
+			"version": "3.11.0"
 		}
 	}
 }
