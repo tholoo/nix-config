@@ -1,4 +1,9 @@
-{ config, lib, ... }:
+{
+  pkgs,
+  config,
+  lib,
+  ...
+}:
 let
   inherit (lib) mkIf;
   inherit (lib.mine) mkEnable;
@@ -18,6 +23,7 @@ in
     virtualisation = {
       docker = {
         enable = true;
+        extraPackages = [ pkgs.docker-buildx ];
         daemon.settings = {
           registry-mirrors = [ "https://registry.docker.ir" ];
           log-driver = "json-file";
