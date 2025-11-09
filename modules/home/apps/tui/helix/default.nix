@@ -80,6 +80,8 @@ with lib.mine;
           # typst
           tinymist
           typstyle
+          # markdown
+          markdown-oxide
         ]
       );
       # https://docs.helix-editor.com/configuration.html
