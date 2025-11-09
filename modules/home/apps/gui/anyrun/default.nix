@@ -40,77 +40,96 @@ in
       };
       extraCss = # css
         ''
-          #window {
+          @define-color accent #7e9cd8;
+          @define-color bg-color #1e1e1e;
+          @define-color fg-color #E5EBF7;
+          @define-color desc-color #b0b0b0;
+
+          window {
             background-color: rgba(0, 0, 0, 0);
           }
 
-          box#main {
+          box.main {
             border-radius: 15px;
-            background-color: rgba(30, 30, 30, 1);
+            background-color: @bg-color;
             font-size: 20px;
-            border: 2px solid #7e9cd8;
+            border: 2px solid @accent;
+            margin: 10px;
+            padding: 5px;
+            box-shadow: none;
           }
 
-          entry#entry {
+          text {
             min-height: 50px;
             border-radius: 20px;
             background: transparent;
             box-shadow: none;
-            color: #E5EBF7;
+            color: @fg-color;
             border: none;
           }
 
-          list#main {
-            background-color: rgba(0, 0, 0, 0);
+          list.plugin {
+            background-color: transparent;
           }
 
-          #plugin {
+          box.plugin {
             background: transparent;
             padding-bottom: 5px;
           }
 
-          #match {
+          label.match {
             padding: 2.5px;
+            color: @fg-color;
           }
 
-          #match:selected {
+          .match {
             background: transparent;
-            border-right: 4px solid #7e9cd8;
-            border-left: 4px solid #7e9cd8;
-            border-radius: 4px;
-            color: #7e9cd8;
           }
 
-          #match:selected label#info {
-            color: #b0b0b0;
-            animation: fade 0.1s linear
+          .match:hover {
+            background: transparent;
+          }
+
+          .match:selected {
+            background: transparent;
+            border-right: 4px solid @accent;
+            border-left: 4px solid @accent;
+            border-radius: 4px;
+            color: @accent;
+            animation: fade 0.1s linear;
+          }
+
+          label.plugin.info {
+            font-size: 14px;
+            color: @fg-color;
+          }
+
+          .match label.plugin.info {
+            color: transparent;
+          }
+
+          .match:selected label.plugin.info {
+            color: @desc-color;
+            animation: fade 0.1s linear;
+          }
+
+          label.match.description {
+            font-size: 15px;
+            color: @desc-color;
+          }
+
+          box.plugin:first-child {
+            margin-top: 5px;
           }
 
           @keyframes fade {
             0% {
-              color: transparent;
+              opacity: 0;
             }
 
             100% {
-              color: #b0b0b0;
+              opacity: 1;
             }
-          }
-
-          #match label#info {
-            color: transparent;
-          }
-
-          #match:hover {
-            background: transparent;
-          }
-
-          label#match-desc {
-            font-size: 15px;
-            color: #b0b0b0;
-          }
-
-          label#plugin {
-            font-size: 14px;
           }
         '';
 
