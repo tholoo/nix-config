@@ -105,6 +105,10 @@
     };
 
     zellij-switch.url = "github:mostafaqanbaryan/zellij-switch";
+    zen-browser = {
+      url = "github:0xc000022070/zen-browser-flake";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -174,7 +178,8 @@
         nixvim.homeManagerModules.nixvim
         agenix.homeManagerModules.default
         nix-index-database.homeModules.nix-index
-        # stylix.homeManagerModules.stylix
+        zen-browser.homeModules.beta
+        # stylix.homeModules.stylix
       ];
 
       # homes.users."my-user@my-host".specialArgs = {
