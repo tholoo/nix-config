@@ -157,6 +157,19 @@ $env.config = {
   # https://github.com/selfagency/nushell-config/blob/main/keybindings.nu
   keybindings: [
     {
+        name: paste_bash_multiline
+        modifier: alt
+        keycode: char_v
+        mode: [emacs, vi_normal, vi_insert]
+        event: { send: ExecuteHostCommand 
+            cmd: r#'commandline edit (
+                    wl-paste
+                    | str replace -ar '\\(?=\r?\n)' '' 
+                    | $"\(($in))"
+                )'#
+        }
+    },
+    {
       name: fuzzy_file_dir_completion
       modifier: control
       keycode: char_t
@@ -218,7 +231,7 @@ export def e [path: string@e_completer = "."] {
 
 export def shell [...pkgs: string] {
   let nix_pkgs = $pkgs | each { |pkg| $"nixpkgs#($pkg)" }
-  exec nix shell ...$nix_pkgs
+  ^nix shell ...$nix_pkgs
 }
 
 export def --env mkcd [name: path] {
@@ -226,6 +239,11 @@ export def --env mkcd [name: path] {
   cd $name
 }
 
+export def psgrep [query: string] {
+    ps
+    | each {|e| if ($e.name | str contains --ignore-case $query) { $e }}
+    | compact
+}
 
 def zellij-update-tabname-git [] {
     if ("ZELLIJ" in $env) {
