@@ -32,7 +32,7 @@ in
       programs.yazi = {
         enable = true;
         shellWrapperName = "f";
-        keymap.manager.prepend_keymap = [
+        keymap.mgr.prepend_keymap = [
           {
             on = [ "e" ];
             run = "open";
@@ -74,7 +74,7 @@ in
           }
         ];
         settings = lib.mkOptionDefault {
-          manager = {
+          mgr = {
             ratio = [
               1
               3
