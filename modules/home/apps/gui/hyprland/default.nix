@@ -101,7 +101,7 @@ in
         # "$terminal" = lib.getExe' pkgs.wezterm "wezterm";
         "$terminal" = lib.getExe pkgs.ghostty;
         "$fileManager" = lib.getExe' pkgs.kdePackages.dolphin "dolphin";
-        "$menu" = "anyrun";
+        "$menu" = "vicinae open";
         "$browser" = lib.getExe pkgs.floorp;
 
         #################
