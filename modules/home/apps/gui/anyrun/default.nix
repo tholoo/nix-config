@@ -45,20 +45,23 @@ in
           @define-color fg-color #E5EBF7;
           @define-color desc-color #b0b0b0;
 
+          /* Window */
           window {
             background-color: rgba(0, 0, 0, 0);
           }
 
+          /* Main container */
           box.main {
             border-radius: 15px;
             background-color: @bg-color;
             font-size: 20px;
             border: 2px solid @accent;
-            margin: 10px;
+            margin: 10px;      /* prevents full-screen look */
             padding: 5px;
             box-shadow: none;
           }
 
+          /* Search input */
           text {
             min-height: 50px;
             border-radius: 20px;
@@ -68,6 +71,7 @@ in
             border: none;
           }
 
+          /* List + plugin containers */
           list.plugin {
             background-color: transparent;
           }
@@ -77,6 +81,7 @@ in
             padding-bottom: 5px;
           }
 
+          /* Match rows */
           label.match {
             padding: 2.5px;
             color: @fg-color;
@@ -90,6 +95,7 @@ in
             background: transparent;
           }
 
+          /* Selected row */
           .match:selected {
             background: transparent;
             border-right: 4px solid @accent;
@@ -99,6 +105,7 @@ in
             animation: fade 0.1s linear;
           }
 
+          /* Info lines inside a match */
           label.plugin.info {
             font-size: 14px;
             color: @fg-color;
@@ -113,23 +120,21 @@ in
             animation: fade 0.1s linear;
           }
 
+          /* Descriptions under each match */
           label.match.description {
             font-size: 15px;
             color: @desc-color;
           }
 
+          /* Optional: first plugin top margin like the default */
           box.plugin:first-child {
             margin-top: 5px;
           }
 
+          /* Keyframes */
           @keyframes fade {
-            0% {
-              opacity: 0;
-            }
-
-            100% {
-              opacity: 1;
-            }
+            0%   { opacity: 0; }
+            100% { opacity: 1; }
           }
         '';
 
