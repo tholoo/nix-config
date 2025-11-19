@@ -45,7 +45,7 @@ in
     home.packages =
       with pkgs;
       [
-        ubuntu_font_family
+        ubuntu-classic
         liberation_ttf
         vazir-fonts # persian font
         vazir-code-font # persian font
