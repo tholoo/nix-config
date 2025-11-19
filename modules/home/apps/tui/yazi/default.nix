@@ -51,7 +51,7 @@ in
             on = [ "<C-n>" ];
             # there is also ripdrag but it didn't seem to work
             run = ''
-              shell '${lib.getExe pkgs.xdragon} -x -i -T "$1"' --confirm
+              shell '${lib.getExe pkgs.dragon-drop} -x -i -T "$1"' --confirm
             '';
             desc = "Drag & Drop";
           }
