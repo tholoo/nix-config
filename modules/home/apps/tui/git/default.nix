@@ -26,7 +26,9 @@ in
         settings = {
           git = {
             log.showWholeGraph = true;
-            paging.externalDiffCommand = "${lib.getExe pkgs.difftastic} --color=always";
+            pagers = [
+              { externalDiffCommand = "${lib.getExe pkgs.difftastic} --color=always"; }
+            ];
           };
           gui = {
             theme = {
@@ -43,16 +45,15 @@ in
       };
       gh-dash.enable = true;
       git-cliff.enable = true;
+      delta = {
+        enable = true;
+        enableGitIntegration = true;
+      };
       git = {
         enable = true;
         lfs.enable = true;
-        userName = config.mine.user.fullName;
-        userEmail = config.mine.user.email;
-        # Install git with all the optional extras
-        package = pkgs.gitAndTools.gitFull;
-        delta.enable = true;
         # diff-so-fancy.enable = true;
-        extraConfig = {
+        settings = {
           core.editor = "hx";
           init.defaultBranch = "main";
           pull.rebase = true;
@@ -63,21 +64,26 @@ in
           rebase.updateRefs = true;
           # if branch exists in origin, git worktree add will use that branch instead of creating a new one
           worktree.guessRemote = true;
-        };
-        aliases = {
-          a = "add";
-          b = "branch";
-          c = "commit";
-          cb = "checkout -b";
-          cm = "commit -m";
-          co = "checkout";
-          f = "fetch";
-          s = "status -s";
-          lg = "log --oneline --graph --decorate --all --abbrev-commit --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset'";
-          clone-bare = "!${lib.getExe pkgs.bash} ${./git-clone-bare.sh}";
-          info = "!${lib.getExe pkgs.onefetch}";
-          done = "!${lib.getExe pkgs.bash} ${./git-done.sh}";
-          mr = "!sh -c 'git fetch $1 merge-requests/$2/head:mr-$1-$2 && git checkout mr-$1-$2' -";
+
+          user = {
+            name = config.mine.user.fullName;
+            email = config.mine.user.email;
+          };
+          alias = {
+            a = "add";
+            b = "branch";
+            c = "commit";
+            cb = "checkout -b";
+            cm = "commit -m";
+            co = "checkout";
+            f = "fetch";
+            s = "status -s";
+            lg = "log --oneline --graph --decorate --all --abbrev-commit --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset'";
+            clone-bare = "!${lib.getExe pkgs.bash} ${./git-clone-bare.sh}";
+            info = "!${lib.getExe pkgs.onefetch}";
+            done = "!${lib.getExe pkgs.bash} ${./git-done.sh}";
+            mr = "!sh -c 'git fetch $1 merge-requests/$2/head:mr-$1-$2 && git checkout mr-$1-$2' -";
+          };
         };
       };
     };
