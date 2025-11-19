@@ -507,9 +507,9 @@ in
         asyncrun-vim
       ];
       extraPackages = with pkgs; [
-        rustfmt
-        rustc
-        cargo
+        # rustfmt
+        # rustc
+        # cargo
         lldb
         shfmt
         shellcheck
