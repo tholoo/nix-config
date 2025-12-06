@@ -82,6 +82,7 @@ in
 
     programs.floorp = {
       enable = true;
+      package = pkgs.floorp;
       # package = pkgs.floorp-unwrapped;
       # package = pkgs.floorp.override {
       #   cfg = {
