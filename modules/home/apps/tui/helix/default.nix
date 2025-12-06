@@ -92,6 +92,10 @@ with lib.mine;
           true-color = true;
           auto-save = true;
           line-number = "relative";
+          shell = [
+            "nu"
+            "-c"
+          ];
           cursor-shape = {
             normal = "block";
             insert = "bar";
