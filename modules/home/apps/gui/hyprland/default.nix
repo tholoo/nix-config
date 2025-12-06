@@ -363,7 +363,8 @@ in
             ", Print, exec, ${screenshot}"
             ", Insert, exec, ${getExe wayshot} --stdout | ${getExe satty} --filename - --fullscreen --initial-tool brush"
             # "$mainMod, Y, exec, ${getExe cliphist} list | ${getExe wofi} --show dmenu | ${getExe cliphist} decode | ${getExe' wl-clipboard "wl-copy"}"
-            "$mainMod, Y, exec, $terminal --class=\"clipse\" -e '${lib.getExe pkgs.clipse}'"
+            # "$mainMod, Y, exec, $terminal --class=\"com.example.clipse\" -e '${lib.getExe pkgs.clipse}'"
+            "$mainMod, Y, exec, vicinae vicinae://extensions/vicinae/clipboard/history"
             "$mainMod SHIFT, Z, exec, ${getExe wlogout}"
             "$mainMod SHIFT, n, exec, ${getExe' swaynotificationcenter "swaync-client"} --toggle-panel --skip-wait"
             "$mainMod, period, exec, ${getExe' swaynotificationcenter "swaync-client"} --hide-latest"
@@ -464,10 +465,10 @@ in
           "noanim, class:^(Godot)$"
           "tile, class:^(Godot)$, initialTitle:^(Godot)$"
 
-          "float,class:(clipse)"
+          "float,class:(com.example.clipse)"
           "float,class:(floatingAppFocus)"
-          "noanim,class:^(clipse|floatingAppFocus)$"
-          "size 622 652,class:(clipse)"
+          "noanim,class:^(com.example.clipse|floatingAppFocus)$"
+          "size 622 652,class:(com.example.clipse)"
 
           # "nofocus,class:(org.kde.kdeconnect.daemon)"
           # "float,class:(org.kde.kdeconnect.daemon)"
