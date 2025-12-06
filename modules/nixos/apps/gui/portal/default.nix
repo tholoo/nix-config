@@ -32,7 +32,7 @@ in
           default = [
             "gtk"
           ];
-          "org.freedesktop.impl.portal.FileChooser" = [ "xdg-desktop-portal-termfilechooser" ];
+          "org.freedesktop.impl.portal.FileChooser" = "termfilechooser";
         };
         hyprland = {
           default = [
@@ -55,6 +55,7 @@ in
       GDK_DEBUG = "portals";
       XDG_CURRENT_DESKTOP = "Hyprland";
       QT_QPA_PLATFORMTHEME = "qt5ct:qt6ct";
+      TERMCMD = "ghostty";
     };
   };
 }
