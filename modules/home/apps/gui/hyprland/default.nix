@@ -16,16 +16,30 @@ let
     with lib;
     with pkgs;
     ''
-      selection=$(${getExe slurp} -o)
+      set -euo pipefail
 
-      tempfile=$(mktemp /tmp/screenshot-XXXXXX.png)
-      ${getExe wayshot} -s "$selection" --file "$tempfile"
+      HYPRSHOT="${getExe pkgs.hyprshot}"
+      WLCOPY="${getExe' pkgs.wl-clipboard "wl-copy"}"
+      SATTY="${getExe pkgs.satty}"
 
-      cat "$tempfile" | ${getExe' wl-clipboard "wl-copy"} --type image/png
+      tempfile=""
+      cleanup() {
+        if [ -n "''${tempfile:-}" ]; then
+          rm -f "$tempfile" || true
+        fi
+      }
+      trap cleanup EXIT INT TERM HUP
 
-      ${getExe satty} --filename "$tempfile" --fullscreen --initial-tool line
+      tempfile="$(mktemp /tmp/screenshot-XXXXXX.png)"
 
-      rm "$tempfile"
+      # Freeze frame, select region, emit PNG to stdout -> temp file
+      "$HYPRSHOT" -m region --freeze --raw > "$tempfile"
+
+      # Copy to clipboard
+      cat "$tempfile" | "$WLCOPY" --type image/png
+
+      # Annotate
+      "$SATTY" --filename "$tempfile" --fullscreen --initial-tool line
     ''
   );
 in
