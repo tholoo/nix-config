@@ -44,6 +44,8 @@ in
       serpl # search and replace
       ncdu # see what's taking up space
       gparted # disk management
+
+      nmap
     ];
   };
 }
