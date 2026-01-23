@@ -46,6 +46,7 @@ in
       gparted # disk management
 
       nmap
+      dnsutils
     ];
   };
 }
