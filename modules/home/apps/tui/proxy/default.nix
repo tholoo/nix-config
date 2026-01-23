@@ -23,6 +23,8 @@ in
   config = mkIf cfg.enable {
     home.packages = with pkgs; [
       go-graft # for proxying commands
+      sshuttle
+      tun2socks
     ];
   };
 }
