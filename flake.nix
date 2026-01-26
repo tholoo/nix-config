@@ -182,7 +182,7 @@
       # };
 
       homes.modules = with inputs; [
-        nixvim.homeManagerModules.nixvim
+        nixvim.homeModules.nixvim
         agenix.homeManagerModules.default
         nix-index-database.homeModules.nix-index
         zen-browser.homeModules.beta
