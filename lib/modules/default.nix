@@ -1,7 +1,7 @@
 { lib, inputs }:
 with lib;
 rec {
-  listContainsList = checkContains: fold (el: c: c || builtins.elem el checkContains) false;
+  listContainsList = checkContains: foldr (el: c: c || builtins.elem el checkContains) false;
 
   mkEnable =
     config: attrs:

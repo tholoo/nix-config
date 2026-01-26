@@ -22,7 +22,7 @@ in
     # TODO: see ~/.config/fish/config.fish
     programs.fzf =
       let
-        excludes = lib.fold (el: c: "${c} --exclude ${el}") "" [
+        excludes = lib.foldr (el: c: "${c} --exclude ${el}") "" [
           "__pycache__"
           ".venv"
           "venv"
