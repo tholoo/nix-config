@@ -19,4 +19,20 @@ in
   "singbox-header-domain.age".publicKeys = users.all ++ systems.all;
   "singbox-uuid.age".publicKeys = users.all ++ systems.all;
   "singbox-clash-pass.age".publicKeys = users.all ++ systems.all;
+
+  "jellyfin-admin-password.age".publicKeys = users.all ++ systems.all;
+  "lidarr-apikey.age".publicKeys = users.all ++ systems.all;
+  "lidarr-password.age".publicKeys = users.all ++ systems.all;
+  "prowlarr-apikey.age".publicKeys = users.all ++ systems.all;
+  "prowlarr-password.age".publicKeys = users.all ++ systems.all;
+  "sabnzbd-apikey.age".publicKeys = users.all ++ systems.all;
+  "sabnzbd-nzbkey.age".publicKeys = users.all ++ systems.all;
+  "jellyseerr-apikey.age".publicKeys = users.all ++ systems.all;
+  "rutracker-apikey.age".publicKeys = users.all ++ systems.all;
+  "rutracker-username.age".publicKeys = users.all ++ systems.all;
+  "rutracker-password.age".publicKeys = users.all ++ systems.all;
+  "sonarr-apikey.age".publicKeys = users.all ++ systems.all;
+  "sonarr-password.age".publicKeys = users.all ++ systems.all;
+  "radarr-apikey.age".publicKeys = users.all ++ systems.all;
+  "radarr-password.age".publicKeys = users.all ++ systems.all;
 }

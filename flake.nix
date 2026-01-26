@@ -105,6 +105,12 @@
     };
 
     zellij-switch.url = "github:mostafaqanbaryan/zellij-switch";
+
+    nixflix = {
+      url = "github:kiriwalawren/nixflix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     zen-browser = {
       url = "github:0xc000022070/zen-browser-flake";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -151,6 +157,7 @@
         nur.modules.nixos.default
         # dedsec-grub-theme.nixosModule
         NixVirt.nixosModules.default
+        nixflix.nixosModules.default
       ];
 
       systems.hosts.glacier.modules = with inputs.nixos-hardware.nixosModules; [
