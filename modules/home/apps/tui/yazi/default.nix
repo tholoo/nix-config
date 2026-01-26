@@ -25,6 +25,7 @@ in
       plugins = with pkgs.yaziPlugins; {
         "glow" = glow;
         "smart-enter" = smart-enter;
+        "mediainfo" = mediainfo;
       };
       keymap.mgr.prepend_keymap = [
         {
