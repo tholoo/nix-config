@@ -82,6 +82,8 @@ with lib.mine;
           typstyle
           # markdown
           markdown-oxide
+          # java
+          jdt-language-server
         ]
       );
       # https://docs.helix-editor.com/configuration.html
@@ -123,6 +125,13 @@ with lib.mine;
           esc = [
             "collapse_selection"
             "keep_primary_selection"
+          ];
+          "C-e" = [
+            ":sh rm -f /tmp/unique-file"
+            ":insert-output yazi %{buffer_name} --chooser-file=/tmp/unique-file"
+            ":insert-output echo \"\x1b[?1049h\x1b[?2004h\" > /dev/tty"
+            ":open %sh{cat /tmp/unique-file}"
+            ":redraw"
           ];
           space = {
             space = "file_picker";
@@ -242,6 +251,10 @@ with lib.mine;
             command = lib.getExe pkgs.pylyzer;
             args = [ "--server" ];
           };
+          ty = {
+            command = lib.getExe pkgs.ty;
+            args = [ "server" ];
+          };
           godot = {
             command = lib.getExe pkgs.netcat;
             args = [
@@ -286,7 +299,8 @@ with lib.mine;
           {
             name = "python";
             language-servers = [
-              "basedpyright"
+              # "basedpyright"
+              "ty"
               "ruff"
               # "pylyzer"
               "typos"
