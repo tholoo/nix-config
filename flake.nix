@@ -143,7 +143,7 @@
       };
 
       overlays = with inputs; [
-        neovim-nightly-overlay.overlays.default
+        # neovim-nightly-overlay.overlays.default
         nur.overlays.default
         fenix.overlays.default
         zellij-switch.overlays.default
