@@ -40,6 +40,7 @@ in
       distrobox
 
       ffmpeg_6-full
+      ffmpegthumbnailer
     ];
   };
 }
