@@ -56,7 +56,6 @@ in
       ];
       runners = {
         wine = {
-          package = pkgs.wineWow64Packages.staging;
           settings = {
             runner = {
               WINEFSYNC = "1";
