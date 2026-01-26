@@ -47,6 +47,7 @@ in
 
       nmap
       dnsutils
+      nftables
     ];
   };
 }
