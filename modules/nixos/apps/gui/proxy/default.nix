@@ -23,7 +23,6 @@ in
     networking.firewall.checkReversePath = "loose";
     networking.firewall.trustedInterfaces = [
       "tun0"
-      "nekoray-tun"
     ];
     # networking.proxy.default = "http://127.0.0.1:12334";
 
