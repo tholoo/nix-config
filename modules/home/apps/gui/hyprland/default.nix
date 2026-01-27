@@ -472,12 +472,12 @@ in
 
           "border_size 0, match:float 0, match:workspace f[1]"
           "rounding 0,    match:float 0, match:workspace f[1]"
+
+          "match:class ^(com\\.ayugram\\.desktop)$, match:title ^(Media viewer)$, float on, fullscreen_state 0 0, fullscreen off, suppress_event fullscreen"
         ];
 
         windowrulev2 = [
           "suppressevent maximize, class:.*" # You'll probably like this.
-          "float,class:^(org.telegram.desktop|telegramdesktop)$,title:^(Media viewer)$"
-          "noanim,class:^(org.telegram.desktop|telegramdesktop)$,title:^(Media viewer)$"
 
           "float,class:^(com.ayugram.desktop|ayugramdesktop)$,title:^(Media viewer)$"
           "noanim,class:^(com.ayugram.desktop|ayugramdesktop)$,title:^(Media viewer)$"
