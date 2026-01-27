@@ -129,7 +129,7 @@ in
         # exec-once = nm-applet &
         # exec-once = waybar & hyprpaper & firefox
         exec-once = [
-          ''${pkgs.dbus}/bin/dbus-update-activation-environment --systemd --all''
+          "${pkgs.dbus}/bin/dbus-update-activation-environment --systemd --all"
           "systemctl --user import-environment; systemctl --user start graphical-session.target"
 
           "${lib.getExe pkgs.sunsetr}"
@@ -137,7 +137,7 @@ in
           "[workspace 2 silent] $browser"
           "[workspace 3 silent] ${lib.getExe pkgs.ayugram-desktop}"
           "[workspace 4 silent] ${lib.getExe pkgs.v2rayn}"
-          "[workspace 5 silent] ${lib.getExe pkgs.youtube-music}; sleep 5; pkill youtube-music; ${lib.getExe pkgs.youtube-music}"
+          "[workspace 5 silent] ${lib.getExe pkgs.pear-desktop}; sleep 5; pkill youtube-music; ${lib.getExe pkgs.pear-desktop}"
 
           "${lib.getExe' pkgs.swww "swww-daemon"}"
           "${lib.getExe pkgs.wl-clip-persist} --clipboard both"
@@ -145,7 +145,7 @@ in
           "${lib.getExe pkgs.clipse} -listen"
 
           ''hyprctl setcursor "Bibata-Modern-Ice" 22''
-          ''${lib.getExe' pkgs.systemd "systemctl"} --user reload-or-restart kanshi.service''
+          "${lib.getExe' pkgs.systemd "systemctl"} --user reload-or-restart kanshi.service"
         ];
 
         exec = [
@@ -414,8 +414,8 @@ in
             ", XF86AudioRaiseVolume, exec, wpctl set-volume --limit 2 @DEFAULT_AUDIO_SINK@ 2%+"
             ", XF86AudioLowerVolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 2%-"
             # light
-            '', XF86MonBrightnessUp, exec, ${getExe light} -A 1''
-            '', XF86MonBrightnessDown, exec, ${getExe light} -U 1''
+            ", XF86MonBrightnessUp, exec, ${getExe light} -A 1"
+            ", XF86MonBrightnessDown, exec, ${getExe light} -U 1"
 
             # gaps
             "ALT, bracketleft  , exec, sh ${./gaps.sh} --inc_gaps_in"
@@ -463,6 +463,17 @@ in
           "f[1], gapsout:0, gapsin:0"
         ];
 
+        windowrule = [
+          "border_size 0, match:float 0, match:workspace w[t1]"
+          "rounding 0,    match:float 0, match:workspace w[t1]"
+
+          "border_size 0, match:float 0, match:workspace w[tg1]"
+          "rounding 0,    match:float 0, match:workspace w[tg1]"
+
+          "border_size 0, match:float 0, match:workspace f[1]"
+          "rounding 0,    match:float 0, match:workspace f[1]"
+        ];
+
         windowrulev2 = [
           "suppressevent maximize, class:.*" # You'll probably like this.
           "float,class:^(org.telegram.desktop|telegramdesktop)$,title:^(Media viewer)$"
@@ -493,12 +504,6 @@ in
           # "pin, class:(org.kde.kdeconnect.daemon)"
           # "size 100% 100%, class:(org.kde.kdeconnect.daemon)"
 
-          "bordersize 0, floating:0, onworkspace:w[t1]"
-          "rounding 0, floating:0, onworkspace:w[t1]"
-          "bordersize 0, floating:0, onworkspace:w[tg1]"
-          "rounding 0, floating:0, onworkspace:w[tg1]"
-          "bordersize 0, floating:0, onworkspace:f[1]"
-          "rounding 0, floating:0, onworkspace:f[1]"
         ];
       };
     };
