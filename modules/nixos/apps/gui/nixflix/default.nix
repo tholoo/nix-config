@@ -1,4 +1,5 @@
 {
+  pkgs,
   config,
   lib,
   ...
@@ -68,6 +69,38 @@ in
               _secret = config.age.secrets.prowlarr-password.path;
             };
           };
+          indexers = [
+            {
+              name = "Nyaa.si";
+              apiKey = {
+                _secret = config.age.secrets.dummy-apikey.path;
+              };
+            }
+            {
+              name = "BT.etree";
+              apiKey = {
+                _secret = config.age.secrets.dummy-apikey.path;
+              };
+            }
+            {
+              name = "The Pirate Bay";
+              apiKey = {
+                _secret = config.age.secrets.dummy-apikey.path;
+              };
+            }
+            {
+              name = "BitSearch";
+              apiKey = {
+                _secret = config.age.secrets.dummy-apikey.path;
+              };
+            }
+            {
+              name = "ExtraTorrent.st";
+              apiKey = {
+                _secret = config.age.secrets.dummy-apikey.path;
+              };
+            }
+          ];
         };
       };
 
