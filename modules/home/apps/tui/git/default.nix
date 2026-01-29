@@ -40,7 +40,7 @@ in
       };
       gh = {
         enable = true;
-        extensions = with pkgs; [ gh-copilot ];
+        extensions = with pkgs; [ github-copilot-cli ];
         # git_protocol = "ssh";
       };
       gh-dash.enable = true;
