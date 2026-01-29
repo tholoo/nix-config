@@ -59,7 +59,7 @@
           nil_ls = {
             enable = true;
             settings = {
-              formatting.command = [ "${lib.getExe pkgs.nixfmt-rfc-style}" ];
+              formatting.command = [ "${lib.getExe pkgs.nixfmt}" ];
               nix.flake = {
                 autoArchive = true;
                 autoEvalInputs = true;
