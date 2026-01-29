@@ -28,7 +28,7 @@ in
   };
 
   config = mkIf cfg.enable {
-    home.packages = with pkgs; [ youtube-music ];
+    home.packages = with pkgs; [ pear-desktop ];
     xdg.configFile."YouTube Music/config.json" = {
       force = true;
       source = mkMutableSymlink ./config.json;
