@@ -38,7 +38,6 @@ in
 
       jellyseerr-apikey.file = inputs.self + /secrets/jellyseerr-apikey.age;
 
-      rutracker-apikey.file = inputs.self + /secrets/rutracker-apikey.age;
       rutracker-username.file = inputs.self + /secrets/rutracker-username.age;
       rutracker-password.file = inputs.self + /secrets/rutracker-password.age;
 

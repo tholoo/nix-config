@@ -28,7 +28,6 @@ in
   "sabnzbd-apikey.age".publicKeys = users.all ++ systems.all;
   "sabnzbd-nzbkey.age".publicKeys = users.all ++ systems.all;
   "jellyseerr-apikey.age".publicKeys = users.all ++ systems.all;
-  "rutracker-apikey.age".publicKeys = users.all ++ systems.all;
   "rutracker-username.age".publicKeys = users.all ++ systems.all;
   "rutracker-password.age".publicKeys = users.all ++ systems.all;
   "sonarr-apikey.age".publicKeys = users.all ++ systems.all;

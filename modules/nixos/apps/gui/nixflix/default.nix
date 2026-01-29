@@ -71,34 +71,26 @@ in
           };
           indexers = [
             {
-              name = "Nyaa.si";
-              apiKey = {
-                _secret = config.age.secrets.dummy-apikey.path;
+              name = "RuTracker.org";
+
+              username = {
+                _secret = config.age.secrets.rutracker-username.path;
               };
+              password = {
+                _secret = config.age.secrets.rutracker-password.path;
+              };
+
+              # Schema fields (must match exactly)
+              baseUrl = "https://rutracker.org";
+              # "Strip Russian letters"
+              russianLetters = true;
             }
             {
               name = "BT.etree";
-              apiKey = {
-                _secret = config.age.secrets.dummy-apikey.path;
-              };
-            }
-            {
-              name = "The Pirate Bay";
-              apiKey = {
-                _secret = config.age.secrets.dummy-apikey.path;
-              };
-            }
-            {
-              name = "BitSearch";
-              apiKey = {
-                _secret = config.age.secrets.dummy-apikey.path;
-              };
-            }
-            {
-              name = "ExtraTorrent.st";
-              apiKey = {
-                _secret = config.age.secrets.dummy-apikey.path;
-              };
+              baseUrl = "https://bt.etree.org/";
+              appProfileId = 1;
+              definitionFile = "btetree";
+              sort = 0;
             }
           ];
         };
