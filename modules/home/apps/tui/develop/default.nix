@@ -25,7 +25,7 @@ in
     };
 
     home.packages = with pkgs; [
-      bugstalker # rust debugger
+      # bugstalker # rust debugger
       fenix.complete.toolchain
     ];
   };
