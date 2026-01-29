@@ -19,6 +19,21 @@ in
   };
 
   config = mkIf cfg.enable {
+    networking.firewall.allowedTCPPorts = [
+      80
+      443
+    ];
+
+    systemd.services.jellyfin.environment = {
+      HTTP_PROXY = "http://127.0.0.1:10808";
+      HTTPS_PROXY = "http://127.0.0.1:10808";
+      NO_PROXY = "localhost,127.0.0.1";
+    };
+
+    environment.systemPackages = [
+      pkgs.jellyfin-mpv-shim
+    ];
+
     nixflix = {
       enable = true;
       mediaDir = "/data/media";
