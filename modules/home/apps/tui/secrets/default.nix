@@ -19,9 +19,12 @@ in
   };
 
   config = mkIf cfg.enable {
-    age.secrets = {
-      ip-granite.file = inputs.self + /secrets/ip-granite.age;
-      ip-ahm.file = inputs.self + /secrets/ip-ahm.age;
+    age = {
+      identityPaths = [ "/home/${config.mine.user.name}/.ssh/id_ed25519" ];
+      secrets = {
+        ip-granite.file = inputs.self + /secrets/ip-granite.age;
+        ip-ahm.file = inputs.self + /secrets/ip-ahm.age;
+      };
     };
   };
 }
