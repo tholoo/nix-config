@@ -30,4 +30,10 @@
   security.sudo.wheelNeedsPassword = false;
   # services.minecraft-server.serverProperties.jvmOpts = "-Xmx512M -Xms512M";
   virtualisation.docker.daemon.settings.registry-mirrors = [ ]; # disable ir mirror
+
+  networking.firewall.allowedTCPPorts = [
+    80
+    443
+    3000
+  ];
 }
