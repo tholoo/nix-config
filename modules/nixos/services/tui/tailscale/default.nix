@@ -15,6 +15,7 @@ in
     tags = [
       "service"
       "tui"
+      "vpn"
     ];
   };
 
