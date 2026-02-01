@@ -115,6 +115,8 @@
       url = "github:0xc000022070/zen-browser-flake";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    nix-dokploy.url = "github:el-kurto/nix-dokploy";
   };
 
   outputs =
@@ -158,6 +160,7 @@
         # dedsec-grub-theme.nixosModule
         NixVirt.nixosModules.default
         nixflix.nixosModules.default
+        nix-dokploy.nixosModules.default
       ];
 
       systems.hosts.glacier.modules = with inputs.nixos-hardware.nixosModules; [
