@@ -60,8 +60,8 @@ with lib.mine;
       ];
 
       environment.variables = {
-        EDITOR = "hx";
-        SUDO_EDITOR = "hx";
+        EDITOR = lib.mkForce "hx";
+        SUDO_EDITOR = lib.mkForce "hx";
         # Native wayland support
         NIXOS_OZONE_WL = "1";
         GDK_BACKEND = "wayland";
