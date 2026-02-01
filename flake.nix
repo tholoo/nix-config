@@ -196,7 +196,7 @@
       #   my-custom-value = "my-value";
       # };
 
-      outputs-builder = channels: { formatter = channels.nixpkgs.nixfmt-rfc-style; };
+      outputs-builder = channels: { formatter = channels.nixpkgs.nixfmt; };
 
       deploy.nodes = {
         "granite" = {
