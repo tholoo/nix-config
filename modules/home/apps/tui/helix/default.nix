@@ -162,12 +162,20 @@ with lib.mine;
           nixd = {
             auto-format = true;
             command = lib.getExe pkgs.nixd;
-            config = {
-              options = {
-                nixos.expr = ''(builtins.getFlake "/home/${config.mine.user.name}/nix-config").nixosConfigurations."${host}".options'';
-                home-manager.expr = ''(builtins.getFlake "/home/${config.mine.user.name}/nix-config").homeConfigurations."${config.mine.user.name}@${host}".options'';
+            config =
+              let
+                myFlake = ''(builtins.getFlake "/home/${config.mine.user.name}/nix-config")'';
+                nixosOpts = ''${myFlake}.nixosConfigurations."${host}".options'';
+              in
+              {
+                nixpkgs.expr = "import ${myFlake}.inputs.nixpkgs { }";
+                formatting.command = [ "${lib.getExe pkgs.nixfmt}" ];
+                options = {
+                  nixos.expr = nixosOpts;
+                  # home-manager.expr = ''(builtins.getFlake "/home/${config.mine.user.name}/nix-config").homeConfigurations."${config.mine.user.name}@${host}".options'';
+                  home-manager.expr = "${nixosOpts}.home-manager.users.type.getSubOptions []";
+                };
               };
-            };
           };
           biome = {
             command = "biome";
