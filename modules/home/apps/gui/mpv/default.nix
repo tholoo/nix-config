@@ -36,6 +36,7 @@ let
     sub-visibility = "yes";
     audio-file-auto = "fuzzy";
     save-position-on-quit = "yes";
+    osc = "no";
 
     gpu-context = "wayland";
     hwdec = "auto-safe";
