@@ -21,6 +21,8 @@ in
         cmd=${pkgs.xdg-desktop-portal-termfilechooser}/share/xdg-desktop-portal-termfilechooser/yazi-wrapper.sh
       '';
     };
+    home.preferXdgDirectories = true;
+
     xdg = {
       enable = true;
       mimeApps = {
