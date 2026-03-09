@@ -7,8 +7,8 @@
 }:
 
 mkShell {
-  packages = with pkgs; [
-    deploy-rs
+  packages = [
+    inputs.deploy-rs.packages.${system}.deploy-rs
     inputs.agenix.packages.${system}.default
   ];
 }
