@@ -13,25 +13,32 @@ let
   };
 in
 {
-  "ip-granite.age".publicKeys = users.all ++ systems.all;
-  "ip-ahm.age".publicKeys = users.all ++ systems.all;
-  "singbox-domain.age".publicKeys = users.all ++ systems.all;
-  "singbox-header-domain.age".publicKeys = users.all ++ systems.all;
-  "singbox-uuid.age".publicKeys = users.all ++ systems.all;
-  "singbox-clash-pass.age".publicKeys = users.all ++ systems.all;
+  "ips/ip-granite.age".publicKeys = users.all ++ systems.all;
+  "ips/ip-parsa-hetzner-germany.age".publicKeys = users.all ++ systems.all;
+  "ips/ip-ahmad-hetzner-germany.age".publicKeys = users.all ++ systems.all;
+  "ips/ip-parsa-iranserver-tehran.age".publicKeys = users.all ++ systems.all;
+  "ips/ip-parsa-asiatech-tehran.age".publicKeys = users.all ++ systems.all;
+  "ips/ip-ahmad-parspack-tehran.age".publicKeys = users.all ++ systems.all;
+  "ips/ip-parsa-asiatech-tehran2.age".publicKeys = users.all ++ systems.all;
+  "ips/ip-mohammad-do.age".publicKeys = users.all ++ systems.all;
 
-  "jellyfin-admin-password.age".publicKeys = users.all ++ systems.all;
-  "lidarr-apikey.age".publicKeys = users.all ++ systems.all;
-  "lidarr-password.age".publicKeys = users.all ++ systems.all;
-  "prowlarr-apikey.age".publicKeys = users.all ++ systems.all;
-  "prowlarr-password.age".publicKeys = users.all ++ systems.all;
-  "sabnzbd-apikey.age".publicKeys = users.all ++ systems.all;
-  "sabnzbd-nzbkey.age".publicKeys = users.all ++ systems.all;
-  "jellyseerr-apikey.age".publicKeys = users.all ++ systems.all;
-  "rutracker-username.age".publicKeys = users.all ++ systems.all;
-  "rutracker-password.age".publicKeys = users.all ++ systems.all;
-  "sonarr-apikey.age".publicKeys = users.all ++ systems.all;
-  "sonarr-password.age".publicKeys = users.all ++ systems.all;
-  "radarr-apikey.age".publicKeys = users.all ++ systems.all;
-  "radarr-password.age".publicKeys = users.all ++ systems.all;
+  "singbox/singbox-domain.age".publicKeys = users.all ++ systems.all;
+  "singbox/singbox-header-domain.age".publicKeys = users.all ++ systems.all;
+  "singbox/singbox-uuid.age".publicKeys = users.all ++ systems.all;
+  "singbox/singbox-clash-pass.age".publicKeys = users.all ++ systems.all;
+
+  "jellyfin/jellyfin-admin-password.age".publicKeys = users.all ++ systems.all;
+  "jellyfin/lidarr-apikey.age".publicKeys = users.all ++ systems.all;
+  "jellyfin/lidarr-password.age".publicKeys = users.all ++ systems.all;
+  "jellyfin/prowlarr-apikey.age".publicKeys = users.all ++ systems.all;
+  "jellyfin/prowlarr-password.age".publicKeys = users.all ++ systems.all;
+  "jellyfin/sabnzbd-apikey.age".publicKeys = users.all ++ systems.all;
+  "jellyfin/sabnzbd-nzbkey.age".publicKeys = users.all ++ systems.all;
+  "jellyfin/jellyseerr-apikey.age".publicKeys = users.all ++ systems.all;
+  "jellyfin/rutracker-username.age".publicKeys = users.all ++ systems.all;
+  "jellyfin/rutracker-password.age".publicKeys = users.all ++ systems.all;
+  "jellyfin/sonarr-apikey.age".publicKeys = users.all ++ systems.all;
+  "jellyfin/sonarr-password.age".publicKeys = users.all ++ systems.all;
+  "jellyfin/radarr-apikey.age".publicKeys = users.all ++ systems.all;
+  "jellyfin/radarr-password.age".publicKeys = users.all ++ systems.all;
 }
