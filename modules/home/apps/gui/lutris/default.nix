@@ -20,57 +20,57 @@ in
     ];
   };
 
-  config = mkIf cfg.enable {
-    home.packages = with pkgs; [
-      heroic
-      mangohud
-      winetricks
-      gamescope
-      gamemode
-      umu-launcher
-      vulkan-tools
-      dxvk
-      vkd3d
-      wineWowPackages.staging
-    ];
+  # config = mkIf cfg.enable {
+  #   home.packages = with pkgs; [
+  #     heroic
+  #     mangohud
+  #     winetricks
+  #     gamescope
+  #     gamemode
+  #     umu-launcher
+  #     vulkan-tools
+  #     dxvk
+  #     vkd3d
+  #     wineWowPackages.staging
+  #   ];
 
-    programs.${name} = {
-      enable = true;
-      # package = pkgs.lutris.override {
-      # steamSupport = true;
-      # };
-      # steamPackage = pkgs.steam;
-      extraPackages = with pkgs; [
-        mangohud
-        winetricks
-        gamescope
-        gamemode
-        umu-launcher
-        vulkan-tools
-        dxvk
-        vkd3d
-      ];
-      winePackages = with pkgs; [
-        wineWow64Packages.full
-        wineWowPackages.staging
-      ];
-      runners = {
-        wine = {
-          settings = {
-            runner = {
-              WINEFSYNC = "1";
-              WINEESYNC = "1";
-            };
-            system = {
-              disable_screen_saver = true;
-              sandbox = false;
-            };
-          };
-        };
-      };
-      protonPackages = with pkgs; [
-        proton-ge-bin
-      ];
-    };
-  };
+  #   programs.${name} = {
+  #     enable = true;
+  #     # package = pkgs.lutris.override {
+  #     # steamSupport = true;
+  #     # };
+  #     # steamPackage = pkgs.steam;
+  #     extraPackages = with pkgs; [
+  #       mangohud
+  #       winetricks
+  #       gamescope
+  #       gamemode
+  #       umu-launcher
+  #       vulkan-tools
+  #       dxvk
+  #       vkd3d
+  #     ];
+  #     winePackages = with pkgs; [
+  #       wineWow64Packages.full
+  #       wineWowPackages.staging
+  #     ];
+  #     runners = {
+  #       wine = {
+  #         settings = {
+  #           runner = {
+  #             WINEFSYNC = "1";
+  #             WINEESYNC = "1";
+  #           };
+  #           system = {
+  #             disable_screen_saver = true;
+  #             sandbox = false;
+  #           };
+  #         };
+  #       };
+  #     };
+  #     protonPackages = with pkgs; [
+  #       proton-ge-bin
+  #     ];
+  #   };
+  # };
 }

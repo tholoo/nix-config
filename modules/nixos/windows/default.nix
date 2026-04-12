@@ -22,8 +22,8 @@ in
   config = mkIf cfg.enable {
     boot.binfmt.emulatedSystems = [ "x86_64-windows" ];
     environment.systemPackages = with pkgs; [
-      wineWowPackages.waylandFull
-      winetricks
+      # wineWowPackages.waylandFull
+      # winetricks
     ];
   };
 }

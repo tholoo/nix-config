@@ -47,20 +47,21 @@ in
                 "hyprland/workspaces"
                 "hyprland/submap"
               ];
-          modules-right =
-            [ "privacy" ]
-            ++ (
-              if config.wayland.windowManager.sway.enable then [ "sway/language" ] else [ "hyprland/language" ]
-            )
-            ++ [
-              "network"
-              "cpu"
-              "memory"
-              "wireplumber"
-              "battery"
-              "clock"
-              "tray"
-            ];
+          modules-right = [
+            "privacy"
+          ]
+          ++ (
+            if config.wayland.windowManager.sway.enable then [ "sway/language" ] else [ "hyprland/language" ]
+          )
+          ++ [
+            "network"
+            "cpu"
+            "memory"
+            "wireplumber"
+            "battery"
+            "clock"
+            "tray"
+          ];
           battery = {
             states = {
               warning = 30;
@@ -90,7 +91,7 @@ in
               ""
               ""
             ];
-            on-click = "helvum";
+            on-click = "crosspipe";
             max-volume = 150;
             scroll-step = 0.2;
           };

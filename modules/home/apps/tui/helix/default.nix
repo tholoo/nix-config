@@ -64,7 +64,7 @@ with lib.mine;
           # helm
           helm-ls
           # json
-          nodePackages.vscode-json-languageserver
+          vscode-json-languageserver
           # typescript
           typescript-language-server
           vscode-langservers-extracted

@@ -19,7 +19,7 @@ in
   };
 
   config = mkIf cfg.enable {
-    virtualisation.virtualbox.host.enable = true;
-    users.extraGroups.vboxusers.members = [ "tholo" ];
+    # virtualisation.virtualbox.host.enable = true;
+    # users.extraGroups.vboxusers.members = [ "tholo" ];
   };
 }

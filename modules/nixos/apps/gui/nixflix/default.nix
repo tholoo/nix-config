@@ -35,7 +35,7 @@ in
     ];
 
     nixflix = {
-      enable = true;
+      enable = false;
       mediaDir = "/data/media";
       stateDir = "/data/.state";
 
@@ -150,7 +150,7 @@ in
         };
       };
 
-      jellyseerr = {
+      seerr = {
         enable = true;
         vpn.enable = false;
         apiKey = {

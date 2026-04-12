@@ -139,7 +139,7 @@ in
           "[workspace 4 silent] ${lib.getExe pkgs.v2rayn}"
           "[workspace 5 silent] ${lib.getExe pkgs.pear-desktop}; sleep 5; pkill youtube-music; ${lib.getExe pkgs.pear-desktop}"
 
-          "${lib.getExe' pkgs.swww "swww-daemon"}"
+          "${lib.getExe' pkgs.awww "awww-daemon"}"
           "${lib.getExe pkgs.wl-clip-persist} --clipboard both"
           "QT_QPA_PLATFORM=xcb ${lib.getExe' pkgs.kdePackages.kdeconnect-kde "kdeconnectd"}"
           "${lib.getExe pkgs.clipse} -listen"
@@ -149,7 +149,7 @@ in
         ];
 
         exec = [
-          "${lib.getExe pkgs.swww} img ${inputs.self}/resources/wallpapers/wallhaven-fields-858z32.png -t none"
+          "${lib.getExe pkgs.awww} img ${inputs.self}/resources/wallpapers/wallhaven-fields-858z32.png -t none"
         ];
 
         #############################
@@ -414,8 +414,8 @@ in
             ", XF86AudioRaiseVolume, exec, wpctl set-volume --limit 2 @DEFAULT_AUDIO_SINK@ 2%+"
             ", XF86AudioLowerVolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 2%-"
             # light
-            ", XF86MonBrightnessUp, exec, ${getExe light} -A 1"
-            ", XF86MonBrightnessDown, exec, ${getExe light} -U 1"
+            ", XF86MonBrightnessUp, exec, ${getExe brightnessctl} -A 1"
+            ", XF86MonBrightnessDown, exec, ${getExe brightnessctl} -U 1"
 
             # gaps
             "ALT, bracketleft  , exec, sh ${./gaps.sh} --inc_gaps_in"
@@ -476,35 +476,35 @@ in
           "match:class ^(com\\.ayugram\\.desktop)$, match:title ^(Media viewer)$, float on, fullscreen_state 0 0, fullscreen off, suppress_event fullscreen"
         ];
 
-        windowrulev2 = [
-          "suppressevent maximize, class:.*" # You'll probably like this.
+        # windowrulev2 = [
+        #   "suppressevent maximize, class:.*" # You'll probably like this.
 
-          "float,class:^(com.ayugram.desktop|ayugramdesktop)$,title:^(Media viewer)$"
-          "noanim,class:^(com.ayugram.desktop|ayugramdesktop)$,title:^(Media viewer)$"
+        #   "float,class:^(com.ayugram.desktop|ayugramdesktop)$,title:^(Media viewer)$"
+        #   "noanim,class:^(com.ayugram.desktop|ayugramdesktop)$,title:^(Media viewer)$"
 
-          "noinitialfocus,class:^(nannou)$"
-          "noanim,class:^(nannou)$"
-          "float,class:^(nannou)$"
-          "move 100%-w-20 0%-w-20,class:^(nannou)$"
+        #   "noinitialfocus,class:^(nannou)$"
+        #   "noanim,class:^(nannou)$"
+        #   "float,class:^(nannou)$"
+        #   "move 100%-w-20 0%-w-20,class:^(nannou)$"
 
-          "noanim, class:^(Godot)$"
-          "tile, class:^(Godot)$, initialTitle:^(Godot)$"
+        #   "noanim, class:^(Godot)$"
+        #   "tile, class:^(Godot)$, initialTitle:^(Godot)$"
 
-          "float,class:(com.example.clipse)"
-          "float,class:(floatingAppFocus)"
-          "noanim,class:^(com.example.clipse|floatingAppFocus)$"
-          "size 622 652,class:(com.example.clipse)"
+        #   "float,class:(com.example.clipse)"
+        #   "float,class:(floatingAppFocus)"
+        #   "noanim,class:^(com.example.clipse|floatingAppFocus)$"
+        #   "size 622 652,class:(com.example.clipse)"
 
-          # "nofocus,class:(org.kde.kdeconnect.daemon)"
-          # "float,class:(org.kde.kdeconnect.daemon)"
-          # "noanim,class:(org.kde.kdeconnect.daemon)"
-          # "noblur,class:(org.kde.kdeconnect.daemon)"
-          # "fullscreenstate 0 1, class:(org.kde.kdeconnect.daemon)"
-          # "nomaxsize, class:(org.kde.kdeconnect.daemon)"
-          # "pin, class:(org.kde.kdeconnect.daemon)"
-          # "size 100% 100%, class:(org.kde.kdeconnect.daemon)"
+        #   # "nofocus,class:(org.kde.kdeconnect.daemon)"
+        #   # "float,class:(org.kde.kdeconnect.daemon)"
+        #   # "noanim,class:(org.kde.kdeconnect.daemon)"
+        #   # "noblur,class:(org.kde.kdeconnect.daemon)"
+        #   # "fullscreenstate 0 1, class:(org.kde.kdeconnect.daemon)"
+        #   # "nomaxsize, class:(org.kde.kdeconnect.daemon)"
+        #   # "pin, class:(org.kde.kdeconnect.daemon)"
+        #   # "size 100% 100%, class:(org.kde.kdeconnect.daemon)"
 
-        ];
+        # ];
       };
     };
   };
