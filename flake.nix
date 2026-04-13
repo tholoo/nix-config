@@ -203,6 +203,7 @@
           hostname = "granite";
           sshUser = "root";
           remoteBuild = true;
+          confirmTimeout = 120;
           profiles.system = {
             user = "root";
             path = inputs.deploy-rs.lib.x86_64-linux.activate.nixos inputs.self.nixosConfigurations.granite;
