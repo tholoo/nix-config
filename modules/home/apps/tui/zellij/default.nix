@@ -44,12 +44,7 @@ in
       zellij-switch
     ];
 
-    programs.zellij = {
-      enable = true;
-      settings = {
-        show_startup_tips = false;
-      };
-    };
+    programs.zellij.enable = true;
     # xdg.configFile."zellij/config.kdl".source = ./config.kdl;
     xdg.configFile."zellij/plugins/monocle.wasm".source =
       "${pkgs.mine.zellij-monocle}/zellij-monocle.wasm";
@@ -59,6 +54,7 @@ in
       // DEFAULT: https://github.com/zellij-org/zellij/blob/main/zellij-utils/assets/config/default.kdl
 
       default_shell "nu"
+      show_startup_tips false
 
       plugins {
           compact-bar location="zellij:compact-bar"
