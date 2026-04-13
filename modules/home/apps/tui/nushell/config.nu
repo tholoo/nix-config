@@ -278,4 +278,4 @@ def zellij-update-tabname-git [] {
     }
 }
 
-
+zellij-update-tabname-git
