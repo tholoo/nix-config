@@ -80,6 +80,9 @@ with lib.mine;
           # PermitRootLogin = "no";
           # Use keys only. Remove if you want to SSH using password (not recommended)
           PasswordAuthentication = false;
+          # Send keepalives to clients every 15s, drop after 5 misses (75s total)
+          ClientAliveInterval = 15;
+          ClientAliveCountMax = 5;
         };
       };
       # Copy the NixOS configuration file and link it from the resulting system
