@@ -46,6 +46,8 @@ in
 
       radarr-password.file = inputs.self + /secrets/jellyfin/radarr-password.age;
       radarr-apikey.file = inputs.self + /secrets/jellyfin/radarr-apikey.age;
+
+      dokploy-db-password.file = inputs.self + /secrets/dokploy/dokploy-db-password.age;
     };
   };
 }

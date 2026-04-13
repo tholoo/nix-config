@@ -27,6 +27,7 @@ in
     services.dokploy = {
       enable = true;
       port = null; # disable port 3000
+      database.passwordFile = config.age.secrets.dokploy-db-password.path;
     };
   };
 }

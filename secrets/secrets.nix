@@ -13,6 +13,8 @@ let
   };
 in
 {
+  "dokploy/dokploy-db-password.age".publicKeys = users.all ++ systems.all;
+
   "ips/ip-granite.age".publicKeys = users.all ++ systems.all;
   "ips/ip-parsa-hetzner-germany.age".publicKeys = users.all ++ systems.all;
   "ips/ip-ahmad-hetzner-germany.age".publicKeys = users.all ++ systems.all;
