@@ -15,7 +15,7 @@ in
     tags = [
       "tui"
       "cli-tools"
-      "devleop"
+      "develop"
     ];
   };
 

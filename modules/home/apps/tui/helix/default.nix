@@ -18,7 +18,6 @@ with lib.mine;
     tags = [
       "tui"
       "editor"
-      "devleop"
     ];
 
     enableLSP = mkOption {
@@ -38,7 +37,7 @@ with lib.mine;
 
     programs.helix = {
       enable = true;
-      extraPackages = mkIf cfg.enable (
+      extraPackages = mkIf cfg.enableLSP (
         with pkgs;
         [
           # nix
@@ -140,7 +139,7 @@ with lib.mine;
           };
         };
       };
-      languages = {
+      languages = mkIf cfg.enableLSP {
         language-server = {
           rust-analyzer = {
             auto-format = true;
