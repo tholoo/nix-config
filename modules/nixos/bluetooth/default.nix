@@ -30,5 +30,9 @@ in
         };
       };
     };
+
+    services.udev.extraRules = ''
+      ACTION=="add", SUBSYSTEM=="rfkill", ATTR{type}=="bluetooth", ATTR{soft}="0"
+    '';
   };
 }
