@@ -49,6 +49,7 @@ in
         package = pkgs.arc-theme;
         name = "Arc";
       };
+      gtk4.theme = config.gtk.theme;
       iconTheme = {
         package = pkgs.papirus-icon-theme;
         name = "Papirus";
