@@ -14,8 +14,13 @@
       fullName = "tholo";
       email = "ali.mohamadza@gmail.com";
     };
+    tags.exclude = [
+      "gui"
+      "game"
+      "calender"
+    ];
 
-    gui.enable = true;
+    gui.enable = false;
     tui.enable = true;
   };
 }

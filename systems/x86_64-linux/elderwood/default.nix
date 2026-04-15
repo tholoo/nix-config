@@ -13,16 +13,22 @@
   ...
 }:
 {
-  imports = [ ./hardware-configuration.nix ];
+  imports = [
+    ./hardware-configuration.nix
+    ./disk-config.nix
+  ];
   mine = {
     host = {
       name = "elderwood";
       location = "Asia/Tehran";
     };
 
-    tags.exclude = [ "server" ];
+    tags.exclude = [
+      "gui"
+      "game"
+    ];
 
-    gui.enable = true;
+    gui.enable = false;
     tui.enable = true;
 
     grub.enable = true;
