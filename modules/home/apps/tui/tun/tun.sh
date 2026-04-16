@@ -89,8 +89,10 @@ cmd_on() {
   ss -lnt | grep -q "127.0.0.1:${SOCKS_PORT}" || { log "SOCKS not listening."; exit 1; }
 
   log "[2/8] Pre-test: verify SOCKS can reach the internet (before changing anything)..."
-  curl -fsS --max-time 8 --socks5-hostname "${SOCKS_HOST}:${SOCKS_PORT}" https://checkip.amazonaws.com >/dev/null \
-    || { log "SOCKS itself cannot reach the internet right now (before tunneling). Fix v2rayN/Xray first."; exit 1; }
+  if ! curl -fsS --max-time 8 --socks5-hostname "${SOCKS_HOST}:${SOCKS_PORT}" https://checkip.amazonaws.com >/dev/null; then
+    log "WARNING: SOCKS pre-test failed. Continuing anyway."
+    log "WARNING: If setup later fails or loops, check v2rayN/Xray first."
+  fi
 
   log "[3/8] Detect SOCKS listener PID and Xray process tree..."
   local socks_pid pids pids_space
