@@ -13,8 +13,10 @@ in
 {
   options.mine.${name} = mkEnable config {
     tags = [
-      "gui"
+      "tui"
+      "personal"
       "media"
+      "server"
     ];
   };
 
