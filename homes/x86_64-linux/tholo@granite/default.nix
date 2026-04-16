@@ -20,6 +20,7 @@
       "mcfly"
       "cli-cool"
       "calender"
+      "personal"
     ];
 
     cli-cool.enable = false;
