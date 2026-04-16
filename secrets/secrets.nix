@@ -15,6 +15,8 @@ let
   };
 in
 {
+  "firefly/firefly-app-key.age".publicKeys = users.all ++ systems.all;
+
   "mihomo/mihomo-sub-url-main.age".publicKeys = users.all ++ systems.all;
 
   "mail/mail-user1-password.age".publicKeys = users.all ++ systems.all;
