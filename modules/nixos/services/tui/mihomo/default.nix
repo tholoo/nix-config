@@ -33,6 +33,15 @@ let
       "geodata-mode" = true;
       "geo-auto-update" = false;
 
+      tun = {
+        enable = true;
+        device = "mihomo";
+        stack = "mixed";
+        "dns-hijack" = [ "any:53" ];
+        "auto-route" = true;
+        "auto-detect-interface" = true;
+      };
+
       dns = {
         enable = true;
         ipv6 = false;
@@ -45,13 +54,21 @@ let
           "+.pool.ntp.org"
         ];
         "default-nameserver" = [
+          "78.157.42.100"
           "1.1.1.1"
           "8.8.8.8"
         ];
         nameserver = [
+          "78.157.42.100"
           "tls://1.1.1.1:853"
           "tls://8.8.8.8:853"
         ];
+        "nameserver-policy" = {
+          "+.ir" = [
+            "78.157.42.100"
+            "10.202.10.10"
+          ];
+        };
         fallback = [ "tls://1.0.0.1:853" ];
         "fallback-filter" = {
           geoip = true;
@@ -109,10 +126,10 @@ let
 
   providerScript = lib.concatMapStringsSep "\n" (sub: ''
     URL="$(cat "$CREDENTIALS_DIRECTORY/${sub.name}")"
+    ${pkgs.curl}/bin/curl -sk --connect-timeout 15 -o /var/lib/mihomo/provider-${sub.name}.yaml "$URL" || true
     ${lib.getExe pkgs.yq-go} -i '.proxy-providers."${sub.name}" = {
-      "type": "http",
-      "url": "'"$URL"'",
-      "interval": 3600,
+      "type": "file",
+      "path": "provider-${sub.name}.yaml",
       "health-check": {
         "enable": true,
         "url": "http://cp.cloudflare.com/generate_204",
@@ -126,9 +143,9 @@ in
     tags = [
       "tui"
       "service"
+      "server"
       "proxy"
       "vpn"
-      "server"
     ];
 
     port = mkOption {
@@ -183,12 +200,45 @@ in
 
   config = mkIf cfg.enable {
     services.resolved.enable = true;
-    networking.firewall.allowedTCPPorts = [
-      cfg.port
-      cfg.apiPort
-    ];
+    networking = {
+      firewall = {
+        trustedInterfaces = [ "mihomo" ];
+        checkReversePath = "loose";
+        allowedTCPPorts = [
+          cfg.port
+          cfg.apiPort
+        ];
+      };
+    };
 
     environment.systemPackages = [ pkgs.mihomo ];
+
+    systemd.services.mihomo-sub-update = {
+      description = "Refresh mihomo subscriptions";
+      after = [ "network-online.target" ];
+      wants = [ "network-online.target" ];
+      serviceConfig = {
+        Type = "oneshot";
+        DynamicUser = true;
+        StateDirectory = "mihomo";
+        LoadCredential = map (sub: "${sub.name}:${sub.urlFile}") cfg.subscriptions;
+      };
+      script = lib.concatMapStringsSep "\n" (sub: ''
+        URL="$(cat "$CREDENTIALS_DIRECTORY/${sub.name}")"
+        ${pkgs.curl}/bin/curl -sk --connect-timeout 15 -o /var/lib/mihomo/provider-${sub.name}.yaml "$URL" || true
+      '') cfg.subscriptions;
+      postStart = "${pkgs.systemd}/bin/systemctl restart mihomo.service || true";
+    };
+
+    systemd.timers.mihomo-sub-update = {
+      description = "Periodic mihomo subscription refresh";
+      wantedBy = [ "timers.target" ];
+      timerConfig = {
+        OnBootSec = "5min";
+        OnUnitActiveSec = "6h";
+        RandomizedDelaySec = "5min";
+      };
+    };
 
     systemd.services.mihomo = {
       description = "Mihomo proxy daemon";
@@ -213,6 +263,24 @@ in
         DynamicUser = true;
         StateDirectory = "mihomo";
         LoadCredential = map (sub: "${sub.name}:${sub.urlFile}") cfg.subscriptions;
+        AmbientCapabilities = [
+          "CAP_NET_ADMIN"
+          "CAP_NET_BIND_SERVICE"
+          "CAP_NET_RAW"
+        ];
+        CapabilityBoundingSet = [
+          "CAP_NET_ADMIN"
+          "CAP_NET_BIND_SERVICE"
+          "CAP_NET_RAW"
+        ];
+        PrivateDevices = false;
+        PrivateUsers = false;
+        RestrictAddressFamilies = [
+          "AF_INET"
+          "AF_INET6"
+          "AF_NETLINK"
+          "AF_UNIX"
+        ];
       };
     };
   };

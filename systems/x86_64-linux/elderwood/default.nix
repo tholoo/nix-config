@@ -44,8 +44,6 @@
         }
       ];
     };
-
-    dokploy.enable = false;
   };
 
   environment.sessionVariables = {
