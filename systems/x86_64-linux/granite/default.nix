@@ -19,6 +19,7 @@
       "mount"
       "proxy"
       "vpn"
+      "personal"
     ];
 
     systemd-boot.enable = false;
