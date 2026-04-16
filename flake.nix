@@ -207,6 +207,16 @@
             path = inputs.deploy-rs.lib.x86_64-linux.activate.nixos inputs.self.nixosConfigurations.granite;
           };
         };
+        "elderwood" = {
+          hostname = "192.168.1.101";
+          sshUser = "root";
+          remoteBuild = false;
+          confirmTimeout = 600;
+          profiles.system = {
+            user = "root";
+            path = inputs.deploy-rs.lib.x86_64-linux.activate.nixos inputs.self.nixosConfigurations.elderwood;
+          };
+        };
       };
 
       checks = builtins.mapAttrs (
