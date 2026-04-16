@@ -20,6 +20,8 @@ in
 
   config = mkIf cfg.enable {
     age.secrets = {
+      mihomo-sub-url-main.file = inputs.self + /secrets/mihomo/mihomo-sub-url-main.age;
+
       singbox-domain.file = inputs.self + /secrets/singbox/singbox-domain.age;
       singbox-header-domain.file = inputs.self + /secrets/singbox/singbox-header-domain.age;
       singbox-uuid.file = inputs.self + /secrets/singbox/singbox-uuid.age;
@@ -48,6 +50,8 @@ in
       radarr-apikey.file = inputs.self + /secrets/jellyfin/radarr-apikey.age;
 
       dokploy-db-password.file = inputs.self + /secrets/dokploy/dokploy-db-password.age;
+
+      mail-user1-password.file = inputs.self + /secrets/mail/mail-user1-password.age;
     };
   };
 }

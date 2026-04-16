@@ -33,6 +33,19 @@
 
     grub.enable = true;
     systemd-boot.enable = false;
+
+    mihomo = {
+      enable = true;
+      webui = pkgs.metacubexd;
+      subscriptions = [
+        {
+          name = "main";
+          urlFile = config.age.secrets.mihomo-sub-url-main.path;
+        }
+      ];
+    };
+
+    dokploy.enable = false;
   };
 
   environment.sessionVariables = {
