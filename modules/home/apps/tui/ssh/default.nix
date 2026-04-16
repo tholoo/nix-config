@@ -19,6 +19,10 @@ in
   };
 
   config = mkIf cfg.enable {
+    home.packages = with pkgs; [
+      autossh
+    ];
+
     programs.ssh = {
       enable = true;
       enableDefaultConfig = false;
