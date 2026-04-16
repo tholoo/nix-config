@@ -26,6 +26,7 @@
     syncthing.enable = false;
 
     k8s.enable = false;
+    n8n.enable = false;
   };
 
   security.sudo.wheelNeedsPassword = false;
