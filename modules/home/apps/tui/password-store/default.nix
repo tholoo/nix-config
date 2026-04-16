@@ -21,6 +21,7 @@ in
   config = mkIf cfg.enable {
     programs.${name} = {
       enable = true;
+      settings = { };
       package = pkgs.pass-wayland.withExtensions (
         exts: with exts; [
           pass-otp

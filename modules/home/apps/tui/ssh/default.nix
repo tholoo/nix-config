@@ -26,9 +26,6 @@ in
     programs.ssh = {
       enable = true;
       enableDefaultConfig = false;
-      addKeysToAgent = "yes";
-      serverAliveInterval = 15;
-      serverAliveCountMax = 5;
       matchBlocks =
         let
           cat = lib.getExe' pkgs.coreutils "cat";
@@ -37,6 +34,11 @@ in
         in
         with config.age.secrets;
         {
+          "*" = {
+            addKeysToAgent = "yes";
+            serverAliveInterval = 15;
+            serverAliveCountMax = 5;
+          };
           github = {
             hostname = "github.com";
             user = "git";

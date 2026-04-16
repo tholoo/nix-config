@@ -52,6 +52,7 @@ in
       git = {
         enable = true;
         lfs.enable = true;
+        signing.format = null;
         # diff-so-fancy.enable = true;
         settings = {
           core.editor = "hx";
