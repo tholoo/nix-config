@@ -4,6 +4,7 @@ let
   users = mkAll {
     tholo = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDP5NAC+t7dRdeCUVaMPRUvfu4hrFLqEqpmh8NlXORwF";
     tholo_glacier = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM81VuTolmcvR3GSa5ZjcC2MQAD2l6EGgM44ZLo9Wp3U";
+    tholo_elderwood = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICZD/kmJU6dEYVxb2hI2OnpZ4AkBccyzXNZq895uqesr";
   };
 
   systems = mkAll {
@@ -14,6 +15,8 @@ let
   };
 in
 {
+  "mail/mail-user1-password.age".publicKeys = users.all ++ systems.all;
+
   "dokploy/dokploy-db-password.age".publicKeys = users.all ++ systems.all;
 
   "ips/ip-granite.age".publicKeys = users.all ++ systems.all;
