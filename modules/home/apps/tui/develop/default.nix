@@ -28,5 +28,7 @@ in
       # bugstalker # rust debugger
       fenix.complete.toolchain
     ];
+
+    programs.uv.enable = true;
   };
 }
