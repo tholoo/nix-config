@@ -38,6 +38,7 @@ in
   "singbox/singbox-clash-pass.age".publicKeys = users.all ++ systems.all;
 
   "jellyfin/jellyfin-admin-password.age".publicKeys = users.all ++ systems.all;
+  "jellyfin/jellyfin-apikey.age".publicKeys = users.all ++ systems.all;
   "jellyfin/lidarr-apikey.age".publicKeys = users.all ++ systems.all;
   "jellyfin/lidarr-password.age".publicKeys = users.all ++ systems.all;
   "jellyfin/prowlarr-apikey.age".publicKeys = users.all ++ systems.all;

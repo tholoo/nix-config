@@ -28,6 +28,7 @@ in
       singbox-clash-pass.file = inputs.self + /secrets/singbox/singbox-clash-pass.age;
 
       jellyfin-admin-password.file = inputs.self + /secrets/jellyfin/jellyfin-admin-password.age;
+      jellyfin-apikey.file = inputs.self + /secrets/jellyfin/jellyfin-apikey.age;
 
       lidarr-password.file = inputs.self + /secrets/jellyfin/lidarr-password.age;
       lidarr-apikey.file = inputs.self + /secrets/jellyfin/lidarr-apikey.age;

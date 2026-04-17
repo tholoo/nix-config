@@ -37,7 +37,7 @@ in
     ];
 
     nixflix = {
-      enable = false;
+      enable = true;
       mediaDir = "/data/media";
       stateDir = "/data/.state";
 
@@ -46,6 +46,7 @@ in
 
       sonarr = {
         enable = true;
+        openFirewall = true;
         config = {
           apiKey = {
             _secret = config.age.secrets.sonarr-apikey.path;
@@ -61,6 +62,7 @@ in
 
       radarr = {
         enable = true;
+        openFirewall = true;
         config = {
           apiKey = {
             _secret = config.age.secrets.radarr-apikey.path;
@@ -76,6 +78,7 @@ in
 
       prowlarr = {
         enable = true;
+        openFirewall = true;
         config = {
           apiKey = {
             _secret = config.age.secrets.prowlarr-apikey.path;
@@ -129,6 +132,7 @@ in
 
       lidarr = {
         enable = true;
+        openFirewall = true;
         config = {
           apiKey = {
             _secret = config.age.secrets.lidarr-apikey.path;
@@ -144,6 +148,11 @@ in
 
       jellyfin = {
         enable = true;
+        openFirewall = true;
+        network.localNetworkAddresses = [ ];
+        apiKey = {
+          _secret = config.age.secrets.jellyfin-apikey.path;
+        };
         users.admin = {
           policy.isAdministrator = true;
           password = {
@@ -154,6 +163,7 @@ in
 
       seerr = {
         enable = true;
+        openFirewall = true;
         vpn.enable = false;
         apiKey = {
           _secret = config.age.secrets.jellyseerr-apikey.path;
