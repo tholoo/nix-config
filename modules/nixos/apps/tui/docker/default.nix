@@ -25,6 +25,7 @@ in
         enable = true;
         extraPackages = [ pkgs.docker-buildx ];
         daemon.settings = {
+          live-restore = false;
           registry-mirrors = [ "https://registry.docker.ir" ];
           log-driver = "json-file";
           log-opts = {
