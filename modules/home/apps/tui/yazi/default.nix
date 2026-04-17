@@ -27,6 +27,9 @@ in
         "smart-enter" = smart-enter;
         "mediainfo" = mediainfo;
       };
+      initLua = ''
+        require("smart-enter"):setup { open_multi = true }
+      '';
       keymap.mgr.prepend_keymap = [
         {
           on = [ "e" ];

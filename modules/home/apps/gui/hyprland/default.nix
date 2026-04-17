@@ -474,6 +474,10 @@ in
           "rounding 0,    match:float 0, match:workspace f[1]"
 
           "match:class ^(com\\.ayugram\\.desktop)$, match:title ^(Media viewer)$, float on, fullscreen_state 0 0, fullscreen off, suppress_event fullscreen"
+
+          "match:initial_class ^(dev\\.ghostty\\.chooser)$, float on"
+          "match:initial_class ^(dev\\.ghostty\\.chooser)$, size 60% 60%"
+          "match:initial_class ^(dev\\.ghostty\\.chooser)$, center 1"
         ];
 
         # windowrulev2 = [

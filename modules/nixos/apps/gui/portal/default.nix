@@ -23,26 +23,28 @@ in
       enable = true;
       xdgOpenUsePortal = true;
       extraPortals = with pkgs; [
-        xdg-desktop-portal-gtk
         xdg-desktop-portal-hyprland
+        xdg-desktop-portal-gtk
         xdg-desktop-portal-termfilechooser
       ];
       config = {
         common = {
           default = [
+            "hyprland"
             "gtk"
           ];
-          "org.freedesktop.impl.portal.FileChooser" = "termfilechooser";
+          "org.freedesktop.impl.portal.FileChooser" = [ "termfilechooser" ];
         };
         hyprland = {
           default = [
-            "gtk"
             "hyprland"
+            "gtk"
           ];
-          "org.freedesktop.impl.portal.FileChooser" = [ "xdg-desktop-portal-termfilechooser" ];
+          "org.freedesktop.impl.portal.FileChooser" = [ "termfilechooser" ];
         };
       };
     };
+
     environment.systemPackages = with pkgs; [
       xdg-desktop-portal-termfilechooser
       qt6Packages.qt6ct
@@ -50,12 +52,15 @@ in
       adwaita-icon-theme
       gtk4
     ];
+
     environment.sessionVariables = {
       GTK_USE_PORTAL = 1;
       GDK_DEBUG = "portals";
       XDG_CURRENT_DESKTOP = "Hyprland";
       QT_QPA_PLATFORMTHEME = "qt5ct:qt6ct";
-      TERMCMD = "ghostty";
+      TERMCMD = "ghostty --gtk-single-instance=false --class=dev.ghostty.chooser -e";
+      # QT_QPA_PLATFORMTHEME = "xdgdesktopportal";
+      # TDESKTOP_USE_GTK_FILE_DIALOG = 1;
     };
   };
 }

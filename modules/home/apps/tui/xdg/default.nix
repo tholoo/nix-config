@@ -15,11 +15,25 @@ in
 
   config = mkIf cfg.enable {
     xdg.configFile."xdg-desktop-portal-termfilechooser/config" = {
+      enable = true;
       force = true;
       text = ''
         [filechooser]
         cmd=${pkgs.xdg-desktop-portal-termfilechooser}/share/xdg-desktop-portal-termfilechooser/yazi-wrapper.sh
+        default_dir=${config.home.homeDirectory}/Downloads
+        env=TERMCMD=ghostty --gtk-single-instance=false --class=dev.ghostty.chooser -e
+        open_mode=suggested
+        save_mode=suggested
       '';
+    };
+
+    xdg.terminal-exec = {
+      enable = true;
+      settings = {
+        default = [
+          "com.mitchellh.ghostty.desktop"
+        ];
+      };
     };
     home.preferXdgDirectories = true;
 
