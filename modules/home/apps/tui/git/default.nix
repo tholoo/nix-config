@@ -56,6 +56,7 @@ in
         # diff-so-fancy.enable = true;
         settings = {
           core.editor = "hx";
+          core.sshCommand = "${pkgs.openssh}/bin/ssh";
           init.defaultBranch = "main";
           pull.rebase = true;
           rebase.autostash = true;
