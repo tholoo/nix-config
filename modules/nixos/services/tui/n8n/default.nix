@@ -25,6 +25,11 @@ in
       openFirewall = true;
       environment = {
         N8N_SECURE_COOKIE = false;
+      }
+      // lib.optionalAttrs config.mine.mihomo.enable {
+        HTTP_PROXY = "http://127.0.0.1:${toString config.mine.mihomo.port}";
+        HTTPS_PROXY = "http://127.0.0.1:${toString config.mine.mihomo.port}";
+        NO_PROXY = "localhost,127.0.0.1,::1";
       };
     };
   };
