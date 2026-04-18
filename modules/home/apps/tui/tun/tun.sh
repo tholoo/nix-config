@@ -48,8 +48,6 @@ desc_pids() {
 # Extract remote IPs that the xray process tree is currently connected to (tcp)
 xray_remote_ips() {
   local pids="$1"
-  # ss format: ESTAB ... users:(("xray",pid=123,...))
-  # remote is typically field 5: <ip>:<port> (or [v6]:port)
   ss -ntp 2>/dev/null \
     | awk -v pids="$pids" '
       BEGIN {
@@ -63,16 +61,126 @@ xray_remote_ips() {
 
         remote=$5;
 
-        # strip port
         sub(/:[0-9]+$/, "", remote);
-
-        # strip [ ] around IPv6
         gsub(/^\[/, "", remote); gsub(/\]$/, "", remote);
 
-        # ignore empty/localhost
         if (remote != "" && remote != "127.0.0.1" && remote != "::1") print remote;
       }' \
     | sort -u
+}
+
+is_tun_dev_up() {
+  ip link show "${TUN_DEV}" >/dev/null 2>&1 || return 1
+  ip link show dev "${TUN_DEV}" | grep -q "state UP"
+}
+
+has_tun_addr() {
+  ip -brief addr show dev "${TUN_DEV}" 2>/dev/null | grep -q "${TUN_ADDR%/*}"
+}
+
+is_tun2socks_running() {
+  pgrep -af "tun2socks.*-device ${TUN_DEV}" >/dev/null 2>&1
+}
+
+has_nft_table() {
+  nft list table inet tun_mark >/dev/null 2>&1
+}
+
+has_ip_rule() {
+  ip rule show | grep -q "fwmark ${MARK_HEX}.*lookup ${RT_TABLE}"
+}
+
+has_table_default_route() {
+  ip route show table "${RT_TABLE}" | grep -q "^default via ${TUN_GW} dev ${TUN_DEV}"
+}
+
+is_socks_listening() {
+  ss -lnt 2>/dev/null | grep -q "127.0.0.1:${SOCKS_PORT}"
+}
+
+cmd_status() {
+  need ip
+  need ss
+  need nft
+  need pgrep
+  need grep
+
+  local active=1
+
+  log "Tunnel status"
+  log "============="
+
+  if is_socks_listening; then
+    log "[OK]   SOCKS listener is up on 127.0.0.1:${SOCKS_PORT}"
+  else
+    log "[FAIL] SOCKS listener is not up on 127.0.0.1:${SOCKS_PORT}"
+    active=0
+  fi
+
+  if is_tun_dev_up; then
+    log "[OK]   TUN device ${TUN_DEV} exists and is UP"
+  else
+    log "[FAIL] TUN device ${TUN_DEV} is missing or DOWN"
+    active=0
+  fi
+
+  if has_tun_addr; then
+    log "[OK]   ${TUN_DEV} has address ${TUN_ADDR}"
+  else
+    log "[FAIL] ${TUN_DEV} does not have expected address ${TUN_ADDR}"
+    active=0
+  fi
+
+  if is_tun2socks_running; then
+    log "[OK]   tun2socks is running for ${TUN_DEV}"
+  else
+    log "[FAIL] tun2socks is not running for ${TUN_DEV}"
+    active=0
+  fi
+
+  if has_nft_table; then
+    log "[OK]   nft table inet tun_mark exists"
+  else
+    log "[FAIL] nft table inet tun_mark is missing"
+    active=0
+  fi
+
+  if has_ip_rule; then
+    log "[OK]   policy rule fwmark ${MARK_HEX} -> table ${RT_TABLE} exists"
+  else
+    log "[FAIL] policy rule fwmark ${MARK_HEX} -> table ${RT_TABLE} is missing"
+    active=0
+  fi
+
+  if has_table_default_route; then
+    log "[OK]   routing table ${RT_TABLE} has default via ${TUN_GW} dev ${TUN_DEV}"
+  else
+    log "[FAIL] routing table ${RT_TABLE} does not have expected default route"
+    active=0
+  fi
+
+  log
+  log "Details"
+  log "-------"
+  ip -brief addr show dev "${TUN_DEV}" 2>/dev/null || true
+  ip rule show | grep "lookup ${RT_TABLE}" || true
+  ip route show table "${RT_TABLE}" || true
+
+  if has_nft_table; then
+    log
+    log "nft table inet tun_mark:"
+    nft list table inet tun_mark || true
+  fi
+
+  if [[ "${active}" -eq 1 ]]; then
+    log
+    log "Result: ACTIVE"
+    exit 0
+  else
+    log
+    log "Result: INACTIVE or PARTIALLY BROKEN"
+    exit 1
+  fi
 }
 
 cmd_on() {
@@ -84,6 +192,8 @@ cmd_on() {
   need pgrep
   need awk
   need sort
+  need sed
+  need paste
 
   log "[1/8] Sanity: SOCKS listening on 127.0.0.1:${SOCKS_PORT}?"
   ss -lnt | grep -q "127.0.0.1:${SOCKS_PORT}" || { log "SOCKS not listening."; exit 1; }
@@ -114,7 +224,6 @@ cmd_on() {
   log "Exempt upstream IPs:"
   printf '%s\n' "${remotes}" | sed 's/^/  - /'
 
-  # Build nft set syntax: { ip1, ip2, ... }
   local nft_set
   nft_set="$(printf '%s\n' "${remotes}" | paste -sd, -)"
 
@@ -188,7 +297,8 @@ cmd_off() {
 }
 
 case "${1:-}" in
-  on)  cmd_on ;;
-  off) cmd_off ;;
-  *) echo "Usage: sudo $0 on|off"; exit 2 ;;
+  on)     cmd_on ;;
+  off)    cmd_off ;;
+  status) cmd_status ;;
+  *) echo "Usage: sudo $0 on|off|status"; exit 2 ;;
 esac
