@@ -43,6 +43,9 @@
           urlFile = config.age.secrets.mihomo-sub-url-main.path;
         }
       ];
+      directDomains = [
+        "runflare.com"
+      ];
     };
 
     dokploy.enable = false;
