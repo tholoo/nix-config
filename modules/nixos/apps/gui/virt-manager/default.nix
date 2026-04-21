@@ -13,5 +13,8 @@ in
     ];
   };
 
-  config = mkIf cfg.enable { programs.virt-manager.enable = true; };
+  config = mkIf cfg.enable {
+    programs.virt-manager.enable = true;
+    virtualisation.libvirtd.enable = true;
+  };
 }

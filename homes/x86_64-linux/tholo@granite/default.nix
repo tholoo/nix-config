@@ -23,6 +23,8 @@
       "personal"
     ];
 
+    irc.enable = false;
+    tox.enable = false;
     cli-cool.enable = false;
     kube.enable = false;
     nixvim.enable = false;

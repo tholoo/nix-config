@@ -22,6 +22,8 @@
       "personal"
     ];
 
+    tui-misc.enable = false;
+
     systemd-boot.enable = false;
     syncthing.enable = false;
 
