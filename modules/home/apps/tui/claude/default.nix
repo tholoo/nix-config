@@ -30,61 +30,73 @@ in
       default = null;
       description = "Host-specific context for Claude Code (rendered as a rule file).";
     };
+
+    proxyUrl = mkOption {
+      type = types.nullOr types.str;
+      default = null;
+      example = "socks5://127.0.0.1:1080";
+      description = "Proxy URL for Claude Code API requests. Read by the overlay wrapper.";
+    };
   };
 
   config = mkIf cfg.enable {
     programs.claude-code = {
       enable = true;
 
-      settings = {
-        theme = "dark";
-        includeCoAuthoredBy = false;
+      settings =
+        {
+          theme = "dark";
+          includeCoAuthoredBy = false;
+        }
+        // lib.optionalAttrs (cfg.proxyUrl != null) {
+          proxyUrl = cfg.proxyUrl;
+        }
+        // {
+          permissions = {
+            defaultMode = "acceptEdits";
+            allow = [
+              "Bash(git *)"
+              "Bash(nix fmt:*)"
+              "Bash(nix build:*)"
+              "Bash(nix develop:*)"
+              "Bash(nix run:*)"
+              "Bash(nix flake *)"
+              "Bash(agenix *)"
+              "Bash(ls:*)"
+              "Bash(which:*)"
+              "Bash(man:*)"
+              "Edit"
+              "Read"
+            ];
+            ask = [
+              "Bash(nixos-rebuild *)"
+              "Bash(deploy *)"
+              "Bash(rm *)"
+            ];
+            deny = [
+              "Bash(rm -rf:*)"
+              "Read(./.env)"
+              "Read(./secrets/**)"
+            ];
+          };
 
-        permissions = {
-          defaultMode = "acceptEdits";
-          allow = [
-            "Bash(git *)"
-            "Bash(nix fmt:*)"
-            "Bash(nix build:*)"
-            "Bash(nix develop:*)"
-            "Bash(nix run:*)"
-            "Bash(nix flake *)"
-            "Bash(agenix *)"
-            "Bash(ls:*)"
-            "Bash(which:*)"
-            "Bash(man:*)"
-            "Edit"
-            "Read"
-          ];
-          ask = [
-            "Bash(nixos-rebuild *)"
-            "Bash(deploy *)"
-            "Bash(rm *)"
-          ];
-          deny = [
-            "Bash(rm -rf:*)"
-            "Read(./.env)"
-            "Read(./secrets/**)"
-          ];
+          hooks = {
+            PostToolUse = [
+              {
+                matcher = "Edit|MultiEdit|Write";
+                hooks = [
+                  {
+                    type = "command";
+                    command = ''
+                      file=$(jq -r '.tool_input.file_path // empty' <<< "$CLAUDE_TOOL_INPUT")
+                      [[ "$file" == *.nix ]] && nix fmt "$file" 2>/dev/null || true
+                    '';
+                  }
+                ];
+              }
+            ];
+          };
         };
-
-        hooks = {
-          PostToolUse = [
-            {
-              matcher = "Edit|MultiEdit|Write";
-              hooks = [
-                {
-                  type = "command";
-                  command = ''
-                    file=$(jq -r '.tool_input.file_path // empty' <<< "$CLAUDE_TOOL_INPUT")
-                    [[ "$file" == *.nix ]] && nix fmt "$file" 2>/dev/null || true
-                  '';
-                }
-              ];
-            }
-          ];
-        };
-      };
 
       rules = lib.optionalAttrs (cfg.hostContext != null) {
         host-context = cfg.hostContext;
