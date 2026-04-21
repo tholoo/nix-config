@@ -218,8 +218,17 @@ $env.config = {
                 { |before, after| zellij-update-tabname-git }
             ]
         }
-    }
- }
+        pre_execution: [
+            {|| zellij-update-tabname-ssh-or-git }
+        ]
+        pre_prompt: [
+            {||
+                if ("ZELLIJ" in $env) {
+                    zellij-update-tabname-git
+                }
+            }
+        ]
+    } }
 
 def e_completer [] {
     core-ls -la | get name
@@ -275,6 +284,119 @@ def zellij-update-tabname-git [] {
 
         # Update the zellij tab name.
         zellij action rename-tab $tab_name;
+    }
+}
+
+def extract-ssh-target [cmd: string] {
+    let parts = (
+        $cmd
+        | str trim
+        | split row --regex '\s+'
+        | where {|x| $x != "" }
+    )
+
+    if ($parts | is-empty) {
+        return null
+    }
+
+    let ssh_names = ["ssh", "autossh", "mosh"]
+
+    let ssh_idx = (
+        $parts
+        | enumerate
+        | where {|it|
+            (
+                ($it.item in $ssh_names)
+                or ($ssh_names | any {|n| $it.item | str ends-with $"/($n)" })
+            )
+        }
+        | get -o 0.index
+    )
+
+    if $ssh_idx == null {
+        return null
+    }
+
+    mut i = $ssh_idx + 1
+    while $i < ($parts | length) {
+        let tok = ($parts | get $i)
+
+        # options that consume a value
+        if $tok in [
+            "-B" "-b" "-c" "-D" "-E" "-e" "-F" "-I" "-i" "-J" "-L" "-l"
+            "-m" "-O" "-o" "-p" "-Q" "-R" "-S" "-W" "-w"
+        ] {
+            $i = $i + 2
+            continue
+        }
+
+        # flags without value
+        if ($tok | str starts-with "-") {
+            $i = $i + 1
+            continue
+        }
+
+        let dest = $tok
+
+        let no_scheme = if ($dest | str starts-with "ssh://") {
+            $dest | str replace "ssh://" ""
+        } else {
+            $dest
+        }
+
+        let no_user = if ($no_scheme | str contains "@") {
+            $no_scheme | split row "@" | last
+        } else {
+            $no_scheme
+        }
+
+        if ($no_user | str starts-with "[") {
+            let host = ($no_user | parse --regex '^\[(?<host>.+)\](?::(?<port>\d+))?$')
+            if not ($host | is-empty) {
+                return ($host | get 0.host)
+            }
+            return $no_user
+        }
+
+        let parsed = ($no_user | parse --regex '^(?<host>[^:]+)(?::(?<port>\d+))?$')
+        if not ($parsed | is-empty) {
+            return ($parsed | get 0.host)
+        }
+
+        return $no_user
+    }
+
+    null
+}
+
+def zellij-update-tabname-ssh-or-git [] {
+    if ("ZELLIJ" not-in $env) {
+        return
+    }
+
+    let cmd = (commandline)
+
+    let ssh_target = (extract-ssh-target $cmd)
+    if $ssh_target != null {
+        zellij action rename-tab $ssh_target
+        return
+    }
+
+    zellij-update-tabname-git
+}
+
+exoprt def my_ip [
+    --short (-s)
+] {
+    if $short {
+        sys net
+        | flatten ip
+        | get ip.address
+        | where {|it| $it =~ "192.168"}
+    } else {
+        sys net
+        | flatten ip
+        | where {|it| $it.ip.address =~ "192.168"}
     }
 }
 
