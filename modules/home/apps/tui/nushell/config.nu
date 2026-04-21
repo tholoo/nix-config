@@ -385,7 +385,7 @@ def zellij-update-tabname-ssh-or-git [] {
     zellij-update-tabname-git
 }
 
-exoprt def my_ip [
+export def my_ip [
     --short (-s)
 ] {
     if $short {
