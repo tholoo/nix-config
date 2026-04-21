@@ -1,13 +1,20 @@
 {
   config,
   lib,
+  pkgs,
   ...
 }:
 let
-  inherit (lib) mkIf;
+  inherit (lib)
+    mkIf
+    mkOption
+    types
+    ;
   inherit (lib.mine) mkEnable;
   cfg = config.mine.claude-code;
   name = "claude-code";
+
+  jsonFormat = pkgs.formats.json { };
 in
 {
   options.mine.${name} = mkEnable config {
@@ -17,6 +24,12 @@ in
       "cli-tools"
       "ai"
     ];
+
+    hostContext = mkOption {
+      type = types.nullOr types.str;
+      default = null;
+      description = "Host-specific context for Claude Code (rendered as a rule file).";
+    };
   };
 
   config = mkIf cfg.enable {
@@ -37,6 +50,9 @@ in
             "Bash(nix run:*)"
             "Bash(nix flake *)"
             "Bash(agenix *)"
+            "Bash(ls:*)"
+            "Bash(which:*)"
+            "Bash(man:*)"
             "Edit"
             "Read"
           ];
@@ -59,7 +75,6 @@ in
               hooks = [
                 {
                   type = "command";
-                  # Auto-format .nix files after edits
                   command = ''
                     file=$(jq -r '.tool_input.file_path // empty' <<< "$CLAUDE_TOOL_INPUT")
                     [[ "$file" == *.nix ]] && nix fmt "$file" 2>/dev/null || true
@@ -69,6 +84,26 @@ in
             }
           ];
         };
+      };
+
+      rules = lib.optionalAttrs (cfg.hostContext != null) {
+        host-context = cfg.hostContext;
+      };
+    };
+
+    # Keybindings: shift+enter for newline, unbind alt+enter
+    home.file.".claude/keybindings.json" = {
+      source = jsonFormat.generate "claude-code-keybindings.json" {
+        "$schema" = "https://www.schemastore.org/claude-code-keybindings.json";
+        bindings = [
+          {
+            context = "Chat";
+            bindings = {
+              "shift+enter" = "chat:newline";
+              "alt+enter" = null;
+            };
+          }
+        ];
       };
     };
   };

@@ -34,5 +34,15 @@
       enableLSP = false;
     };
 
+    claude-code = {
+      enable = true;
+      hostContext = ''
+        # Host: granite
+        You are on **granite**, a Hetzner Cloud server (x86_64, systemd-boot).
+        This is a remote production server running media stack (nixflix), dokploy, and other services.
+        Be extra cautious — changes here affect live services. Prefer `deploy-rs` over direct `nixos-rebuild`.
+      '';
+    };
+
   };
 }

@@ -22,5 +22,7 @@
 
     gui.enable = false;
     tui.enable = true;
+
+    claude-code.enable = false;
   };
 }
