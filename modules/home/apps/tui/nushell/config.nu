@@ -264,12 +264,12 @@ def zellij-update-tabname-git [] {
             ($current_dir | path parse | get stem)
         };
 
-        let in_git = (try { git rev-parse --is-inside-work-tree } catch { "false" });
+        let in_git = (try { git rev-parse --is-inside-work-tree err> /dev/null } catch { "false" });
         if ($in_git | into bool) {
             # Get the git superproject root if available.
-            let git_root_super = (try { git rev-parse --show-superproject-working-tree } catch { "" });
+            let git_root_super = (try { git rev-parse --show-superproject-working-tree err> /dev/null } catch { "" });
             let git_root = if ($git_root_super == "") {
-                (try { git rev-parse --show-toplevel } catch { "" })
+                (try { git rev-parse --show-toplevel err> /dev/null } catch { "" })
             } else {
                 $git_root_super
             };
