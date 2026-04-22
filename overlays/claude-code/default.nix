@@ -6,30 +6,27 @@ final: prev: {
     postPatch =
       (oldAttrs.postPatch or "")
       + ''
-        # Increase API maxRetries: 2 -> 6
+        # Increase API maxRetries: 2 -> 999 (effectively unlimited)
         substituteInPlace cli.js \
-          --replace-fail 'this.maxRetries=Y.maxRetries??2' 'this.maxRetries=Y.maxRetries??6'
+          --replace-fail 'this.maxRetries=Y.maxRetries??2' 'this.maxRetries=Y.maxRetries??999'
 
         # Tune SSE reconnect for unstable connections:
-        #   FUY  (initial delay):    1000ms -> 300ms   (retry faster)
-        #   UUY  (max delay):       30000ms -> 8000ms  (lower backoff cap)
-        #   QUY  (total budget):   600000ms -> 1200000ms (20min instead of 10min)
-        #   dUY  (liveness timeout): 45000ms -> 90000ms (tolerate longer gaps)
+        #   FUY  (initial delay):    1000ms -> 300ms       (retry faster)
+        #   UUY  (max delay):       30000ms -> 8000ms      (lower backoff cap)
+        #   QUY  (total budget):   600000ms -> 999999999ms (essentially infinite)
+        #   dUY  (liveness timeout): 45000ms -> 600000ms   (10min tolerance)
         substituteInPlace cli.js \
           --replace-fail 'FUY=1000,UUY=30000,QUY=600000,dUY=45000' \
-                         'FUY=300,UUY=8000,QUY=1200000,dUY=90000'
-
-        # Increase default stream idle timeout: 90s -> 180s
-        substituteInPlace cli.js \
-          --replace-fail 'CLAUDE_STREAM_IDLE_TIMEOUT_MS||"",10)||90000' \
-                         'CLAUDE_STREAM_IDLE_TIMEOUT_MS||"",10)||180000'
+                         'FUY=300,UUY=8000,QUY=999999999,dUY=600000'
       '';
 
     postInstall =
       (oldAttrs.postInstall or "")
       + ''
-        # Read proxyUrl from settings and export as env vars for claude only
+        # Set stream idle timeout via env var (no need to patch JS)
+        # and read proxyUrl from settings, exporting only if reachable
         wrapProgram $out/bin/claude \
+          --set-default CLAUDE_STREAM_IDLE_TIMEOUT_MS 999999999 \
           --run '
             _cfg="''${HOME}/.claude"
             _proxy=""
@@ -39,9 +36,17 @@ final: prev: {
               fi
             done
             if [ -n "$_proxy" ]; then
-              export HTTPS_PROXY="$_proxy"
-              export HTTP_PROXY="$_proxy"
-              export ALL_PROXY="$_proxy"
+              _host="''${_proxy##*://}"
+              _port="''${_host##*:}"
+              _host="''${_host%%:*}"
+              if timeout 2 ${final.bash}/bin/bash -c "</dev/tcp/$_host/$_port" 2>/dev/null; then
+                export HTTPS_PROXY="$_proxy"
+                export HTTP_PROXY="$_proxy"
+                export ALL_PROXY="$_proxy"
+              else
+                echo "error: proxy $_proxy is not reachable" >&2
+                exit 1
+              fi
             fi
           '
       '';
