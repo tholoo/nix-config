@@ -98,6 +98,11 @@ in
           };
         };
 
+      skills = {
+        debug = ./debug-skill.md;
+        grill = ./grill-skill.md;
+      };
+
       rules = lib.optionalAttrs (cfg.hostContext != null) {
         host-context = cfg.hostContext;
       };
