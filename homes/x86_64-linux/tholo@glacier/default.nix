@@ -15,6 +15,6 @@
       You are on **glacier**, a laptop (IdeaPad Slim 5, AMD CPU+GPU, x86_64).
       This is the primary mobile dev machine with full GUI + TUI suites.
     '';
-    claude-code.proxyUrl = "socks5://127.0.0.1:10808";
+    claude-code.proxyUrl = "http://127.0.0.1:10808";
   };
 }
