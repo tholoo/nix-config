@@ -106,7 +106,7 @@
 
     vigiland.url = "github:jappie3/vigiland";
 
-    simple-nixos-mailserver.url = "gitlab:simple-nixos-mailserver/nixos-mailserver";
+    # simple-nixos-mailserver.url = "gitlab:simple-nixos-mailserver/nixos-mailserver";
 
     nixflix = {
       url = "github:kiriwalawren/nixflix";
@@ -161,7 +161,7 @@
         nur.modules.nixos.default
         # dedsec-grub-theme.nixosModule
         NixVirt.nixosModules.default
-        simple-nixos-mailserver.nixosModule
+        # simple-nixos-mailserver.nixosModule
         nixflix.nixosModules.default
         nix-dokploy.nixosModules.default
         stylix.nixosModules.stylix
