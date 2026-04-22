@@ -10,41 +10,6 @@ let
   inherit (lib.mine) mkEnable;
   cfg = config.mine.${name};
   name = "theme";
-
-  themes = {
-    catppuccin-mocha = {
-      scheme = "catppuccin-mocha";
-      polarity = "dark";
-    };
-    catppuccin-latte = {
-      scheme = "catppuccin-latte";
-      polarity = "light";
-    };
-    gruvbox-dark = {
-      scheme = "gruvbox-dark-hard";
-      polarity = "dark";
-    };
-    tokyo-night = {
-      scheme = "tokyo-night-dark";
-      polarity = "dark";
-    };
-    dracula = {
-      scheme = "dracula";
-      polarity = "dark";
-    };
-    nord = {
-      scheme = "nord";
-      polarity = "dark";
-    };
-    rose-pine = {
-      scheme = "rose-pine";
-      polarity = "dark";
-    };
-    rose-pine-dawn = {
-      scheme = "rose-pine-dawn";
-      polarity = "light";
-    };
-  };
 in
 {
   options.mine.${name} = mkEnable config {
@@ -88,14 +53,5 @@ in
 
       targets.plymouth.enable = false;
     };
-
-    specialisation = builtins.mapAttrs (_: theme: {
-      configuration = {
-        stylix = {
-          base16Scheme = lib.mkForce "${pkgs.base16-schemes}/share/themes/${theme.scheme}.yaml";
-          polarity = lib.mkForce theme.polarity;
-        };
-      };
-    }) themes;
   };
 }
