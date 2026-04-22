@@ -55,18 +55,116 @@ in
           permissions = {
             defaultMode = "acceptEdits";
             allow = [
+              # built-in tools
+              "Edit"
+              "Read"
+              "Write"
+              "Glob"
+              "Grep"
+              "WebFetch"
+              "WebSearch"
+              "Agent"
+
+              # git
               "Bash(git *)"
+              "Bash(gh *)"
+
+              # nix
               "Bash(nix fmt:*)"
               "Bash(nix build:*)"
               "Bash(nix develop:*)"
               "Bash(nix run:*)"
               "Bash(nix flake *)"
+              "Bash(nix eval:*)"
+              "Bash(nix search:*)"
+              "Bash(nix path-info:*)"
+              "Bash(nix why-depends:*)"
+              "Bash(nix log:*)"
+              "Bash(nix-store *)"
+              "Bash(nix hash:*)"
+              "Bash(nixos-option:*)"
               "Bash(agenix *)"
+              "Bash(home-manager generations:*)"
+
+              # filesystem & search
               "Bash(ls:*)"
+              "Bash(tree:*)"
+              "Bash(find:*)"
+              "Bash(fd:*)"
+              "Bash(rg:*)"
+              "Bash(cat:*)"
+              "Bash(head:*)"
+              "Bash(tail:*)"
+              "Bash(wc:*)"
+              "Bash(diff:*)"
+              "Bash(file:*)"
+              "Bash(stat:*)"
+              "Bash(du:*)"
+              "Bash(df:*)"
+              "Bash(basename:*)"
+              "Bash(dirname:*)"
+              "Bash(pwd:*)"
+              "Bash(realpath:*)"
+              "Bash(readlink:*)"
+              "Bash(mkdir:*)"
+              "Bash(cp:*)"
+              "Bash(mv:*)"
+              "Bash(touch:*)"
+
+              # text processing
+              "Bash(grep:*)"
+              "Bash(sed:*)"
+              "Bash(awk:*)"
+              "Bash(sort:*)"
+              "Bash(uniq:*)"
+              "Bash(tr:*)"
+              "Bash(cut:*)"
+              "Bash(jq:*)"
+              "Bash(yq:*)"
+
+              # system info
               "Bash(which:*)"
               "Bash(man:*)"
-              "Edit"
-              "Read"
+              "Bash(uname:*)"
+              "Bash(hostname:*)"
+              "Bash(echo:*)"
+              "Bash(printf:*)"
+              "Bash(env:*)"
+              "Bash(printenv:*)"
+
+              # process & service inspection
+              "Bash(ps:*)"
+              "Bash(pgrep:*)"
+              "Bash(systemctl status:*)"
+              "Bash(systemctl show:*)"
+              "Bash(systemctl list-units:*)"
+              "Bash(systemctl list-timers:*)"
+              "Bash(systemctl is-active:*)"
+              "Bash(systemctl is-enabled:*)"
+              "Bash(systemctl cat:*)"
+              "Bash(journalctl:*)"
+
+              # network (read-only)
+              "Bash(ip addr:*)"
+              "Bash(ip route:*)"
+              "Bash(ss:*)"
+              "Bash(ping:*)"
+              "Bash(curl:*)"
+              "Bash(dig:*)"
+              "Bash(host:*)"
+
+              # dev tools
+              "Bash(cargo:*)"
+              "Bash(go:*)"
+              "Bash(python:*)"
+              "Bash(python3:*)"
+              "Bash(uv:*)"
+              "Bash(uvx:*)"
+              "Bash(pytest:*)"
+              "Bash(pip:*)"
+              "Bash(npm:*)"
+              "Bash(npx:*)"
+              "Bash(node:*)"
             ];
             ask = [
               "Bash(nixos-rebuild *)"
