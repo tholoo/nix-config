@@ -87,7 +87,7 @@ with lib.mine;
       );
       # https://docs.helix-editor.com/configuration.html
       settings = {
-        theme = "ayu_dark";
+        # theme managed by stylix
         editor = {
           auto-format = true;
           true-color = true;

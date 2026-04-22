@@ -104,6 +104,10 @@
 
     zellij-switch.url = "github:mostafaqanbaryan/zellij-switch";
 
+    vigiland.url = "github:jappie3/vigiland";
+
+    simple-nixos-mailserver.url = "gitlab:simple-nixos-mailserver/nixos-mailserver";
+
     nixflix = {
       url = "github:kiriwalawren/nixflix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -157,8 +161,10 @@
         nur.modules.nixos.default
         # dedsec-grub-theme.nixosModule
         NixVirt.nixosModules.default
+        simple-nixos-mailserver.nixosModule
         nixflix.nixosModules.default
         nix-dokploy.nixosModules.default
+        stylix.nixosModules.stylix
       ];
 
       systems.hosts.glacier.modules = with inputs.nixos-hardware.nixosModules; [
@@ -187,7 +193,7 @@
         agenix.homeManagerModules.default
         nix-index-database.homeModules.nix-index
         zen-browser.homeModules.beta
-        # stylix.homeModules.stylix
+        # stylix.homeModules.stylix — not needed; stylix NixOS module propagates to home-manager
       ];
 
       # homes.users."my-user@my-host".specialArgs = {

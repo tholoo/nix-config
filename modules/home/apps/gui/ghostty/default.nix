@@ -20,8 +20,7 @@ in
       installVimSyntax = true;
       settings = {
         confirm-close-surface = false;
-        theme = "Deep";
-        font-family = "JetBrainsMono Nerd Font";
+        # theme and font managed by stylix
         font-size = 12.5;
       };
     };

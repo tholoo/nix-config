@@ -64,21 +64,19 @@ in
       settings = {
         background = {
           monitor = "";
-          path = "${inputs.self}/resources/wallpapers/wallhaven-car-swamp.png";
+          # path managed by stylix (uses stylix.image)
         };
         general = {
           hide_cursor = true;
         };
-        input-field = [
+        # input-field colors managed by stylix
+        input-field = lib.mkForce [
           {
             size = "200, 50";
             position = "0, -80";
             monitor = "";
             dots_center = true;
             fade_on_empty = true;
-            font_color = "rgb(202, 211, 245)";
-            inner_color = "rgb(91, 96, 120)";
-            outer_color = "rgb(24, 25, 38)";
             outline_thickness = 5;
             placeholder_text = "";
             shadow_passes = 2;
@@ -178,8 +176,7 @@ in
           border_size = "2";
 
           # https://wiki.hyprland.org/Configuring/Variables/#variable-types for info about colors
-          "col.active_border" = "rgba(33ccffee) rgba(00ff99ee) 45deg";
-          "col.inactive_border" = "rgba(595959aa)";
+          # border colors managed by stylix
 
           # Set to true enable resizing windows by clicking and dragging on borders and gaps
           resize_on_border = true;
@@ -202,7 +199,7 @@ in
             enabled = true;
             range = 4;
             render_power = 3;
-            color = "rgba(1a1a1aee)";
+            # color managed by stylix
           };
 
           # https://wiki.hyprland.org/Configuring/Variables/#blur

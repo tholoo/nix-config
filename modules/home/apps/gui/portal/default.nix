@@ -19,38 +19,12 @@ in
   };
 
   config = mkIf cfg.enable {
-    home.pointerCursor = {
-      gtk.enable = true;
-      hyprcursor.enable = true;
-      package = pkgs.bibata-cursors;
-      name = "Bibata-Modern-Ice";
-    };
-    qt = {
-      enable = true;
-      platformTheme.name = "adwaita";
-      style = {
-        name = "adwaita-dark";
-        package = pkgs.adwaita-qt6;
-      };
-    };
+    # Qt, GTK, cursor, and font theming is managed by stylix
     gtk = {
       enable = true;
-      font = {
-        name = "DejaVu Sans";
-        package = pkgs.dejavu_fonts;
-      };
-      theme = {
-        package = pkgs.arc-theme;
-        name = "Arc";
-      };
-      gtk4.theme = config.gtk.theme;
       iconTheme = {
         package = pkgs.papirus-icon-theme;
         name = "Papirus";
-      };
-      cursorTheme = {
-        package = pkgs.bibata-cursors;
-        name = "Bibata-Modern-Ice";
       };
     };
   };
