@@ -26,7 +26,7 @@ in
 
       grub = {
         enable = true;
-        configurationLimit = 30;
+        configurationLimit = 5;
         efiSupport = true;
         efiInstallAsRemovable = if cfg.server then true else false;
         useOSProber = true;
