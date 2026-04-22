@@ -196,6 +196,49 @@ in
           };
         };
 
+      mcpServers =
+        let
+          npx = "${pkgs.nodejs}/bin/npx";
+          npxPath = lib.makeBinPath [
+            pkgs.nodejs
+            pkgs.bash
+            pkgs.coreutils
+          ];
+        in
+        {
+          serena = {
+            command = lib.getExe' pkgs.uv "uvx";
+            args = [
+              "--from"
+              "git+https://github.com/oraios/serena"
+              "serena"
+              "start-mcp-server"
+              "--open-web-dashboard"
+              "False"
+            ];
+          };
+          context7 = {
+            command = npx;
+            args = [
+              "-y"
+              "@upstash/context7-mcp"
+            ];
+            env = {
+              PATH = npxPath;
+            };
+          };
+          playwright = {
+            command = npx;
+            args = [
+              "-y"
+              "@playwright/mcp@latest"
+            ];
+            env = {
+              PATH = npxPath;
+            };
+          };
+        };
+
       skills = {
         debug = ./debug-skill.md;
         grill = ./grill-skill.md;
