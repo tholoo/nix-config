@@ -27,6 +27,8 @@ in
     home.packages = with pkgs; [
       # bugstalker # rust debugger
       fenix.complete.toolchain
+
+      python314
     ];
 
     programs.uv.enable = true;
