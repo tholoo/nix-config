@@ -21,7 +21,6 @@ in
   config = mkIf cfg.enable {
     programs.wireshark = {
       enable = true;
-      usbmon = true;
     };
   };
 }
