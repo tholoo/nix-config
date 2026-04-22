@@ -18,6 +18,7 @@
       "gui"
       "game"
       "calender"
+      "develop"
     ];
 
     gui.enable = false;

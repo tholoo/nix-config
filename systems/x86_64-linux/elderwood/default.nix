@@ -26,6 +26,7 @@
     tags.exclude = [
       "gui"
       "game"
+      "develop"
     ];
 
     gui.enable = false;
