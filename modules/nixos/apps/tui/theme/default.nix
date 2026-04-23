@@ -10,11 +10,12 @@ let
   inherit (lib.mine) mkEnable;
   cfg = config.mine.${name};
   name = "theme";
+  hasGui = builtins.elem "gui" config.mine.tags.include;
 in
 {
   options.mine.${name} = mkEnable config {
     tags = [
-      "gui"
+      "tui"
       "theme"
     ];
   };
@@ -23,7 +24,7 @@ in
     stylix = {
       enable = true;
       image = "${inputs.self}/resources/wallpapers/wallhaven-fields-858z32.png";
-      base16Scheme = "${pkgs.base16-schemes}/share/themes/catppuccin-mocha.yaml";
+      base16Scheme = "${pkgs.base16-schemes}/share/themes/ayu-dark.yaml";
       polarity = "dark";
 
       fonts = {
@@ -45,13 +46,17 @@ in
         };
       };
 
-      cursor = {
+      cursor = mkIf hasGui {
         package = pkgs.bibata-cursors;
         name = "Bibata-Modern-Ice";
         size = 24;
       };
 
       targets.plymouth.enable = false;
+
+      # Disable auto-import since stylix.homeModules.stylix is loaded
+      # separately in homes.modules (needed for standalone home-manager switch)
+      homeManagerIntegration.autoImport = false;
     };
   };
 }

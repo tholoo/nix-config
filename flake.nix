@@ -193,7 +193,7 @@
         agenix.homeManagerModules.default
         nix-index-database.homeModules.nix-index
         zen-browser.homeModules.beta
-        # stylix.homeModules.stylix — not needed; stylix NixOS module propagates to home-manager
+        stylix.homeModules.stylix
       ];
 
       # homes.users."my-user@my-host".specialArgs = {
