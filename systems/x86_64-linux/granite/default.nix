@@ -31,6 +31,8 @@
     n8n.enable = false;
     home-assistant.enable = false;
     llama-cpp.enable = false;
+    homepage-dashboard.enable = false;
+    uptime-kuma.enable = false;
   };
 
   security.sudo.wheelNeedsPassword = false;
