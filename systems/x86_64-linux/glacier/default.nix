@@ -16,6 +16,10 @@
     systemd-boot.enable = false;
   };
 
+  networking.hosts = {
+    "192.168.1.101" = [ "elderwood" ];
+  };
+
   systemd.services.nix-daemon.environment = {
     http_proxy = "socks5h://127.0.0.1:10808";
     https_proxy = "socks5h://127.0.0.1:10808";
