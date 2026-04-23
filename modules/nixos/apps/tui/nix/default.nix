@@ -22,7 +22,18 @@ in
       };
 
       settings = {
-        experimental-features = lib.mkDefault "nix-command flakes";
+        experimental-features = [
+          "nix-command"
+          "flakes"
+          "configurable-impure-env"
+        ];
+        # Pass proxy into fixed-output derivation builds (crate downloads, etc.)
+        impure-env = [
+          "http_proxy=socks5h://127.0.0.1:10808"
+          "https_proxy=socks5h://127.0.0.1:10808"
+          "HTTP_PROXY=socks5h://127.0.0.1:10808"
+          "HTTPS_PROXY=socks5h://127.0.0.1:10808"
+        ];
         # Deduplicate and optimize nix store
         auto-optimise-store = true;
         trusted-users = [
