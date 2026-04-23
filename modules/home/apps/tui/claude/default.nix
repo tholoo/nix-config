@@ -238,6 +238,7 @@ in
             ];
             env = {
               PATH = npxPath;
+              PLAYWRIGHT_BROWSERS_PATH = "${config.home.homeDirectory}/.cache/ms-playwright";
             };
           };
         };
