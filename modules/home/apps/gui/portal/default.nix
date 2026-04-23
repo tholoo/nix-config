@@ -22,6 +22,7 @@ in
     # Qt, GTK, cursor, and font theming is managed by stylix
     gtk = {
       enable = true;
+      gtk4.theme = null;
       iconTheme = {
         package = pkgs.papirus-icon-theme;
         name = "Papirus";
