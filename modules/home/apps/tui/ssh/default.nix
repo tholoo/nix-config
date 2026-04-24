@@ -74,7 +74,7 @@ in
             proxyCommand = "bash -c '${nc} $(${cat} ${ip-parsa-asiatech-tehran.path}) %p'";
           };
           flint = {
-            user = "root";
+            user = "tholo";
             checkHostIP = false;
             proxyCommand = "bash -c '${nc} $(${cat} ${ip-flint.path}) %p'";
           };
