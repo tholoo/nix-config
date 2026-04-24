@@ -24,11 +24,11 @@ in
   "dokploy/dokploy-db-password.age".publicKeys = users.all ++ systems.all;
 
   "ips/ip-granite.age".publicKeys = users.all ++ systems.all;
+  "ips/ip-flint.age".publicKeys = users.all ++ systems.all;
   "ips/ip-parsa-hetzner-germany.age".publicKeys = users.all ++ systems.all;
   "ips/ip-ahmad-hetzner-germany.age".publicKeys = users.all ++ systems.all;
   "ips/ip-parsa-iranserver-tehran.age".publicKeys = users.all ++ systems.all;
   "ips/ip-parsa-asiatech-tehran.age".publicKeys = users.all ++ systems.all;
-  "ips/ip-ahmad-parspack-tehran.age".publicKeys = users.all ++ systems.all;
   "ips/ip-parsa-asiatech-tehran2.age".publicKeys = users.all ++ systems.all;
   "ips/ip-mohammad-do.age".publicKeys = users.all ++ systems.all;
 

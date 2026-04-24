@@ -73,10 +73,10 @@ in
             checkHostIP = false;
             proxyCommand = "bash -c '${nc} $(${cat} ${ip-parsa-asiatech-tehran.path}) %p'";
           };
-          ahmad-parspack-tehran = {
+          flint = {
             user = "root";
             checkHostIP = false;
-            proxyCommand = "bash -c '${nc} $(${cat} ${ip-ahmad-parspack-tehran.path}) %p'";
+            proxyCommand = "bash -c '${nc} $(${cat} ${ip-flint.path}) %p'";
           };
           parsa-asiatech-tehran2 = {
             user = "root";

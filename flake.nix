@@ -184,6 +184,12 @@
         nixosModules.mixins-trusted-nix-caches
       ];
 
+      systems.hosts.flint.modules = with inputs.srvos; [
+        nixosModules.server
+        nixosModules.mixins-terminfo
+        nixosModules.mixins-trusted-nix-caches
+      ];
+
       # systems.hosts.my-host.specialArgs = {
       #   my-custom-value = "my-value";
       # };
@@ -211,6 +217,16 @@
           profiles.system = {
             user = "root";
             path = inputs.deploy-rs.lib.x86_64-linux.activate.nixos inputs.self.nixosConfigurations.granite;
+          };
+        };
+        "flint" = {
+          hostname = "flint";
+          sshUser = "root";
+          remoteBuild = false;
+          confirmTimeout = 120;
+          profiles.system = {
+            user = "root";
+            path = inputs.deploy-rs.lib.x86_64-linux.activate.nixos inputs.self.nixosConfigurations.flint;
           };
         };
         "elderwood" = {
