@@ -47,6 +47,11 @@ Convert a server to nixos using nixos-anywhere
 nix run github:nix-community/nixos-anywhere -- --flake .#granite root@granite --build-on-remote
 ```
 
+Check which modules are enabled and why
+```bash
+nix run .#nix-modules-tui -- granite
+```
+
 ## secrets
 Get the public ip with:
 ```bash
