@@ -20,6 +20,7 @@
       "proxy"
       "vpn"
       "personal"
+      "emulation"
     ];
 
     tui-misc.enable = false;
@@ -33,6 +34,7 @@
     llama-cpp.enable = false;
     homepage-dashboard.enable = false;
     uptime-kuma.enable = false;
+    mealie.enable = false;
   };
 
   security.sudo.wheelNeedsPassword = false;
