@@ -5,6 +5,7 @@ let
     tholo = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDP5NAC+t7dRdeCUVaMPRUvfu4hrFLqEqpmh8NlXORwF";
     tholo_glacier = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM81VuTolmcvR3GSa5ZjcC2MQAD2l6EGgM44ZLo9Wp3U";
     tholo_elderwood = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICZD/kmJU6dEYVxb2hI2OnpZ4AkBccyzXNZq895uqesr";
+    tholo_flint = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAc53AitN2lk7FE8i4b6ZsNU4DhcKJQALgEdfEsmOQw3";
   };
 
   systems = mkAll {
