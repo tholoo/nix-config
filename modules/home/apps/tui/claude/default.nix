@@ -50,6 +50,7 @@ in
       settings = {
         theme = "dark";
         includeCoAuthoredBy = false;
+        effortLevel = "high";
       }
       // lib.optionalAttrs (cfg.proxyUrl != null) {
         proxyUrl = cfg.proxyUrl;
@@ -237,8 +238,6 @@ in
             "Bash(nixos-rebuild *)"
             "Bash(deploy *)"
             "Bash(rm *)"
-          ];
-          deny = [
             "Bash(rm -rf:*)"
             "Read(./.env)"
           ];
