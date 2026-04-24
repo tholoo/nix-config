@@ -16,6 +16,7 @@ in
       "service"
       "automation"
       "server"
+      "personal"
     ];
   };
 

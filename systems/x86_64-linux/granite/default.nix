@@ -30,11 +30,9 @@
 
     k8s.enable = false;
     n8n.enable = false;
-    home-assistant.enable = false;
     llama-cpp.enable = false;
     homepage-dashboard.enable = false;
     uptime-kuma.enable = false;
-    mealie.enable = false;
   };
 
   security.sudo.wheelNeedsPassword = false;
