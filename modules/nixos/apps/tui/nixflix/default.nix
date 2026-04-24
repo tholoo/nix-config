@@ -1,4 +1,5 @@
 {
+  inputs,
   pkgs,
   config,
   lib,
@@ -21,6 +22,24 @@ in
   };
 
   config = mkIf cfg.enable {
+    age.secrets = {
+      jellyfin-admin-password.file = inputs.self + /secrets/jellyfin/jellyfin-admin-password.age;
+      jellyfin-apikey.file = inputs.self + /secrets/jellyfin/jellyfin-apikey.age;
+      lidarr-password.file = inputs.self + /secrets/jellyfin/lidarr-password.age;
+      lidarr-apikey.file = inputs.self + /secrets/jellyfin/lidarr-apikey.age;
+      prowlarr-apikey.file = inputs.self + /secrets/jellyfin/prowlarr-apikey.age;
+      prowlarr-password.file = inputs.self + /secrets/jellyfin/prowlarr-password.age;
+      sabnzbd-apikey.file = inputs.self + /secrets/jellyfin/sabnzbd-apikey.age;
+      sabnzbd-nzbkey.file = inputs.self + /secrets/jellyfin/sabnzbd-nzbkey.age;
+      jellyseerr-apikey.file = inputs.self + /secrets/jellyfin/jellyseerr-apikey.age;
+      rutracker-username.file = inputs.self + /secrets/jellyfin/rutracker-username.age;
+      rutracker-password.file = inputs.self + /secrets/jellyfin/rutracker-password.age;
+      sonarr-password.file = inputs.self + /secrets/jellyfin/sonarr-password.age;
+      sonarr-apikey.file = inputs.self + /secrets/jellyfin/sonarr-apikey.age;
+      radarr-password.file = inputs.self + /secrets/jellyfin/radarr-password.age;
+      radarr-apikey.file = inputs.self + /secrets/jellyfin/radarr-apikey.age;
+    };
+
     networking.firewall.allowedTCPPorts = [
       80
       443

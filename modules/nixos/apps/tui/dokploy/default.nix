@@ -1,4 +1,5 @@
 {
+  inputs,
   config,
   lib,
   ...
@@ -19,6 +20,8 @@ in
   };
 
   config = mkIf cfg.enable {
+    age.secrets.dokploy-db-password.file = inputs.self + /secrets/dokploy/dokploy-db-password.age;
+
     virtualisation.docker = {
       enable = true;
       daemon.settings.live-restore = false;

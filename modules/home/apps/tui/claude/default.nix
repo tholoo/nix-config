@@ -241,7 +241,6 @@ in
           deny = [
             "Bash(rm -rf:*)"
             "Read(./.env)"
-            "Read(./secrets/**)"
           ];
         };
 
