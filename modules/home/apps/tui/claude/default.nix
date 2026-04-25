@@ -265,6 +265,9 @@ in
             "Bash(pip show:*)"
             "Bash(pip freeze:*)"
             "Bash(pip check:*)"
+
+            # mcp servers
+            "mcp__playwright"
           ];
           ask = [
             "Bash(nixos-rebuild *)"
