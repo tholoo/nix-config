@@ -377,8 +377,8 @@ in
             # "$mainMod, Y, exec, $terminal --class=\"com.example.clipse\" -e '${lib.getExe pkgs.clipse}'"
             "$mainMod, Y, exec, vicinae vicinae://extensions/vicinae/clipboard/history"
             "$mainMod SHIFT, Z, exec, ${getExe wlogout}"
-            "$mainMod SHIFT, n, exec, ${getExe' swaynotificationcenter "swaync-client"} --toggle-panel --skip-wait"
-            "$mainMod, period, exec, ${getExe' swaynotificationcenter "swaync-client"} --hide-latest"
+            "$mainMod SHIFT, n, exec, ${getExe hyprpanel} toggleWindow notificationsmenu"
+            "$mainMod, period, exec, ${getExe hyprpanel} clearNotifications"
 
             # Special audio keys (piped into wob, using pipewire)
 
