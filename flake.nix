@@ -119,6 +119,11 @@
     };
 
     nix-dokploy.url = "github:el-kurto/nix-dokploy";
+
+    claude-code-nix = {
+      url = "github:sadjow/claude-code-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
