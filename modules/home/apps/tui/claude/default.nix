@@ -72,9 +72,11 @@ in
         theme = "dark";
         includeCoAuthoredBy = false;
         effortLevel = "high";
-      }
-      // lib.optionalAttrs cfg.enableLSPs {
+
         enabledPlugins = {
+          "frontend-design@claude-plugins-official" = true;
+        }
+        // lib.optionalAttrs cfg.enableLSPs {
           "rust-analyzer-lsp@claude-plugins-official" = true;
           "gopls-lsp@claude-plugins-official" = true;
           "typescript-lsp@claude-plugins-official" = true;
