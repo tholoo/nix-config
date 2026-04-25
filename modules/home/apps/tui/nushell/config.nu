@@ -400,4 +400,197 @@ export def my_ip [
     }
 }
 
+# ─── ai: claude-code wrappers for nu pipelines ──────────────────────────
+# Subcommands either bundle context you'd otherwise type by hand, or exploit
+# nu's structured data (table in / table out). All of them call `claude -p`.
+
+def _ai-confirm [msg: string]: nothing -> bool {
+    let answer = (input $"($msg) [y/N] ")
+    ($answer | str downcase | str trim) in ["y" "yes"]
+}
+
+def _ai-confirm-strict [msg: string]: nothing -> bool {
+    let answer = (input $"($msg) \(type 'yes' to proceed\) ")
+    ($answer | str trim) == "yes"
+}
+
+def _ai-strip-fences []: string -> string {
+    $in
+    | str replace -ar '^```[a-zA-Z]*\n?' ''
+    | str replace -ar '\n?```$' ''
+    | str trim
+}
+
+def _ai-cap [rows: any, cap: int]: nothing -> bool {
+    let n = ($rows | length)
+    if $n > $cap {
+        print $"warn: ($n) rows means ($n) separate API calls."
+        _ai-confirm "continue?"
+    } else { true }
+}
+
+def _ai-model-args [haiku: bool]: nothing -> list<string> {
+    if $haiku { ["--model" "haiku"] } else { [] }
+}
+
+def ai [] {
+    print "Usage:"
+    print "  ai ask <prompt>           claude -p, optionally with piped stdin"
+    print "  ai nu <request>           english → nu pipeline (always confirms)"
+    print "  ai annotate <prompt>      add a column per row (--field, --cap)"
+    print "  ai extract <fields>       prose stdin → nu table"
+    print "  ai filter <criterion>     semantic where on rows (--cap)"
+    print "  ai pick <criterion>       pick the single best-matching row"
+    print ""
+    print "Common flags: --haiku (cheap+fast), --dry-run (print payload, don't call API)"
+}
+
+# ai ask <prompt> — claude -p with stdin forwarded as context
+def "ai ask" [prompt: string, --haiku, --dry-run]: any -> any {
+    let stdin = $in
+    let stdin_str = if ($stdin == null) {
+        null
+    } else if (($stdin | describe) | str starts-with "string") {
+        $stdin
+    } else {
+        $stdin | to json
+    }
+    if $dry_run {
+        print $"prompt: ($prompt)"
+        if $stdin_str != null { print $"stdin: ($stdin_str)" }
+        return
+    }
+    let model_args = (_ai-model-args $haiku)
+    if $stdin_str == null {
+        ^claude ...$model_args -p $prompt
+    } else {
+        $stdin_str | ^claude ...$model_args -p $prompt
+    }
+}
+
+# ai nu <request> — translate english to a nu pipeline. Always confirms.
+def "ai nu" [
+    request: string
+    --yes (-y)   # skip prompt for non-dangerous pipelines (still strict-confirms dangerous ones)
+    --haiku
+    --dry-run    # never execute, just print the pipeline
+] {
+    let model_args = (_ai-model-args $haiku)
+    let prompt = $"Translate this request into a single nushell pipeline. Output ONLY the pipeline — no fences, no prose, no comments. Request: ($request)"
+    let cmd = (^claude ...$model_args -p $prompt | _ai-strip-fences)
+    print $"> ($cmd)"
+    if $dry_run { return }
+
+    let hard_block = ['rm -rf /' '--no-preserve-root' 'mkfs' 'dd if=' 'of=/dev/sd' 'of=/dev/nvme']
+    for tok in $hard_block {
+        if ($cmd | str contains $tok) {
+            print $"refusing: pipeline contains '($tok)'"
+            return
+        }
+    }
+
+    # nu's redirect operators (not bash's bare `>`, which in nu is comparison)
+    let danger = ['rm ' 'mv ' '--force' 'out>' 'o>' 'err>' 'e>' '^curl' '^wget' ' curl ' ' wget ' 'sudo' 'chmod ' 'chown ' 'http://' 'https://']
+    let is_danger = ($danger | any {|t| $cmd | str contains $t })
+
+    let approved = if $is_danger {
+        print "this pipeline writes, deletes, hits the network, or escalates."
+        _ai-confirm-strict "approve?"
+    } else if $yes {
+        true
+    } else {
+        _ai-confirm "run?"
+    }
+
+    if $approved { nu -c $cmd }
+}
+
+# stdin | ai annotate <prompt> — add a column per row, in parallel
+def "ai annotate" [
+    prompt: string
+    --field: string = "ai"     # column name to insert
+    --cap: int = 50            # confirm if input has more than this many rows
+    --threads: int = 8         # parallel API calls
+    --haiku
+    --dry-run
+]: list -> list {
+    let rows = $in
+    if not (_ai-cap $rows $cap) { return $rows }
+    let model_args = (_ai-model-args $haiku)
+
+    $rows
+    | par-each --threads $threads {|r|
+        let payload = $"($prompt)\n\nReply with one short line, no preamble.\n\n--- ROW ---\n($r | to json)"
+        let answer = if $dry_run { "<dry-run>" } else { ^claude ...$model_args -p $payload | str trim }
+        $r | insert $field $answer
+    }
+    | collect
+}
+
+# stdin | ai extract <fields> — produce a nu table from prose stdin
+def "ai extract" [
+    fields: string   # e.g. "vendor, date, amount" or "name, email, role"
+    --haiku
+    --dry-run
+]: any -> any {
+    let stdin = $in
+    let stdin_str = if (($stdin | describe) | str starts-with "string") {
+        $stdin
+    } else {
+        $stdin | to json
+    }
+    let prompt = $"Extract the following fields from the input as a JSON array of objects. Fields: ($fields). Output ONLY a JSON array, no prose, no fences."
+    if $dry_run {
+        print $"prompt: ($prompt)"
+        print $"stdin: ($stdin_str)"
+        return
+    }
+    let model_args = (_ai-model-args $haiku)
+    $stdin_str | ^claude ...$model_args -p $prompt | _ai-strip-fences | from json
+}
+
+# stdin | ai filter <criterion> — semantic where on rows, in parallel
+def "ai filter" [
+    criterion: string
+    --cap: int = 50
+    --threads: int = 8
+    --haiku
+    --dry-run
+]: list -> list {
+    let rows = $in
+    if not (_ai-cap $rows $cap) { return $rows }
+    let model_args = (_ai-model-args $haiku)
+
+    $rows
+    | par-each --threads $threads {|r|
+        let keep = if $dry_run {
+            true
+        } else {
+            let payload = $"Does this row match the criterion?\nCriterion: ($criterion)\nRow: ($r | to json)\nReply with exactly 'yes' or 'no', nothing else."
+            (^claude ...$model_args -p $payload | str trim | str downcase | str starts-with "yes")
+        }
+        { __keep: $keep, __row: $r }
+    }
+    | collect
+    | where __keep
+    | get __row
+}
+
+# stdin | ai pick <criterion> — single row best matching the criterion
+def "ai pick" [
+    criterion: string
+    --haiku
+    --dry-run
+]: list -> any {
+    let rows = $in
+    let payload = $"From the JSON array of rows below, pick the single row that best matches the criterion: ($criterion). Reply with ONLY the integer index \(0-based\), nothing else.\n\n--- ROWS ---\n($rows | to json)"
+    if $dry_run {
+        print $payload
+        return
+    }
+    let model_args = (_ai-model-args $haiku)
+    let idx = (^claude ...$model_args -p $payload | str trim | into int)
+    $rows | get $idx
+}
+
 zellij-update-tabname-git
