@@ -73,8 +73,18 @@ in
         includeCoAuthoredBy = false;
         effortLevel = "high";
 
+        extraKnownMarketplaces = {
+          claude-notifications-go = {
+            source = {
+              source = "github";
+              repo = "777genius/claude-notifications-go";
+            };
+          };
+        };
+
         enabledPlugins = {
           "frontend-design@claude-plugins-official" = true;
+          "claude-notifications-go@claude-notifications-go" = true;
         }
         // lib.optionalAttrs cfg.enableLSPs {
           "rust-analyzer-lsp@claude-plugins-official" = true;
