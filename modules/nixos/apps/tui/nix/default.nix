@@ -55,8 +55,8 @@ in
           "anyrun.cachix.org-1:pqBobmOjI7nKlsUMV25u9QHa9btJK65/C8vnO3p346s="
         ];
         warn-dirty = false;
-        connect-timeout = 10;
-        download-attempts = 5;
+        connect-timeout = 5;
+        download-attempts = 3;
         narinfo-cache-negative-ttl = 0;
       };
 
