@@ -16,7 +16,7 @@ in
 
   config = mkIf cfg.enable {
     programs.waybar = {
-      enable = true;
+      enable = false;
       systemd.enable = false;
 
       # style = ''

@@ -21,7 +21,7 @@ in
 
   config = mkIf cfg.enable {
     programs.anyrun = {
-      enable = true;
+      enable = false;
       config = {
         plugins = with pkgs; [
           "${anyrun}/lib/libapplications.so"
