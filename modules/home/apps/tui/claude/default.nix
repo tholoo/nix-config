@@ -37,12 +37,33 @@ in
       example = "socks5://127.0.0.1:1080";
       description = "Proxy URL for Claude Code API requests. Read by the overlay wrapper.";
     };
+
+    enableLSPs = mkOption {
+      type = types.bool;
+      default = true;
+      description = ''
+        Whether to install LSP binaries on PATH and enable the matching
+        claude-code LSP plugins (rust-analyzer, gopls, typescript, clangd, jdtls).
+      '';
+    };
   };
 
   config = mkIf cfg.enable {
-    home.packages = with pkgs; [
-      claude-monitor
-    ];
+    home.packages =
+      (with pkgs; [
+        claude-monitor
+      ])
+      ++ lib.optionals cfg.enableLSPs (
+        with pkgs;
+        [
+          # LSPs for claude-code language plugins (need to be on user PATH,
+          # not just in helix's wrapper, since claude-code spawns them itself)
+          gopls
+          typescript-language-server
+          clang-tools
+          jdt-language-server
+        ]
+      );
 
     programs.claude-code = {
       enable = true;
@@ -51,6 +72,15 @@ in
         theme = "dark";
         includeCoAuthoredBy = false;
         effortLevel = "high";
+      }
+      // lib.optionalAttrs cfg.enableLSPs {
+        enabledPlugins = {
+          "rust-analyzer-lsp@claude-plugins-official" = true;
+          "gopls-lsp@claude-plugins-official" = true;
+          "typescript-lsp@claude-plugins-official" = true;
+          "clangd-lsp@claude-plugins-official" = true;
+          "jdtls-lsp@claude-plugins-official" = true;
+        };
       }
       // lib.optionalAttrs (cfg.proxyUrl != null) {
         proxyUrl = cfg.proxyUrl;

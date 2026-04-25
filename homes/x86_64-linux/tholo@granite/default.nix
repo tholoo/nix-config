@@ -38,6 +38,7 @@
 
     claude-code = {
       enable = true;
+      enableLSPs = false;
       hostContext = ''
         # Host: granite
         You are on **granite**, a Hetzner Cloud server (x86_64, systemd-boot).
