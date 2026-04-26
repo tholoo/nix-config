@@ -64,11 +64,13 @@
     LIBVA_DRIVER_NAME = "iHD";
   }; # Force intel-media-driver
 
-  # Haswell + 6.x kernel false-positive: deep C-states cause "MCE broadcast timeout" panics.
-  # Pinning C-state ceilings keeps cores responsive to broadcast IPIs.
+  # Haswell + 6.x kernel false-positive: deep idle (C6/C7) causes "MCE broadcast timeout" panics
+  # because hyperthread siblings don't wake fast enough to ACK broadcast IPIs.
+  # Cap at C2 — keeps the broadcast issue away while still allowing meaningful power saving.
+  # Try raising to 3 if stable; lower again if panics return.
   boot.kernelParams = [
-    "processor.max_cstate=1"
-    "intel_idle.max_cstate=0"
+    "processor.max_cstate=2"
+    "intel_idle.max_cstate=2"
   ];
 
   # NVIDIA GM107 (GTX 750 Ti) hits PRIVRING faults under nouveau.
