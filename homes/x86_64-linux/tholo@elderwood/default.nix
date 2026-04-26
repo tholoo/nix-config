@@ -17,7 +17,7 @@
     tags.exclude = [
       "gui"
       "game"
-      "calender"
+      "calendar"
       "develop"
     ];
 

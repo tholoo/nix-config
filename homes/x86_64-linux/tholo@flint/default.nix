@@ -19,7 +19,7 @@
       "nix-index"
       "mcfly"
       "cli-cool"
-      "calender"
+      "calendar"
       "personal"
     ];
 
