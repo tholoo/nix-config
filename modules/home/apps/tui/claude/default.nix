@@ -10,11 +10,13 @@ let
     mkOption
     types
     ;
-  inherit (lib.mine) mkEnable;
+  inherit (lib.mine) mkEnable listContainsList;
   cfg = config.mine.claude-code;
   name = "claude-code";
 
   jsonFormat = pkgs.formats.json { };
+
+  notificationsBin = "${pkgs.mine.claude-notifications-go}/bin/claude-notifications";
 in
 {
   options.mine.${name} = mkEnable config {
@@ -46,6 +48,19 @@ in
         claude-code LSP plugins (rust-analyzer, gopls, typescript, clangd, jdtls).
       '';
     };
+
+    enableNotifications = mkOption {
+      type = types.bool;
+      default =
+        listContainsList config.mine.tags.include [ "gui" ]
+        && !listContainsList config.mine.tags.exclude [ "gui" ];
+      description = ''
+        Whether to enable the claude-notifications-go plugin and install the
+        Nix-built binary into the plugin's expected location. Defaults to true
+        when the `gui` tag is included (a desktop notification daemon is
+        required), false otherwise (e.g. servers).
+      '';
+    };
   };
 
   config = mkIf cfg.enable {
@@ -73,7 +88,7 @@ in
         includeCoAuthoredBy = false;
         effortLevel = "high";
 
-        extraKnownMarketplaces = {
+        extraKnownMarketplaces = lib.optionalAttrs cfg.enableNotifications {
           claude-notifications-go = {
             source = {
               source = "github";
@@ -84,6 +99,8 @@ in
 
         enabledPlugins = {
           "frontend-design@claude-plugins-official" = true;
+        }
+        // lib.optionalAttrs cfg.enableNotifications {
           "claude-notifications-go@claude-notifications-go" = true;
         }
         // lib.optionalAttrs cfg.enableLSPs {
@@ -381,6 +398,23 @@ in
           }
         ];
       };
+    };
+
+    # The claude-notifications-go plugin downloads its hook binary at runtime
+    # from GitHub Releases. We override that with our Nix-built, audio-wrapped
+    # binary so /init isn't needed and audio works on NixOS.
+    # Runs idempotently — if the marketplace dir doesn't exist yet (plugin not
+    # installed), it does nothing and re-checks on the next switch.
+    home.activation = mkIf cfg.enableNotifications {
+      claudeNotificationsBinary = config.lib.dag.entryAfter [ "writeBoundary" ] ''
+        pluginBin="$HOME/.claude/plugins/marketplaces/claude-notifications-go/bin"
+        if [ -d "$pluginBin" ]; then
+          run ln -sfn ${notificationsBin} "$pluginBin/claude-notifications-linux-amd64"
+          run ln -sfn claude-notifications-linux-amd64 "$pluginBin/claude-notifications"
+          run mkdir -p "$HOME/.cache/claude-notifications-go"
+          run sh -c 'echo ${pkgs.mine.claude-notifications-go.version} > "$HOME/.cache/claude-notifications-go/verified-version"'
+        fi
+      '';
     };
   };
 }
