@@ -1,4 +1,4 @@
-{ pkgs, modulesPath, ... }:
+{ pkgs, lib, modulesPath, ... }:
 {
   imports = [
     (modulesPath + "/installer/scan/not-detected.nix")
@@ -36,6 +36,9 @@
   };
 
   security.sudo.wheelNeedsPassword = false;
+
+  # Hetzner cloud VM has no /dev/kvm; libvirtd from the docker module can't start here.
+  virtualisation.libvirtd.enable = lib.mkForce false;
   # services.minecraft-server.serverProperties.jvmOpts = "-Xmx512M -Xms512M";
   virtualisation.docker.daemon.settings.registry-mirrors = [ ]; # disable ir mirror
 
