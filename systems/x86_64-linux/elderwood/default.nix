@@ -50,9 +50,28 @@
     };
 
     dokploy.enable = false;
+
+    # TODO: re-enable for CPU-only inference once the rest of the host is settled.
+    llama-cpp.enable = false;
+
+    # k3s/flux2 bootstrap reaches GitHub release artifacts; re-enable once mihomo proxy is up.
+    k8s.enable = false;
   };
+
+  age.secrets.mihomo-sub-url-main.file = inputs.self + /secrets/mihomo/mihomo-sub-url-main.age;
 
   environment.sessionVariables = {
     LIBVA_DRIVER_NAME = "iHD";
   }; # Force intel-media-driver
+
+  # Haswell + 6.x kernel false-positive: deep C-states cause "MCE broadcast timeout" panics.
+  # Pinning C-state ceilings keeps cores responsive to broadcast IPIs.
+  boot.kernelParams = [
+    "processor.max_cstate=1"
+    "intel_idle.max_cstate=0"
+  ];
+
+  # NVIDIA GM107 (GTX 750 Ti) hits PRIVRING faults under nouveau.
+  # Disabled until proprietary driver is wired up (see GPU TODO).
+  boot.blacklistedKernelModules = [ "nouveau" ];
 }

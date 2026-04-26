@@ -4,7 +4,7 @@ let
   users = mkAll {
     tholo = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDP5NAC+t7dRdeCUVaMPRUvfu4hrFLqEqpmh8NlXORwF";
     tholo_glacier = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM81VuTolmcvR3GSa5ZjcC2MQAD2l6EGgM44ZLo9Wp3U";
-    tholo_elderwood = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICZD/kmJU6dEYVxb2hI2OnpZ4AkBccyzXNZq895uqesr";
+    tholo_elderwood = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIfAW1qMjrVqqonLD4HzG/PmKr0jpoXX1DQVX7e8pQ3J";
     tholo_flint = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAc53AitN2lk7FE8i4b6ZsNU4DhcKJQALgEdfEsmOQw3";
   };
 
@@ -12,7 +12,7 @@ let
     granite = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIA0okJ7bbZOM7BWgZ76dvO3VJp+ouPfosrBlXHsyumt6";
     glacier = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIN3a+4xjTkW2KPGTbGtZMhzS++0Tq9/7KFlMS96t8koi";
     ahm = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJrMl4Ne28Pl6LxsI/IsbSA4QK/wBzi/GfX4/jB/KbJt";
-    elderwood = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILDNCUmOYolaXlqx+igGBzt2MgrwLlSooXI6RMFfMyiq";
+    elderwood = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOewqeX2cBEVvSMocWwRL6ilibTOrhbWJ0KLrwhEnKfW";
     flint = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGku/f5jWB3r+JCFHR2RrKyVvefYYnD+CgCt8TpcAxKb";
   };
   # hosts that run specific services
