@@ -42,8 +42,8 @@ in
           "root"
         ];
         substituters = [
-          "https://mirrors.tuna.tsinghua.edu.cn/nix-channels/store?priority=1"
-          "https://cache.nixos.org?priority=2"
+          "https://cache.nixos.org?priority=1"
+          "https://mirrors.tuna.tsinghua.edu.cn/nix-channels/store?priority=2"
         ];
         extra-substituters = [
           "https://nix-community.cachix.org?priority=3"

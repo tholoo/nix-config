@@ -86,8 +86,8 @@ in
         warn-dirty = false;
 
         substituters = [
-          "https://mirrors.tuna.tsinghua.edu.cn/nix-channels/store?priority=1"
-          "https://cache.nixos.org?priority=2"
+          "https://cache.nixos.org?priority=1"
+          "https://mirrors.tuna.tsinghua.edu.cn/nix-channels/store?priority=2"
         ];
         extra-substituters = [
           # "https://aseipp-nix-cache.global.ssl.fastly.net"
