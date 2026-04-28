@@ -35,6 +35,8 @@ let
     "Ctrl+m" = "script-binding mpvacious-menu-open";
     "Ctrl+d" = "script-message-to frmine enrich";
     "Alt+w" = "script-message-to frmine cycle";
+    "P" = "script-message-to frmine study-toggle";
+    "R" = "script-message-to frmine read-sentence";
     "Ctrl+L" = "script-message-to frmine lookup-type";
     "Ctrl+k" = "script-message-to frmine mark-known";
   };
