@@ -2,6 +2,7 @@
   pkgs,
   config,
   lib,
+  inputs,
   ...
 }:
 let
@@ -30,10 +31,12 @@ in
         # Auto-mark-known: track consecutive Easy answers on French Mining
         # notes; after 3, append Lemma to ~/.local/share/frdict/known.txt and
         # suspend the cards. Same known.txt that frmine.lua reads.
+        # Source lives in the french-learning flake input (covered by
+        # tests/test_auto_mark_known.py).
         (pkgs.anki-utils.buildAnkiAddon {
           pname = "auto-mark-known";
           version = "1.0";
-          src = ./auto-mark-known;
+          src = "${inputs.french-learning}/anki/addons/auto-mark-known";
         })
       ];
     };

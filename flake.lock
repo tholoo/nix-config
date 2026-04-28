@@ -426,6 +426,19 @@
         "type": "github"
       }
     },
+    "french-learning": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1777391973,
+        "narHash": "sha256-l27fw6orrxgvkql49nPRFF3GhSwszEdHelXindjNAng=",
+        "path": "/home/tholo/projects/french-learning",
+        "type": "path"
+      },
+      "original": {
+        "path": "/home/tholo/projects/french-learning",
+        "type": "path"
+      }
+    },
     "fromYaml": {
       "flake": false,
       "locked": {
@@ -956,6 +969,7 @@
         "disko": "disko",
         "fenix": "fenix",
         "flake-utils": "flake-utils_2",
+        "french-learning": "french-learning",
         "home-manager": "home-manager_2",
         "nix-alien": "nix-alien",
         "nix-colors": "nix-colors",

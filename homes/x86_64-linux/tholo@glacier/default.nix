@@ -27,5 +27,10 @@
       This is the primary mobile dev machine with full GUI + TUI suites.
     '';
     claude-code.proxyUrl = "http://127.0.0.1:10808";
+
+    # uv needs PyPI on first frdict launch — route through the local proxy
+    # since direct PyPI is blocked here. Once ~/.cache/uv is warm, restarts
+    # don't hit the network at all.
+    frdict.proxy = "http://127.0.0.1:10808";
   };
 }

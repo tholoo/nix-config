@@ -105,10 +105,16 @@ in
     # frmine.lua's lookup-only path uses espeak-ng for instant TTS.
     home.packages = [ pkgs.espeak-ng ];
 
-    # Custom mpv Lua scripts. Path-literal source so the file is copied into
-    # the nix store at eval time — keeps the flake portable across machines.
-    # Edits require a home-manager rebuild to take effect.
-    xdg.configFile."mpv/scripts/sub-pause.lua".source = ./sub-pause.lua;
-    xdg.configFile."mpv/scripts/frmine.lua".source = ./frmine.lua;
+    # Custom mpv Lua scripts live in the french-learning repo so the test
+    # suite can lint them and the field-name contract with note-type.json is
+    # testable from one place. Out-of-store symlinks let edits go live at the
+    # next mpv launch without a home-manager rebuild — matches how
+    # frdict/server.py is consumed by the systemd unit.
+    xdg.configFile."mpv/scripts/sub-pause.lua".source =
+      config.lib.file.mkOutOfStoreSymlink
+        "${config.home.homeDirectory}/projects/french-learning/mpv/sub-pause.lua";
+    xdg.configFile."mpv/scripts/frmine.lua".source =
+      config.lib.file.mkOutOfStoreSymlink
+        "${config.home.homeDirectory}/projects/french-learning/mpv/frmine.lua";
   };
 }

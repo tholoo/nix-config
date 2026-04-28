@@ -124,6 +124,16 @@
       url = "github:sadjow/claude-code-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # Source-of-truth for the auto-mark-known Anki addon and the mpv lua
+    # scripts. Pulled in as a non-flake input so buildAnkiAddon can read
+    # the addon dir under flake pure-eval. After editing files in the
+    # repo, run `nix flake update french-learning` (or `nix flake lock
+    # --update-input french-learning`) to bump the lock.
+    french-learning = {
+      url = "path:/home/tholo/projects/french-learning";
+      flake = false;
+    };
   };
 
   outputs =
