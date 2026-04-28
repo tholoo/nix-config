@@ -525,22 +525,154 @@ mp.register_script_message("lookup-type", prompt_lookup)
 -- lemma so you read+hear without committing. Enter mines the highlighted
 -- word into Anki. Esc exits without mining.
 
-local cycle_state = nil  -- { words, idx } when active, nil otherwise
+local cycle_state = nil  -- { words, spans, idx, sub_style } when active, nil otherwise
 local sub_overlay = nil
 local info_overlay = nil
 local saved_sub_visibility = nil
+local saved_osd_use_margins = nil
 
 -- ASS canvas: 1280x720 is mpv's standard script resolution. Coordinates below
 -- are in this space; mpv scales to actual screen size.
 local ASS_RES_X = 1280
 local ASS_RES_Y = 720
 
--- Approximates mpv's default sub render — white text, black outline, bottom-
--- center anchored. fs44 in 720-script-units is close to mpv's default 55pt at
--- 1080p output. Tweak here if your sub-font-size differs noticeably.
-local SUB_STYLE = "\\an2\\pos(640,680)\\fnArial\\fs44\\bord2.5\\shad1\\1c&HFFFFFF&\\3c&H000000&"
+-- INFO and HINT remain styled by us — they're our chrome (definition card +
+-- key hint), not the user's sub. SUB_STYLE is built per-cycle in
+-- build_sub_style() to mirror mpv's live sub-* render so the overlay is
+-- visually seamless with the subtitle it just replaced.
 local INFO_STYLE = "\\an8\\pos(640,30)\\fnArial\\fs26\\bord1.5\\shad0.5\\1c&HFFFFFF&\\3c&H000000&"
 local HINT_STYLE = "\\fs20\\1c&HAAAAAA&"
+
+-- mpv property output for colors is "#AARRGGBB" (alpha leading) or "#RRGGBB".
+-- ASS wants "&HBBGGRR&" (no alpha — opacity goes in separate \1a/\3a/\4a tags
+-- we don't bother with; sub rendering is always fully opaque). Getting the
+-- byte order wrong here turns the default black border red, because the
+-- alpha=FF byte gets read as the red component.
+local function ass_color(mpv_color, fallback)
+    if not mpv_color or mpv_color == "" then return fallback end
+    local hex = mpv_color:gsub("^#", "")
+    if #hex == 8 then hex = hex:sub(3) end  -- drop leading alpha
+    if #hex ~= 6 then return fallback end
+    local rr, gg, bb = hex:sub(1, 2), hex:sub(3, 4), hex:sub(5, 6)
+    return "&H" .. bb:upper() .. gg:upper() .. rr:upper() .. "&"
+end
+
+-- mpv align-x ∈ {left, center, right}, align-y ∈ {top, center, bottom}.
+-- ASS \an: 1=BL 2=BC 3=BR 4=ML 5=MC 6=MR 7=TL 8=TC 9=TR.
+local function ass_alignment(align_x, align_y)
+    local row = ({ bottom = 0, center = 3, top = 6 })[align_y] or 0
+    local col = ({ left = 1, center = 2, right = 3 })[align_x] or 2
+    return row + col
+end
+
+-- Read mpv's live sub render properties and translate into an ASS style
+-- prefix that the overlay can use to mimic the subtitle it's replacing.
+-- mpv documents sub-font-size/sub-margin-* as "scaled pixels at 720 height",
+-- and our ASS canvas is 1280x720, so values map straight through.
+--
+-- For subs that carry their own ASS styling (e.g. .ass files), mpv ignores
+-- most sub-* properties and renders per-line styles we can't see from here;
+-- the overlay will look like mpv's default-text render in that case rather
+-- than a perfect match. Acceptable — most French content we mine is .srt.
+local function build_sub_style()
+    local font     = mp.get_property("sub-font", "sans-serif")
+    local size     = mp.get_property_number("sub-font-size", 55)
+    local bord     = mp.get_property_number("sub-border-size", 3)
+    local shad     = mp.get_property_number("sub-shadow-offset", 0)
+    local bold     = mp.get_property_bool("sub-bold", false)
+    local italic   = mp.get_property_bool("sub-italic", false)
+    local color1   = ass_color(mp.get_property("sub-color"),         "&HFFFFFF&")
+    local color3   = ass_color(mp.get_property("sub-border-color"),  "&H000000&")
+    local color4   = ass_color(mp.get_property("sub-shadow-color"),  "&H000000&")
+    local margin_y = mp.get_property_number("sub-margin-y", 22)
+    local margin_x = mp.get_property_number("sub-margin-x", 25)
+    local align_x  = mp.get_property("sub-align-x", "center")
+    local align_y  = mp.get_property("sub-align-y", "bottom")
+
+    local x
+    if align_x == "left" then x = margin_x
+    elseif align_x == "right" then x = ASS_RES_X - margin_x
+    else x = ASS_RES_X / 2 end
+
+    local y
+    if align_y == "top" then y = margin_y
+    elseif align_y == "center" then y = ASS_RES_Y / 2
+    else y = ASS_RES_Y - margin_y end
+
+    local prefix = string.format(
+        "\\an%d\\pos(%d,%d)\\fn%s\\fs%d\\bord%s\\shad%s\\1c%s\\3c%s\\4c%s\\b%d\\i%d",
+        ass_alignment(align_x, align_y), x, y, font, math.floor(size + 0.5),
+        tostring(bord), tostring(shad), color1, color3, color4,
+        bold and 1 or 0, italic and 1 or 0
+    )
+    return {
+        prefix       = prefix,
+        base_color   = color1,
+        base_bold    = bold and 1 or 0,
+        base_italic  = italic,  -- user's force-italic pref; per-line italic comes from the sub itself
+    }
+end
+
+-- Walk sub-text-ass and split it into runs of plain text, each carrying the
+-- italic state in effect at that point. Two responsibilities:
+--   1. Track \i1/\i0/\rXxx toggles inside override blocks so we know which
+--      runs are italic. (\r resets to default style — we assume non-italic;
+--      we don't have access to other style definitions from the source file.)
+--   2. Resolve ASS escape sequences outside override blocks into plain text:
+--      \N and \n → real newline, \h → space, \{ and \} → literal braces,
+--      unknown \X → just X (drop the backslash). This is critical: if we
+--      leave \N as raw "\" + "N", the N glues onto the next word during
+--      tokenization (donné\Nun → word "Nun"), and the bare backslash
+--      collides with the highlight override block's "{" once it reaches
+--      ass_escape (libass parses "\\{" as literal "\" + escaped "{",
+--      breaking the override).
+local function parse_sub_ass(s)
+    local runs = {}
+    local italic = false
+    local current = {}
+
+    local function flush()
+        if #current > 0 then
+            runs[#runs + 1] = { text = table.concat(current), italic = italic }
+            current = {}
+        end
+    end
+
+    local pos = 1
+    while pos <= #s do
+        local c = s:sub(pos, pos)
+        if c == "{" then
+            local close = s:find("}", pos, true)
+            if not close then break end
+            local block = s:sub(pos + 1, close - 1)
+            local i = 1
+            while i <= #block do
+                local three = block:sub(i, i + 2)
+                local two = block:sub(i, i + 1)
+                if three == "\\i0" then flush(); italic = false; i = i + 3
+                elseif three == "\\i1" then flush(); italic = true; i = i + 3
+                elseif two == "\\r" then flush(); italic = false; i = i + 2
+                else i = i + 1 end
+            end
+            pos = close + 1
+        elseif c == "\\" and pos < #s then
+            local nxt = s:sub(pos + 1, pos + 1)
+            if nxt == "N" or nxt == "n" then
+                current[#current + 1] = "\n"
+            elseif nxt == "h" then
+                current[#current + 1] = " "
+            else
+                current[#current + 1] = nxt  -- \{, \}, or unknown \X
+            end
+            pos = pos + 2
+        else
+            current[#current + 1] = c
+            pos = pos + 1
+        end
+    end
+    flush()
+    return runs
+end
 
 -- ASS treats {, }, and \ as control chars; the sub line and definitions go in
 -- as raw user text, so escape them to prevent accidental tag injection.
@@ -564,17 +696,29 @@ local CYCLE_KEYS = {
 }
 
 local function cycle_sub_ass()
-    local parts = {}
-    for i, w in ipairs(cycle_state.words) do
-        local esc = ass_escape(w)
-        if i == cycle_state.idx then
-            -- Highlighted word: yellow + bold so it pops against the white sub.
-            parts[i] = "{\\1c&H00FFFF&\\b1}" .. esc .. "{\\1c&HFFFFFF&\\b0}"
+    local style = cycle_state.sub_style
+    local out = { "{" .. style.prefix .. "}" }
+    -- Track italic state so we only emit \iN when it changes. The prefix
+    -- already set base_italic, so start there.
+    local cur_italic = style.base_italic
+    for _, sp in ipairs(cycle_state.spans) do
+        if sp.italic ~= cur_italic then
+            out[#out + 1] = "{\\i" .. (sp.italic and 1 or 0) .. "}"
+            cur_italic = sp.italic
+        end
+        local esc = ass_escape(sp.text):gsub("\n", "\\N")
+        if sp.kind == "word" and sp.word_idx == cycle_state.idx then
+            -- Highlighted word: yellow + bold. Reset back to the sub's base
+            -- color and bold state so the rest of the line stays seamless.
+            -- (Italic is left alone by the highlight tags, so cur_italic
+            -- doesn't change here.)
+            out[#out + 1] = "{\\1c&H00FFFF&\\b1}" .. esc
+                .. "{\\1c" .. style.base_color .. "\\b" .. style.base_bold .. "}"
         else
-            parts[i] = esc
+            out[#out + 1] = esc
         end
     end
-    return "{" .. SUB_STYLE .. "}" .. table.concat(parts, " ")
+    return table.concat(out)
 end
 
 local function cycle_info_ass(body, hint)
@@ -623,6 +767,10 @@ local function cycle_end()
         mp.set_property_bool("sub-visibility", saved_sub_visibility)
         saved_sub_visibility = nil
     end
+    if saved_osd_use_margins ~= nil then
+        mp.set_property_bool("osd-use-margins", saved_osd_use_margins)
+        saved_osd_use_margins = nil
+    end
     cycle_state = nil
 end
 
@@ -666,25 +814,60 @@ local function start_cycle()
         mp.osd_message("frmine: no subtitle on screen", 2)
         return
     end
+    -- Walk the sub once, building two parallel lists:
+    --   words[]  - mineable tokens (drives cycling + /lookup)
+    --   spans[]  - full coverage of the original sub (for verbatim render).
+    -- Single ASCII letters (French elision residue: l', d', s', n', t', m',
+    -- c', j') stay visible as literal spans but aren't mineable.
+    --
+    -- Italic is per-line state from the *sub itself* (e.g. {\i1}…{\i0} in
+    -- ASS, or <i>…</i> in srt which mpv has converted to ASS). sub-text
+    -- strips formatting, so we read sub-text-ass and parse the toggles into
+    -- runs; if sub-text-ass is empty (rare), fall back to a single non-italic
+    -- run from sub-text.
+    local sub_ass = mp.get_property("sub-text-ass") or ""
+    local runs = parse_sub_ass(sub_ass)
+    if #runs == 0 then runs = { { text = sub, italic = false } } end
     local words = {}
-    -- Tokenize on whitespace + punctuation. Skip ASCII single letters
-    -- (residue of French elision: l', d', s', n', etc).
-    for w in sub:gmatch("[^%s%p]+") do
-        if not w:match("^[%a]$") then
-            table.insert(words, w)
+    local spans = {}
+    for _, run in ipairs(runs) do
+        local text = run.text
+        local i = 1
+        while i <= #text do
+            local ws, we = text:find("[^%s%p]+", i)
+            if ws == i then
+                local tok = text:sub(ws, we)
+                if tok:match("^[%a]$") then
+                    spans[#spans + 1] = { kind = "lit", text = tok, italic = run.italic }
+                else
+                    words[#words + 1] = tok
+                    spans[#spans + 1] = { kind = "word", text = tok, word_idx = #words, italic = run.italic }
+                end
+                i = we + 1
+            else
+                spans[#spans + 1] = { kind = "lit", text = text:sub(i, i), italic = run.italic }
+                i = i + 1
+            end
         end
     end
     if #words == 0 then
         mp.osd_message("frmine: no mineable words in current sub", 2)
         return
     end
-    cycle_state = { words = words, idx = 1 }
+    cycle_state = { words = words, spans = spans, idx = 1, sub_style = build_sub_style() }
     mp.set_property_bool("pause", true)
     -- Hide the real sub so our overlay is the only sub-position text on screen.
     -- Saved here, restored in cycle_end so the user's preference survives a
     -- scrub session.
     saved_sub_visibility = mp.get_property_bool("sub-visibility")
     mp.set_property_bool("sub-visibility", false)
+    -- mpv's OSD by default renders inside the video frame (osd-use-margins=no)
+    -- while subs render in the full screen including letterbox bars. That
+    -- offset makes the overlay sit slightly higher than where the real sub
+    -- was. Toggling osd-use-margins=yes makes the OSD canvas screen-relative,
+    -- so our \pos(x, ASS_RES_Y - sub-margin-y) lines up with the sub.
+    saved_osd_use_margins = mp.get_property_bool("osd-use-margins")
+    mp.set_property_bool("osd-use-margins", true)
     sub_overlay = mp.create_osd_overlay("ass-events")
     sub_overlay.res_x = ASS_RES_X
     sub_overlay.res_y = ASS_RES_Y
