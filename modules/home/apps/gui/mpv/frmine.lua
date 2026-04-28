@@ -457,21 +457,24 @@ local function format_lookup(match, n_alt)
     return table.concat(parts, "\n")
 end
 
--- Speak a French word via espeak-ng. Async so the audio doesn't block the
--- OSD render. Robotic but phonemically correct — the IPA tells you what's
--- supposed to come out, this lets you hear it.
+-- Speak a French word by streaming frdict's /speak WAV through ffplay. Async
+-- so playback doesn't block the OSD render. frdict picks the engine (Piper
+-- if PIPER_VOICE is configured, espeak-ng fallback) — quality matches the
+-- reader UI's pronunciations.
 --
 -- Cancels any in-flight pronunciation before starting a new one so fast
--- cycling through words doesn't pile up overlapping playback.
+-- cycling through words doesn't pile up overlapping playback. Silently
+-- no-ops if frdict or ffplay is unavailable.
 local active_speak = nil
 local function speak(word)
     if active_speak then
         mp.abort_async_command(active_speak)
         active_speak = nil
     end
+    local url = FRDICT_URL .. "/speak?word=" .. urlencode(word)
     active_speak = mp.command_native_async({
         name = "subprocess",
-        args = { "espeak-ng", "-v", "fr-fr", "-s", "140", word },
+        args = { "ffplay", "-nodisp", "-autoexit", "-loglevel", "quiet", url },
         playback_only = false,
         capture_stdout = false,
         capture_stderr = false,
@@ -523,6 +526,30 @@ mp.register_script_message("lookup-type", prompt_lookup)
 -- word into Anki. Esc exits without mining.
 
 local cycle_state = nil  -- { words, idx } when active, nil otherwise
+local sub_overlay = nil
+local info_overlay = nil
+local saved_sub_visibility = nil
+
+-- ASS canvas: 1280x720 is mpv's standard script resolution. Coordinates below
+-- are in this space; mpv scales to actual screen size.
+local ASS_RES_X = 1280
+local ASS_RES_Y = 720
+
+-- Approximates mpv's default sub render — white text, black outline, bottom-
+-- center anchored. fs44 in 720-script-units is close to mpv's default 55pt at
+-- 1080p output. Tweak here if your sub-font-size differs noticeably.
+local SUB_STYLE = "\\an2\\pos(640,680)\\fnArial\\fs44\\bord2.5\\shad1\\1c&HFFFFFF&\\3c&H000000&"
+local INFO_STYLE = "\\an8\\pos(640,30)\\fnArial\\fs26\\bord1.5\\shad0.5\\1c&HFFFFFF&\\3c&H000000&"
+local HINT_STYLE = "\\fs20\\1c&HAAAAAA&"
+
+-- ASS treats {, }, and \ as control chars; the sub line and definitions go in
+-- as raw user text, so escape them to prevent accidental tag injection.
+local function ass_escape(s)
+    s = s:gsub("\\", "\\\\")
+    s = s:gsub("{", "\\{")
+    s = s:gsub("}", "\\}")
+    return s
+end
 
 -- h/l mirror LEFT/RIGHT during cycle mode. They normally seek -5/+5 sec
 -- (see mpv module bindings); add_forced_key_binding shadows that while
@@ -536,16 +563,24 @@ local CYCLE_KEYS = {
     { key = "ESC",   name = "frmine-cycle-cancel" },
 }
 
-local function cycle_sub_line()
+local function cycle_sub_ass()
     local parts = {}
     for i, w in ipairs(cycle_state.words) do
+        local esc = ass_escape(w)
         if i == cycle_state.idx then
-            parts[i] = "[" .. w .. "]"
+            -- Highlighted word: yellow + bold so it pops against the white sub.
+            parts[i] = "{\\1c&H00FFFF&\\b1}" .. esc .. "{\\1c&HFFFFFF&\\b0}"
         else
-            parts[i] = w
+            parts[i] = esc
         end
     end
-    return table.concat(parts, " ")
+    return "{" .. SUB_STYLE .. "}" .. table.concat(parts, " ")
+end
+
+local function cycle_info_ass(body, hint)
+    local body_ass = ass_escape(body):gsub("\n", "\\N")
+    local hint_ass = ass_escape(hint)
+    return "{" .. INFO_STYLE .. "}" .. body_ass .. "\\N\\N{" .. HINT_STYLE .. "}" .. hint_ass
 end
 
 -- Live-fetch the highlighted word's dictionary entry on every step, render
@@ -553,7 +588,6 @@ end
 -- (<10ms) so this stays snappy even when the user arrows quickly.
 local function cycle_render()
     if not cycle_state then return end
-    local sub_line = cycle_sub_line()
     local current = cycle_state.words[cycle_state.idx]
     local data = http_get_json(FRDICT_URL .. "/lookup?word=" .. urlencode(current))
     local body
@@ -569,15 +603,27 @@ local function cycle_render()
         end
     end
     local hint = "h/l or ←/→ next  •  Enter mine  •  Esc cancel"
-    mp.osd_message(sub_line .. "\n\n" .. body .. "\n\n" .. hint, 99999)
+    if sub_overlay then
+        sub_overlay.data = cycle_sub_ass()
+        sub_overlay:update()
+    end
+    if info_overlay then
+        info_overlay.data = cycle_info_ass(body, hint)
+        info_overlay:update()
+    end
 end
 
 local function cycle_end()
     for _, b in ipairs(CYCLE_KEYS) do
         mp.remove_key_binding(b.name)
     end
+    if sub_overlay then sub_overlay:remove(); sub_overlay = nil end
+    if info_overlay then info_overlay:remove(); info_overlay = nil end
+    if saved_sub_visibility ~= nil then
+        mp.set_property_bool("sub-visibility", saved_sub_visibility)
+        saved_sub_visibility = nil
+    end
     cycle_state = nil
-    mp.osd_message("", 0)
 end
 
 local function cycle_next()
@@ -634,6 +680,17 @@ local function start_cycle()
     end
     cycle_state = { words = words, idx = 1 }
     mp.set_property_bool("pause", true)
+    -- Hide the real sub so our overlay is the only sub-position text on screen.
+    -- Saved here, restored in cycle_end so the user's preference survives a
+    -- scrub session.
+    saved_sub_visibility = mp.get_property_bool("sub-visibility")
+    mp.set_property_bool("sub-visibility", false)
+    sub_overlay = mp.create_osd_overlay("ass-events")
+    sub_overlay.res_x = ASS_RES_X
+    sub_overlay.res_y = ASS_RES_Y
+    info_overlay = mp.create_osd_overlay("ass-events")
+    info_overlay.res_x = ASS_RES_X
+    info_overlay.res_y = ASS_RES_Y
     for _, b in ipairs(CYCLE_KEYS) do
         mp.add_forced_key_binding(b.key, b.name, CYCLE_HANDLERS[b.name])
     end
