@@ -32,7 +32,7 @@ in
 
     programs.hyprpanel = {
       enable = true;
-      systemd.enable = false;
+      systemd.enable = true;
       settings = {
         "bar.layouts" = {
           "*" = {
@@ -93,9 +93,5 @@ in
         chmod 644 "$cfg_file"
       fi
     '';
-
-    wayland.windowManager.hyprland.settings.exec = [
-      "pkill hyprpanel; sleep 0.5; ${lib.getExe pkgs.hyprpanel}"
-    ];
   };
 }
