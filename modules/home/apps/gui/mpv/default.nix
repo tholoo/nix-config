@@ -25,6 +25,18 @@ let
     # zoom
     "-" = "add video-zoom -.25";
     "+" = "add video-zoom .25";
+
+    # French study workflow
+    "TAB" = "cycle secondary-sub-visibility";
+    "p" = "script-message-to sub_pause toggle";
+    "r" = "script-message-to sub_pause replay";
+    "Ctrl+e" = "script-binding mpvacious-export-note";
+    "Ctrl+v" = "script-binding mpvacious-copy-sub-to-clipboard";
+    "Ctrl+m" = "script-binding mpvacious-menu-open";
+    "Ctrl+d" = "script-message-to frmine enrich";
+    "Alt+w" = "script-message-to frmine cycle";
+    "Ctrl+L" = "script-message-to frmine lookup-type";
+    "Ctrl+k" = "script-message-to frmine mark-known";
   };
 
   mpvConfig = {
@@ -42,6 +54,17 @@ let
     hwdec = "auto-safe";
     vo = "gpu";
     profile = "gpu-hq";
+
+    # French study: prefer French as primary, English as secondary. mpv renders
+    # the secondary track at the top of the screen by default, primary at the
+    # bottom — they don't overlap. Tab toggles the secondary's visibility.
+    slang = "fr,fra,fre,french";
+    alang = "fr,fra,fre,french";
+    secondary-sid = "auto";
+    secondary-sub-visibility = "no";
+    # Don't restore sub track choices on resume — let `slang` pick fresh each
+    # time, otherwise an old "English primary" selection sticks forever.
+    watch-later-options-remove = "sid,secondary-sid";
   };
 in
 {
@@ -78,5 +101,14 @@ in
         mpv-slicing # cut with c
       ];
     };
+
+    # frmine.lua's lookup-only path uses espeak-ng for instant TTS.
+    home.packages = [ pkgs.espeak-ng ];
+
+    # Custom mpv Lua scripts. Path-literal source so the file is copied into
+    # the nix store at eval time — keeps the flake portable across machines.
+    # Edits require a home-manager rebuild to take effect.
+    xdg.configFile."mpv/scripts/sub-pause.lua".source = ./sub-pause.lua;
+    xdg.configFile."mpv/scripts/frmine.lua".source = ./frmine.lua;
   };
 }

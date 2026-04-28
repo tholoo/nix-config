@@ -475,6 +475,10 @@ in
           "match:initial_class ^(dev\\.ghostty\\.chooser)$, float on"
           "match:initial_class ^(dev\\.ghostty\\.chooser)$, size 60% 60%"
           "match:initial_class ^(dev\\.ghostty\\.chooser)$, center 1"
+
+          # Pin Anki to workspace 5 silently — AnkiConnect updates from
+          # mpvacious mining happen there without yanking focus from mpv.
+          "workspace 5 silent, match:class ^(Anki|anki)$"
         ];
 
         # windowrulev2 = [
