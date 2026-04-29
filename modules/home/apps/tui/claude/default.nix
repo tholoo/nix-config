@@ -377,6 +377,7 @@ in
       skills = {
         debug = ./debug-skill.md;
         grill = ./grill-skill.md;
+        saiyan = ./saiyan-skill.md;
       };
 
       rules = lib.optionalAttrs (cfg.hostContext != null) {
