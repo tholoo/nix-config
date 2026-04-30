@@ -277,7 +277,7 @@ def zellij-update-tabname-git [] {
             # If current directory isn’t the same as the git root, prepend the repo’s basename.
             if (($git_root | str downcase) != ($current_dir | str downcase)) {
                 let repo_name = ($git_root | path parse | get stem);
-                let subpath = $current_dir | str replace $git_root "";
+                let subpath = ($current_dir | str replace $"($git_root)/" "");
                 $tab_name = $"($repo_name):($subpath)"
             }
         }
@@ -300,24 +300,70 @@ def extract-ssh-target [cmd: string] {
     }
 
     let ssh_names = ["ssh", "autossh", "mosh"]
+    let wrappers = [
+        "sudo" "doas" "env" "nohup" "time" "command" "exec"
+        "gg" "proxychains" "proxychains4" "tsocks"
+    ]
 
-    let ssh_idx = (
-        $parts
-        | enumerate
-        | where {|it|
-            (
-                ($it.item in $ssh_names)
-                or ($ssh_names | any {|n| $it.item | str ends-with $"/($n)" })
-            )
+    # Walk past any wrapper prefix (sudo, gg, proxychains, …) plus their
+    # flags / KEY=val args to find the *program* actually being run. This
+    # stops `man ssh foo`, `grep -r ssh dir/`, etc. from being matched, while
+    # still recognising `gg ssh host`, `gg -n node ssh host`, `sudo ssh host`.
+    mut prog_idx = 0
+    let n = ($parts | length)
+    while $prog_idx < $n {
+        let t = ($parts | get $prog_idx)
+
+        if $t in $wrappers {
+            $prog_idx = $prog_idx + 1
+            continue
         }
-        | get -o 0.index
-    )
 
-    if $ssh_idx == null {
+        # A flag is only meaningful after we've already skipped a wrapper —
+        # otherwise the first token would just be a non-program flag.
+        if $prog_idx > 0 and ($t | str starts-with "-") {
+            $prog_idx = $prog_idx + 1
+            # If the next token isn't ssh-like / a flag / a wrapper / KEY=val,
+            # assume it's this flag's value and skip it too. (Best-effort:
+            # the cost of guessing wrong is just missing a tab rename.)
+            if $prog_idx < $n {
+                let nxt = ($parts | get $prog_idx)
+                let nxt_is_ssh = (
+                    ($nxt in $ssh_names)
+                    or ($ssh_names | any {|m| $nxt | str ends-with $"/($m)" })
+                )
+                let nxt_is_flag = ($nxt | str starts-with "-")
+                let nxt_is_wrap = ($nxt in $wrappers)
+                let nxt_is_assign = ($nxt =~ '^[A-Za-z_][A-Za-z_0-9]*=')
+                if (not $nxt_is_ssh) and (not $nxt_is_flag) and (not $nxt_is_wrap) and (not $nxt_is_assign) {
+                    $prog_idx = $prog_idx + 1
+                }
+            }
+            continue
+        }
+
+        if ($t =~ '^[A-Za-z_][A-Za-z_0-9]*=') {
+            $prog_idx = $prog_idx + 1
+            continue
+        }
+
+        break
+    }
+
+    if $prog_idx >= $n {
         return null
     }
 
-    mut i = $ssh_idx + 1
+    let prog = ($parts | get $prog_idx)
+    let is_ssh = (
+        ($prog in $ssh_names)
+        or ($ssh_names | any {|m| $prog | str ends-with $"/($m)" })
+    )
+    if not $is_ssh {
+        return null
+    }
+
+    mut i = $prog_idx + 1
     while $i < ($parts | length) {
         let tok = ($parts | get $i)
 
@@ -374,15 +420,13 @@ def zellij-update-tabname-ssh-or-git [] {
         return
     }
 
-    let cmd = (commandline)
-
-    let ssh_target = (extract-ssh-target $cmd)
+    # Only act if the user is actually running an ssh-like command. The
+    # PWD env_change hook + pre_prompt hook already keep the tab name in sync
+    # with the working directory, so non-ssh commands need nothing here.
+    let ssh_target = (extract-ssh-target (commandline))
     if $ssh_target != null {
         zellij action rename-tab $ssh_target
-        return
     }
-
-    zellij-update-tabname-git
 }
 
 export def my_ip [
