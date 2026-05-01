@@ -293,8 +293,9 @@ in
             "Bash(pip freeze:*)"
             "Bash(pip check:*)"
 
-            # mcp servers
-            "mcp__playwright"
+            # mcp servers (home-manager wraps MCP tools under the
+            # `claude-code-home-manager` plugin namespace, hence the long prefix)
+            "mcp__plugin_claude-code-home-manager_playwright"
           ];
           ask = [
             "Bash(nixos-rebuild *)"
@@ -378,6 +379,10 @@ in
         debug = ./debug-skill.md;
         grill = ./grill-skill.md;
         saiyan = ./saiyan-skill.md;
+      };
+
+      agents = {
+        animation-critic = ./animation-critic-agent.md;
       };
 
       rules = lib.optionalAttrs (cfg.hostContext != null) {
