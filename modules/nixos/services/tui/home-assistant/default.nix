@@ -39,6 +39,9 @@ in
         "isal"
         # Useful for Xiaomi devices added from the UI
         "xiaomi_miio"
+        # Yeelight LAN protocol (TCP 55443); works on yeelink.light.color5 once
+        # developer mode is enabled on the bulb.
+        "yeelight"
       ];
       config = {
         # Includes dependencies for a basic setup
