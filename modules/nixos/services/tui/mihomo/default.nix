@@ -10,6 +10,124 @@ let
   cfg = config.mine.${name};
   name = "mihomo";
 
+  # Chocolate4U/Iran-clash-rules: daily-updated mihomo .mrs rule sets covering
+  # Iranian domains, Iranian IP CIDRs, Iranian hosting providers, and security lists.
+  iranRuleBase = "https://github.com/Chocolate4U/Iran-clash-rules/releases/latest/download";
+
+  mkHttpProvider =
+    {
+      url,
+      behavior,
+      format ? "mrs",
+      interval ? 86400,
+    }:
+    {
+      type = "http";
+      inherit
+        behavior
+        format
+        url
+        interval
+        ;
+      path = "./rules/${baseNameOf url}";
+    };
+
+  iranProviders =
+    lib.optionalAttrs cfg.iranRules.enable {
+      "ir-domains" = mkHttpProvider {
+        url = "${iranRuleBase}/ir.mrs";
+        behavior = "domain";
+      };
+      "ir-cidrs" = mkHttpProvider {
+        url = "${iranRuleBase}/ircidr.mrs";
+        behavior = "ipcidr";
+      };
+      "ir-arvancloud" = mkHttpProvider {
+        url = "${iranRuleBase}/arvancloud.mrs";
+        behavior = "ipcidr";
+      };
+      "ir-derakcloud" = mkHttpProvider {
+        url = "${iranRuleBase}/derakcloud.mrs";
+        behavior = "ipcidr";
+      };
+      "ir-iranserver" = mkHttpProvider {
+        url = "${iranRuleBase}/iranserver.mrs";
+        behavior = "ipcidr";
+      };
+      "ir-parspack" = mkHttpProvider {
+        url = "${iranRuleBase}/parspack.mrs";
+        behavior = "ipcidr";
+      };
+    }
+    // lib.optionalAttrs cfg.iranRules.blockAds {
+      # Iran-only ad list (~640 bytes); much narrower than category-ads-all,
+      # very unlikely to break legitimate sites.
+      "ir-ads" = mkHttpProvider {
+        url = "${iranRuleBase}/ads.mrs";
+        behavior = "domain";
+      };
+    }
+    // lib.optionalAttrs cfg.iranRules.blockMalware {
+      "malware" = mkHttpProvider {
+        url = "${iranRuleBase}/malware.mrs";
+        behavior = "domain";
+      };
+      "malware-ip" = mkHttpProvider {
+        url = "${iranRuleBase}/malware-ip.mrs";
+        behavior = "ipcidr";
+      };
+      "phishing" = mkHttpProvider {
+        url = "${iranRuleBase}/phishing.mrs";
+        behavior = "domain";
+      };
+      "phishing-ip" = mkHttpProvider {
+        url = "${iranRuleBase}/phishing-ip.mrs";
+        behavior = "ipcidr";
+      };
+      "cryptominers" = mkHttpProvider {
+        url = "${iranRuleBase}/cryptominers.mrs";
+        behavior = "domain";
+      };
+    };
+
+  userProviders = lib.listToAttrs (
+    map (
+      rp:
+      lib.nameValuePair rp.name (mkHttpProvider {
+        inherit (rp) url behavior;
+        format = rp.format;
+        interval = rp.interval;
+      })
+    ) cfg.ruleProviders
+  );
+
+  allProviders = iranProviders // userProviders;
+
+  # REJECT rules first so blocked traffic is dropped even if a later DIRECT rule would match.
+  # IP-based rule sets need ,no-resolve to avoid a DNS round-trip for every connection.
+  iranRejectRules =
+    lib.optionals cfg.iranRules.blockAds [ "RULE-SET,ir-ads,REJECT" ]
+    ++ lib.optionals cfg.iranRules.blockMalware [
+      "RULE-SET,malware,REJECT"
+      "RULE-SET,phishing,REJECT"
+      "RULE-SET,cryptominers,REJECT"
+      "RULE-SET,malware-ip,REJECT,no-resolve"
+      "RULE-SET,phishing-ip,REJECT,no-resolve"
+    ];
+
+  iranDirectRules = lib.optionals cfg.iranRules.enable [
+    "RULE-SET,ir-domains,DIRECT"
+    "RULE-SET,ir-cidrs,DIRECT,no-resolve"
+    "RULE-SET,ir-arvancloud,DIRECT,no-resolve"
+    "RULE-SET,ir-derakcloud,DIRECT,no-resolve"
+    "RULE-SET,ir-iranserver,DIRECT,no-resolve"
+    "RULE-SET,ir-parspack,DIRECT,no-resolve"
+  ];
+
+  userRules = map (
+    rp: "RULE-SET,${rp.name},${rp.target}" + lib.optionalString (rp.behavior == "ipcidr") ",no-resolve"
+  ) cfg.ruleProviders;
+
   configFile = (pkgs.formats.yaml { }).generate "config.yaml" (
     {
       "mixed-port" = cfg.port;
@@ -112,10 +230,18 @@ let
           "IP-CIDR,10.0.0.0/8,DIRECT"
           "IP-CIDR,172.16.0.0/12,DIRECT"
           "IP-CIDR,192.168.0.0/16,DIRECT"
+        ]
+        ++ iranRejectRules
+        ++ iranDirectRules
+        ++ userRules
+        ++ [
           "DOMAIN-SUFFIX,ir,DIRECT"
           "GEOIP,IR,DIRECT,no-resolve"
           "MATCH,PROXY"
         ];
+    }
+    // lib.optionalAttrs (allProviders != { }) {
+      "rule-providers" = allProviders;
     }
     // lib.optionalAttrs (cfg.webui != null) {
       "external-ui" = "ui";
@@ -194,6 +320,84 @@ in
       default = [ ];
       description = "Extra domain suffixes to route directly";
     };
+
+    iranRules = {
+      enable = mkOption {
+        type = types.bool;
+        default = true;
+        description = ''
+          Pull Chocolate4U/Iran-clash-rules .mrs rule sets and route them DIRECT.
+          Covers Iranian domains (ir.mrs), Iranian IP CIDRs (ircidr.mrs), and
+          major Iranian hosting providers (Arvan, Derak, Iranserver, Parspack).
+          Catches the long tail that GEOIP,IR misses (.com sites hosted in Iran,
+          and Iranian IPs not yet in the v2ray geoip database).
+        '';
+      };
+      blockAds = mkOption {
+        type = types.bool;
+        default = false;
+        description = ''
+          Add the Iran-only ads list (ads.mrs, ~640 bytes) and REJECT matches.
+          Narrow scope — only Iranian ad networks — so very unlikely to break
+          legitimate sites. Does not include the broader category-ads-all list.
+        '';
+      };
+      blockMalware = mkOption {
+        type = types.bool;
+        default = true;
+        description = "REJECT known malware, phishing, and cryptominer domains/IPs.";
+      };
+    };
+
+    ruleProviders = mkOption {
+      type =
+        with types;
+        listOf (submodule {
+          options = {
+            name = mkOption {
+              type = str;
+              description = "Identifier used in the RULE-SET reference";
+            };
+            url = mkOption {
+              type = str;
+              description = "HTTP(S) URL to fetch the rule set from";
+            };
+            behavior = mkOption {
+              type = enum [
+                "domain"
+                "ipcidr"
+                "classical"
+              ];
+              description = "Rule behavior — must match the file's contents";
+            };
+            format = mkOption {
+              type = enum [
+                "mrs"
+                "yaml"
+                "text"
+              ];
+              default = "mrs";
+              description = "On-disk format of the rule set";
+            };
+            target = mkOption {
+              type = str;
+              default = "DIRECT";
+              description = "Action for matches (DIRECT, REJECT, PROXY, etc.)";
+            };
+            interval = mkOption {
+              type = ints.positive;
+              default = 86400;
+              description = "Refresh interval in seconds";
+            };
+          };
+        });
+      default = [ ];
+      description = ''
+        Additional rule providers, fetched by mihomo on the configured interval.
+        Injected into the rule chain after the iranRules sets and before the
+        DOMAIN-SUFFIX,ir / GEOIP,IR fallback.
+      '';
+    };
   };
 
   config = mkIf cfg.enable {
@@ -221,20 +425,19 @@ in
         StateDirectory = "mihomo";
         LoadCredential = map (sub: "${sub.name}:${sub.urlFile}") cfg.subscriptions;
       };
-      script =
-        ''
-          fail=0
-        ''
-        + lib.concatMapStringsSep "\n" (sub: ''
-          URL="$(cat "$CREDENTIALS_DIRECTORY/${sub.name}")"
-          if ! ${pkgs.curl}/bin/curl -sSk --connect-timeout 15 -o /var/lib/mihomo/provider-${sub.name}.yaml "$URL"; then
-            echo "[mihomo-sub-update] failed to fetch ${sub.name}" >&2
-            fail=1
-          fi
-        '') cfg.subscriptions
-        + ''
-          exit $fail
-        '';
+      script = ''
+        fail=0
+      ''
+      + lib.concatMapStringsSep "\n" (sub: ''
+        URL="$(cat "$CREDENTIALS_DIRECTORY/${sub.name}")"
+        if ! ${pkgs.curl}/bin/curl -sSk --connect-timeout 15 -o /var/lib/mihomo/provider-${sub.name}.yaml "$URL"; then
+          echo "[mihomo-sub-update] failed to fetch ${sub.name}" >&2
+          fail=1
+        fi
+      '') cfg.subscriptions
+      + ''
+        exit $fail
+      '';
       # `+` runs ExecStartPost as root, bypassing DynamicUser — needed to manage another unit.
       postStart = "+${pkgs.systemd}/bin/systemctl restart mihomo.service";
     };
