@@ -221,11 +221,22 @@ in
         StateDirectory = "mihomo";
         LoadCredential = map (sub: "${sub.name}:${sub.urlFile}") cfg.subscriptions;
       };
-      script = lib.concatMapStringsSep "\n" (sub: ''
-        URL="$(cat "$CREDENTIALS_DIRECTORY/${sub.name}")"
-        ${pkgs.curl}/bin/curl -sk --connect-timeout 15 -o /var/lib/mihomo/provider-${sub.name}.yaml "$URL" || true
-      '') cfg.subscriptions;
-      postStart = "${pkgs.systemd}/bin/systemctl restart mihomo.service || true";
+      script =
+        ''
+          fail=0
+        ''
+        + lib.concatMapStringsSep "\n" (sub: ''
+          URL="$(cat "$CREDENTIALS_DIRECTORY/${sub.name}")"
+          if ! ${pkgs.curl}/bin/curl -sSk --connect-timeout 15 -o /var/lib/mihomo/provider-${sub.name}.yaml "$URL"; then
+            echo "[mihomo-sub-update] failed to fetch ${sub.name}" >&2
+            fail=1
+          fi
+        '') cfg.subscriptions
+        + ''
+          exit $fail
+        '';
+      # `+` runs ExecStartPost as root, bypassing DynamicUser — needed to manage another unit.
+      postStart = "+${pkgs.systemd}/bin/systemctl restart mihomo.service";
     };
 
     systemd.timers.mihomo-sub-update = {
