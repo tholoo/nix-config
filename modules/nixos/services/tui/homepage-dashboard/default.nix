@@ -13,7 +13,7 @@ let
   inherit (lib.mine) mkEnable;
   cfg = config.mine.${name};
   name = "homepage-dashboard";
-  host = "192.168.1.101";
+  host = "192.168.88.31";
   local = "127.0.0.1";
   envFile = "/run/homepage-dashboard/env";
 
