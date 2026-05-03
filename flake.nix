@@ -245,7 +245,7 @@
           };
         };
         "elderwood" = {
-          hostname = "192.168.1.101";
+          hostname = "192.168.88.31";
           sshUser = "root";
           remoteBuild = false;
           confirmTimeout = 600;
