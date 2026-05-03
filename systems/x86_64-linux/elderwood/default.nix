@@ -72,6 +72,18 @@
     "processor.max_cstate=2"
     "intel_idle.max_cstate=2"
   ];
+  boot.kernel.sysctl = {
+    "net.ipv4.ip_forward" = 1;
+    "net.ipv4.conf.all.rp_filter" = 2; # loose
+    "net.ipv4.conf.default.rp_filter" = 2;
+  };
+  networking.interfaces.enp6s0.ipv4.routes = [
+    {
+      address = "192.168.89.0";
+      prefixLength = 24;
+      via = "192.168.88.1";
+    }
+  ];
 
   # NVIDIA GM107 (GTX 750 Ti) hits PRIVRING faults under nouveau.
   # Disabled until proprietary driver is wired up (see GPU TODO).
