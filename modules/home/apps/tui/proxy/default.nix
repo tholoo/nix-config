@@ -25,6 +25,7 @@ in
       go-graft # for proxying commands
       sshuttle
       tun2socks
+      gost
     ];
   };
 }
