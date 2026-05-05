@@ -3,16 +3,18 @@
   nixConfig = {
     substituters = [
       "https://cache.nixos.org?priority=1"
-      "https://mirrors.tuna.tsinghua.edu.cn/nix-channels/store?priority=2"
+      # "https://mirrors.tuna.tsinghua.edu.cn/nix-channels/store?priority=2"
     ];
     extra-substituters = [
       # "https://aseipp-nix-cache.global.ssl.fastly.net"
       "https://nix-community.cachix.org?priority=3"
       "https://anyrun.cachix.org?priority=4"
+      "https://cache.numtide.com"
     ];
     extra-trusted-public-keys = [
       "anyrun.cachix.org-1:pqBobmOjI7nKlsUMV25u9QHa9btJK65/C8vnO3p346s="
       "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+      "niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g="
     ];
   };
 
@@ -124,6 +126,8 @@
       url = "github:sadjow/claude-code-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    llm-agents.url = "github:numtide/llm-agents.nix";
 
     # Source-of-truth for the auto-mark-known Anki addon and the mpv lua
     # scripts. Pulled in as a non-flake input so buildAnkiAddon can read
