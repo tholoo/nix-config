@@ -419,18 +419,22 @@ in
       description = "Refresh mihomo subscriptions";
       after = [ "network-online.target" ];
       wants = [ "network-online.target" ];
+
       serviceConfig = {
         Type = "oneshot";
         DynamicUser = true;
         StateDirectory = "mihomo";
         LoadCredential = map (sub: "${sub.name}:${sub.urlFile}") cfg.subscriptions;
+
+        ExecStartPost = "+${pkgs.systemd}/bin/systemctl restart mihomo.service";
       };
+
       script = ''
         fail=0
       ''
       + lib.concatMapStringsSep "\n" (sub: ''
         URL="$(cat "$CREDENTIALS_DIRECTORY/${sub.name}")"
-        if ! ${pkgs.curl}/bin/curl -sSk --connect-timeout 15 -o /var/lib/mihomo/provider-${sub.name}.yaml "$URL"; then
+        if ! ${pkgs.curl}/bin/curl -sSkL --connect-timeout 15 --max-time 60 --retry 3 --retry-delay 2 -o /var/lib/mihomo/provider-${sub.name}.yaml "$URL"; then
           echo "[mihomo-sub-update] failed to fetch ${sub.name}" >&2
           fail=1
         fi
@@ -438,8 +442,6 @@ in
       + ''
         exit $fail
       '';
-      # `+` runs ExecStartPost as root, bypassing DynamicUser — needed to manage another unit.
-      postStart = "+${pkgs.systemd}/bin/systemctl restart mihomo.service";
     };
 
     systemd.timers.mihomo-sub-update = {
