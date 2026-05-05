@@ -93,11 +93,13 @@ in
           # "https://aseipp-nix-cache.global.ssl.fastly.net"
           "https://nix-community.cachix.org?priority=3"
           "https://anyrun.cachix.org?priority=4"
+          "https://cache.numtide.com"
         ];
 
         extra-trusted-public-keys = [
           "anyrun.cachix.org-1:pqBobmOjI7nKlsUMV25u9QHa9btJK65/C8vnO3p346s="
           "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+          "niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g="
         ];
       };
     };
