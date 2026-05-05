@@ -16,6 +16,14 @@
     systemd-boot.enable = false;
   };
 
+  services.resolved = {
+    enable = true;
+
+    settings.Resolve = {
+      ResolveUnicastSingleLabel = true;
+    };
+  };
+
   systemd.services.nix-daemon.environment = {
     http_proxy = "socks5h://127.0.0.1:10808";
     https_proxy = "socks5h://127.0.0.1:10808";
