@@ -143,6 +143,8 @@
   outputs =
     inputs:
     let
+      tunScriptCheck = pkgs: import ./checks/tun-script.nix { inherit pkgs; };
+
       lib = inputs.snowfall-lib.mkLib {
         inherit inputs;
         src = ./.;
@@ -225,7 +227,10 @@
       #   my-custom-value = "my-value";
       # };
 
-      outputs-builder = channels: { formatter = channels.nixpkgs.nixfmt; };
+      outputs-builder = channels: {
+        formatter = channels.nixpkgs.nixfmt;
+        checks.tun-script = tunScriptCheck channels.nixpkgs;
+      };
 
       deploy.nodes = {
         "granite" = {
@@ -261,7 +266,14 @@
       };
 
       checks = builtins.mapAttrs (
-        system: deploy-lib: deploy-lib.deployChecks inputs.self.deploy
+        system: deploy-lib:
+        let
+          pkgs = inputs.nixpkgs.legacyPackages.${system};
+        in
+        (deploy-lib.deployChecks inputs.self.deploy)
+        // {
+          tun-script = tunScriptCheck pkgs;
+        }
       ) inputs.deploy-rs.lib;
 
       alias = {

@@ -19,6 +19,30 @@ let
       ]
       (builtins.readFile ./tun.sh)
   );
+
+  direct-script-for = commandName:
+    pkgs.writeShellScriptBin commandName ''
+    set -euo pipefail
+
+    if [[ "$#" -eq 0 ]]; then
+      echo "Usage: ${commandName} <command> [argument ...]" >&2
+      exit 2
+    fi
+
+    unit="tun-direct-$(${pkgs.coreutils}/bin/date +%s%N)-$$"
+
+    exec ${pkgs.systemd}/bin/systemd-run \
+      --user \
+      --scope \
+      --slice=tun-direct.slice \
+      --unit="$unit" \
+      --same-dir \
+      --quiet \
+      "$@"
+  '';
+
+  direct-script = direct-script-for "direct";
+  dg-script = direct-script-for "dg";
 in
 {
   options.mine.${name} = mkEnable config {
@@ -30,6 +54,10 @@ in
   };
 
   config = mkIf cfg.enable {
-    home.packages = [ tun-script ];
+    home.packages = [
+      tun-script
+      direct-script
+      dg-script
+    ];
   };
 }

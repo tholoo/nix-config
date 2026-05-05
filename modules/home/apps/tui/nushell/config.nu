@@ -302,10 +302,10 @@ def extract-ssh-target [cmd: string] {
     let ssh_names = ["ssh", "autossh", "mosh"]
     let wrappers = [
         "sudo" "doas" "env" "nohup" "time" "command" "exec"
-        "gg" "proxychains" "proxychains4" "tsocks"
+        "gg" "dg" "direct" "proxychains" "proxychains4" "tsocks"
     ]
 
-    # Walk past any wrapper prefix (sudo, gg, proxychains, …) plus their
+    # Walk past any wrapper prefix (sudo, gg, dg, direct, proxychains, …) plus their
     # flags / KEY=val args to find the *program* actually being run. This
     # stops `man ssh foo`, `grep -r ssh dir/`, etc. from being matched, while
     # still recognising `gg ssh host`, `gg -n node ssh host`, `sudo ssh host`.
