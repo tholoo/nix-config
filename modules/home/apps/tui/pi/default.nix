@@ -17,13 +17,35 @@ let
 
   jsonFormat = pkgs.formats.json { };
   llmAgents = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system};
+  pi = llmAgents.pi.overrideAttrs (oldAttrs: {
+    postInstall = (oldAttrs.postInstall or "") + ''
+      substituteInPlace "$out/lib/node_modules/@mariozechner/pi-coding-agent/node_modules/@mariozechner/pi-tui/dist/tui.js" \
+        --replace-fail 'buffer += "\x1b[2J\x1b[H\x1b[3J"; // Clear screen, home, then clear scrollback' \
+                       'buffer += "\x1b[2J\x1b[H"; // Clear screen and home without clearing scrollback'
+
+      substituteInPlace "$out/lib/node_modules/@mariozechner/pi-coding-agent/node_modules/@mariozechner/pi-tui/dist/terminal.js" \
+        --replace-fail '        this.queryAndEnableKittyProtocol();' \
+                       '        this.setupStdinBuffer(); process.stdin.on("data", this.stdinDataHandler);'
+
+      substituteInPlace "$out/bin/pi" \
+        --replace-fail "export PI_TELEMETRY='0'" \
+                       "export PI_TELEMETRY='0'
+      export PANDOC_PATH='${lib.getExe pkgs.pandoc}'
+      export PANDOC_PDF_ENGINE='${lib.getExe' pkgs.texliveFull "xelatex"}'
+      export PUPPETEER_EXECUTABLE_PATH='${lib.getExe pkgs.chromium}'
+      export CHROME_PATH='${lib.getExe pkgs.chromium}'
+      export MERMAID_CLI_PATH='${lib.getExe' pkgs.mermaid-cli "mmdc"}'"
+    '';
+  });
 
   piNpm = pkgs.writeShellScriptBin "pi-npm" ''
-    export PATH="${lib.makeBinPath [
-      pkgs.nodejs
-      pkgs.bash
-      pkgs.coreutils
-    ]}:$PATH"
+    export PATH="${
+      lib.makeBinPath [
+        pkgs.nodejs
+        pkgs.bash
+        pkgs.coreutils
+      ]
+    }:$PATH"
     export npm_config_fetch_retries="''${npm_config_fetch_retries:-3}"
     export npm_config_fetch_retry_mintimeout="''${npm_config_fetch_retry_mintimeout:-2000}"
     export npm_config_fetch_retry_maxtimeout="''${npm_config_fetch_retry_maxtimeout:-30000}"
@@ -52,7 +74,6 @@ let
     "npm:@aliou/pi-processes"
     "npm:@juicesharp/rpiv-ask-user-question"
     "npm:pi-btw"
-    "npm:pi-mermaid"
     "npm:@pi-unipi/notify"
     "npm:@llblab/pi-telegram"
     "npm:pi-show"
@@ -118,8 +139,12 @@ in
 
   config = mkIf cfg.enable {
     home.packages = [
-      llmAgents.pi
+      pi
       piNpm
+      pkgs.chromium
+      pkgs.mermaid-cli
+      pkgs.pandoc
+      pkgs.texliveFull
     ]
     ++ lib.optionals cfg.enableLSPs (
       with pkgs;
@@ -145,7 +170,23 @@ in
 
     home.sessionVariables = {
       PI_SKIP_VERSION_CHECK = "1";
+      PANDOC_PATH = lib.getExe pkgs.pandoc;
+      PANDOC_PDF_ENGINE = lib.getExe' pkgs.texliveFull "xelatex";
+      PUPPETEER_EXECUTABLE_PATH = lib.getExe pkgs.chromium;
+      CHROME_PATH = lib.getExe pkgs.chromium;
+      MERMAID_CLI_PATH = lib.getExe' pkgs.mermaid-cli "mmdc";
     };
+
+    # pi-wierd-statusline has no persisted config/env for these defaults.
+    # Disable the cost segment and its fixed editor compositor, which enters
+    # alternate screen and prevents Zellij pane scrollback from working.
+    home.activation.piExtensionPatches = config.lib.dag.entryAfter [ "writeBoundary" ] ''
+      statusline="$HOME/.pi/agent/npm/lib/node_modules/pi-wierd-statusline/index.ts"
+      if [ -f "$statusline" ]; then
+        ${pkgs.gnused}/bin/sed -i '0,/if (cost > 0) {/s//if (false \&\& cost > 0) {/' "$statusline"
+        ${pkgs.gnused}/bin/sed -i '0,/let fixedEditorEnabled = true;/s//let fixedEditorEnabled = false;/' "$statusline"
+      fi
+    '';
 
     home.file = {
       ".pi/agent/settings.json".source = jsonFormat.generate "pi-settings.json" {
@@ -301,12 +342,29 @@ in
           "pwd" = "allow";
           "ls" = "allow";
           "ls *" = "allow";
+          "find" = "allow";
+          "find *" = "allow";
           "rg *" = "allow";
+          "fd" = "allow";
           "fd *" = "allow";
+          "cat" = "allow";
+          "cat *" = "allow";
+          "file *" = "allow";
+          "realpath *" = "allow";
+          "stat *" = "allow";
+          "tree" = "allow";
+          "tree *" = "allow";
+          "wc *" = "allow";
+          "which *" = "allow";
+          "command -v *" = "allow";
           "rm *" = "ask";
           "rm -rf *" = "ask";
           "nixos-rebuild *" = "ask";
           "deploy *" = "ask";
+        };
+
+        skills = {
+          "*" = "allow";
         };
 
         mcp = {
@@ -318,7 +376,7 @@ in
         };
 
         special = {
-          external_directory = "ask";
+          external_directory = "allow";
           doom_loop = "deny";
         };
       };
