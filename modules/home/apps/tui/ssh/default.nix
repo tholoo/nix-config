@@ -21,6 +21,7 @@ in
   config = mkIf cfg.enable {
     home.packages = with pkgs; [
       autossh
+      sshpass
     ];
 
     programs.ssh = {
