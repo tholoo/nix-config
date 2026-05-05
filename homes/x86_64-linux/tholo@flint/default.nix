@@ -36,15 +36,7 @@
       enableLSP = false;
     };
 
-    claude-code = {
-      enable = true;
-      hostContext = ''
-        # Host: flint
-        You are on **flint**, a Parspack KVM VPS in Tehran (x86_64, 4 vCPUs, 8GB RAM, 100GB disk).
-        This is a remote production server. Be extra cautious — changes here affect live services.
-        Prefer `deploy-rs` over direct `nixos-rebuild`.
-      '';
-    };
-
+    claude-code.enable = false;
+    pi.enable = false;
   };
 }

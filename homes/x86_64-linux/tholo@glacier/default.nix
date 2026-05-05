@@ -28,6 +28,12 @@
     '';
     claude-code.proxyUrl = "http://127.0.0.1:10808";
 
+    pi.hostContext = ''
+      # Host: glacier
+      You are on **glacier**, a laptop (IdeaPad Slim 5, AMD CPU+GPU, x86_64).
+      This is the primary mobile dev machine with full GUI + TUI suites.
+    '';
+
     # uv needs PyPI on first frdict launch — route through the local proxy
     # since direct PyPI is blocked here. Once ~/.cache/uv is warm, restarts
     # don't hit the network at all.

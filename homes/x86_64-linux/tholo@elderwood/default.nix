@@ -25,5 +25,6 @@
     tui.enable = true;
 
     claude-code.enable = false;
+    pi.enable = false;
   };
 }
