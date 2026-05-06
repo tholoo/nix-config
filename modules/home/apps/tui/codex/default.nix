@@ -24,6 +24,19 @@ let
     pkgs.bash
     pkgs.coreutils
   ];
+
+  codexNotify = "${
+    pkgs.writeShellApplication {
+      name = "codex-notify";
+      runtimeInputs = [
+        pkgs.coreutils
+        pkgs.jq
+        pkgs.libnotify
+        pkgs.dunst
+      ];
+      text = builtins.readFile ./notify.sh;
+    }
+  }/bin/codex-notify";
 in
 {
   options.mine.${name} = mkEnable config {
@@ -104,6 +117,7 @@ in
         personality = "pragmatic";
         model_reasoning_effort = "high";
         approval_policy = "on-request";
+        default_mode_request_user_input = true;
         sandbox_mode = "workspace-write";
         web_search = "cached";
 
@@ -117,12 +131,52 @@ in
           "google-drive@openai-curated".enabled = true;
         };
 
-        tui.model_availability_nux."gpt-5.5" = 3;
-
         features = {
+          codex_hooks = true;
           multi_agent = true;
           shell_snapshot = true;
           terminal_resize_reflow = true;
+        };
+
+        notify = [ codexNotify ];
+
+        tui = {
+          notification_condition = "always";
+          notification_method = "auto";
+          notifications = [
+            "agent-turn-complete"
+            "approval-requested"
+          ];
+
+          model_availability_nux."gpt-5.5" = 3;
+        };
+
+        hooks = {
+          PermissionRequest = [
+            {
+              hooks = [
+                {
+                  type = "command";
+                  command = codexNotify;
+                  timeout = 10;
+                  statusMessage = "Sending approval notification";
+                }
+              ];
+            }
+          ];
+
+          Stop = [
+            {
+              hooks = [
+                {
+                  type = "command";
+                  command = codexNotify;
+                  timeout = 10;
+                  statusMessage = "Sending completion notification";
+                }
+              ];
+            }
+          ];
         };
       };
 
