@@ -148,6 +148,12 @@ in
             "agent-turn-complete"
             "approval-requested"
           ];
+          status_line = [
+            "model-with-reasoning"
+            "current-dir"
+            "git-branch"
+            "context-remaining"
+          ];
 
           model_availability_nux."gpt-5.5" = 3;
         };
