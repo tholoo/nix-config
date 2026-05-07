@@ -1,5 +1,7 @@
 { ... }:
 {
+  imports = [ ./internet.nix ];
+
   mine = {
     user = {
       name = "tholo";
