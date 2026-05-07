@@ -4,6 +4,7 @@ set -euo pipefail
 payload="${1:-}"
 title="Codex"
 body="Codex needs attention or finished a turn."
+max_body_chars=100
 
 if [[ -z "$payload" && ! -t 0 ]]; then
   payload="$(cat)"
@@ -26,6 +27,10 @@ if command -v jq >/dev/null 2>&1 && [[ -n "$payload" ]]; then
       [[ -n "$msg" ]] && body="$msg"
       ;;
   esac
+fi
+
+if ((${#body} > max_body_chars)); then
+  body="${body:0:${max_body_chars}}..."
 fi
 
 if command -v notify-send >/dev/null 2>&1 && notify-send --urgency=normal "$title" "$body" >/dev/null 2>&1; then

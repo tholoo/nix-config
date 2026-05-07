@@ -165,19 +165,6 @@ in
               ];
             }
           ];
-
-          Stop = [
-            {
-              hooks = [
-                {
-                  type = "command";
-                  command = codexNotify;
-                  timeout = 10;
-                  statusMessage = "Sending completion notification";
-                }
-              ];
-            }
-          ];
         };
       };
 
