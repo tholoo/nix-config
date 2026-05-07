@@ -39,6 +39,7 @@
     mihomo = {
       enable = true;
       webui = pkgs.metacubexd;
+      apiSecretFile = config.age.secrets.mihomo-api-secret.path;
       subscriptions = [
         {
           name = "main";
@@ -46,6 +47,9 @@
         }
       ];
       directDomains = [
+        "aparat.com"
+        "cafebazaar.ir"
+        "digikala.com"
         "runflare.com"
       ];
     };
@@ -61,6 +65,7 @@
     k8s.enable = false;
   };
 
+  age.secrets.mihomo-api-secret.file = inputs.self + /secrets/mihomo/mihomo-api-secret.age;
   age.secrets.mihomo-sub-url-main.file = inputs.self + /secrets/mihomo/mihomo-sub-url-main.age;
 
   environment.sessionVariables = {

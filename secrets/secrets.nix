@@ -28,6 +28,7 @@ in
   "firefly/firefly-app-key.age".publicKeys = users.all ++ [ systems.elderwood ];
 
   "mihomo/mihomo-sub-url-main.age".publicKeys = users.all ++ proxyHosts;
+  "mihomo/mihomo-api-secret.age".publicKeys = users.all ++ proxyHosts;
 
   "network-monitor/grafana-secret-key.age".publicKeys = users.all ++ [ systems.elderwood ];
   "network-monitor/config.age".publicKeys = users.all ++ [ systems.elderwood ];

@@ -13,6 +13,7 @@ let
 
   runtimeDir = "/run/network-monitor";
   prometheusPort = 9091;
+  topSitesPort = 9914;
 
   mkStat =
     {
@@ -20,16 +21,21 @@ let
       title,
       expr,
       x,
+      y ? 0,
+      w ? 4,
+      h ? 4,
     }:
     {
       inherit id title;
       type = "stat";
       datasource.uid = "prometheus";
       gridPos = {
-        inherit x;
-        y = 0;
-        w = 4;
-        h = 4;
+        inherit
+          x
+          y
+          w
+          h
+          ;
       };
       targets = [
         {
@@ -39,6 +45,21 @@ let
       ];
       fieldConfig.defaults = {
         unit = "bool";
+        mappings = [
+          {
+            type = "value";
+            options = {
+              "0" = {
+                text = "DOWN";
+                color = "red";
+              };
+              "1" = {
+                text = "UP";
+                color = "green";
+              };
+            };
+          }
+        ];
         thresholds = {
           mode = "absolute";
           steps = [
@@ -56,6 +77,7 @@ let
       options = {
         colorMode = "background";
         graphMode = "none";
+        textMode = "value";
         reduceOptions = {
           calcs = [ "lastNotNull" ];
           fields = "";
@@ -63,6 +85,212 @@ let
         };
       };
     };
+
+  activeInBps = ''sum by (ifName) (8 * rate(ifHCInOctets{job="mikrotik-snmp"}[5m]) * on(instance, ifIndex) group_left() (ifOperStatus{job="mikrotik-snmp"} == 1))'';
+
+  activeOutBps = ''sum by (ifName) (8 * rate(ifHCOutOctets{job="mikrotik-snmp"}[5m]) * on(instance, ifIndex) group_left() (ifOperStatus{job="mikrotik-snmp"} == 1))'';
+
+  topSitesCollector = pkgs.writeText "network-monitor-top-sites.py" ''
+    import ipaddress
+    import json
+    import os
+    import re
+    import sqlite3
+    import time
+    import urllib.error
+    import urllib.request
+    from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+    from threading import Lock, Thread
+
+    API_URL = os.environ.get("MIHOMO_API_URL", "http://127.0.0.1:9090/connections")
+    SECRET_FILE = os.environ.get("MIHOMO_SECRET_FILE") or os.path.join(
+      os.environ["CREDENTIALS_DIRECTORY"],
+      "mihomo-api-secret",
+    )
+    DB_PATH = os.environ.get("TOP_SITES_DB", "/var/lib/network-monitor/top-sites.sqlite")
+    METRICS_HOST = os.environ.get("METRICS_HOST", "127.0.0.1")
+    METRICS_PORT = int(os.environ.get("METRICS_PORT", "9914"))
+    POLL_INTERVAL = float(os.environ.get("POLL_INTERVAL", "10"))
+    TOP_LIMIT = int(os.environ.get("TOP_LIMIT", "20"))
+    RETENTION_SECONDS = 24 * 60 * 60
+    HOST_RE = re.compile(r"^[a-z0-9.-]+$")
+    lock = Lock()
+    last_success = 0
+    last_poll = 0
+    last_error = ""
+
+
+    def read_secret():
+      with open(SECRET_FILE, "r", encoding="utf-8") as f:
+        return f.read().strip()
+
+
+    def normalize_host(value):
+      if not value:
+        return None
+      host = value.strip().lower().rstrip(".")
+      if not host:
+        return None
+      if ":" in host and not host.startswith("["):
+        host = host.split(":", 1)[0]
+      if host.startswith("[") and host.endswith("]"):
+        host = host[1:-1]
+      try:
+        ip = ipaddress.ip_address(host)
+        if ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_multicast:
+          return None
+        return None
+      except ValueError:
+        pass
+      if host.endswith(".lan") or host.endswith(".local"):
+        return None
+      if "." not in host:
+        return None
+      if not HOST_RE.match(host):
+        return None
+      return host
+
+
+    def init_db(conn):
+      conn.execute("PRAGMA journal_mode = WAL")
+      conn.execute("""
+        CREATE TABLE IF NOT EXISTS connections (
+          id TEXT PRIMARY KEY,
+          domain TEXT NOT NULL,
+          first_seen INTEGER NOT NULL
+        )
+      """)
+      conn.execute("CREATE INDEX IF NOT EXISTS idx_connections_seen ON connections(first_seen)")
+      conn.execute("CREATE INDEX IF NOT EXISTS idx_connections_domain ON connections(domain)")
+      conn.commit()
+
+
+    def connection_domain(item):
+      meta = item.get("metadata") or {}
+      for key in ("host", "destinationHost", "sniffHost"):
+        host = normalize_host(str(meta.get(key) or ""))
+        if host:
+          return host
+      return None
+
+
+    def poll_once(conn, token):
+      global last_success, last_poll, last_error
+      req = urllib.request.Request(API_URL, headers={"Authorization": f"Bearer {token}"})
+      with urllib.request.urlopen(req, timeout=5) as response:
+        body = response.read()
+      payload = json.loads(body.decode("utf-8"))
+      now = int(time.time())
+      inserted = 0
+      for item in payload.get("connections", []):
+        conn_id = item.get("id")
+        domain = connection_domain(item)
+        if not conn_id or not domain:
+          continue
+        cur = conn.execute(
+          "INSERT OR IGNORE INTO connections (id, domain, first_seen) VALUES (?, ?, ?)",
+          (str(conn_id), domain, now),
+        )
+        inserted += cur.rowcount
+      conn.execute("DELETE FROM connections WHERE first_seen < ?", (now - RETENTION_SECONDS,))
+      conn.commit()
+      with lock:
+        last_success = 1
+        last_poll = now
+        last_error = ""
+      return inserted
+
+
+    def poll_loop():
+      global last_success, last_poll, last_error
+      token = read_secret()
+      os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
+      conn = sqlite3.connect(DB_PATH, timeout=10)
+      init_db(conn)
+      while True:
+        try:
+          poll_once(conn, token)
+        except Exception as exc:
+          with lock:
+            last_success = 0
+            last_poll = int(time.time())
+            last_error = exc.__class__.__name__
+        time.sleep(POLL_INTERVAL)
+
+
+    def metric_escape(value):
+      return value.replace("\\", "\\\\").replace("\n", "\\n").replace('"', '\\"')
+
+
+    def render_metrics():
+      now = int(time.time())
+      conn = sqlite3.connect(DB_PATH, timeout=10)
+      lines = [
+        "# HELP network_monitor_top_site_visits Unique mihomo connections first seen for a domain in the selected rolling window.",
+        "# TYPE network_monitor_top_site_visits gauge",
+      ]
+      for window, seconds in (("1h", 3600), ("24h", 86400)):
+        rows = conn.execute(
+          """
+          SELECT domain, COUNT(*) AS visits
+          FROM connections
+          WHERE first_seen >= ?
+          GROUP BY domain
+          ORDER BY visits DESC, domain ASC
+          LIMIT ?
+          """,
+          (now - seconds, TOP_LIMIT),
+        ).fetchall()
+        for domain, visits in rows:
+          lines.append(
+            f'network_monitor_top_site_visits{{window="{window}",domain="{metric_escape(domain)}"}} {visits}'
+          )
+      tracked = conn.execute("SELECT COUNT(*) FROM connections").fetchone()[0]
+      conn.close()
+      with lock:
+        success = last_success
+        poll = last_poll
+        error = last_error
+      lines.extend([
+        "# HELP network_monitor_top_sites_last_success Whether the last mihomo poll succeeded.",
+        "# TYPE network_monitor_top_sites_last_success gauge",
+        f"network_monitor_top_sites_last_success {success}",
+        "# HELP network_monitor_top_sites_last_poll_timestamp_seconds Unix timestamp of the last mihomo poll.",
+        "# TYPE network_monitor_top_sites_last_poll_timestamp_seconds gauge",
+        f"network_monitor_top_sites_last_poll_timestamp_seconds {poll}",
+        "# HELP network_monitor_top_sites_tracked_connections Connections retained in the top-sites database.",
+        "# TYPE network_monitor_top_sites_tracked_connections gauge",
+        f"network_monitor_top_sites_tracked_connections {tracked}",
+        f'network_monitor_top_sites_last_error{{error="{metric_escape(error)}"}} {0 if error == "" else 1}',
+      ])
+      return ("\n".join(lines) + "\n").encode("utf-8")
+
+
+    class Handler(BaseHTTPRequestHandler):
+      def do_GET(self):
+        if self.path != "/metrics":
+          self.send_response(404)
+          self.end_headers()
+          return
+        try:
+          body = render_metrics()
+          self.send_response(200)
+          self.send_header("Content-Type", "text/plain; version=0.0.4; charset=utf-8")
+          self.send_header("Content-Length", str(len(body)))
+          self.end_headers()
+          self.wfile.write(body)
+        except Exception:
+          self.send_response(500)
+          self.end_headers()
+
+      def log_message(self, fmt, *args):
+        return
+
+
+    if __name__ == "__main__":
+      Thread(target=poll_loop, daemon=True).start()
+      ThreadingHTTPServer((METRICS_HOST, METRICS_PORT), Handler).serve_forever()
+  '';
 
   dashboardDir =
     let
@@ -86,67 +314,116 @@ let
           panels = [
             (mkStat {
               id = 1;
-              title = "Router";
+              title = "Direct ISP Web";
               x = 0;
-              expr = ''probe_success{job="blackbox-icmp",role="router"}'';
+              w = 5;
+              expr = ''max(probe_success{job="blackbox-http-direct"})'';
             })
             (mkStat {
               id = 2;
-              title = "Upstream Gateway";
-              x = 4;
-              expr = ''probe_success{job="blackbox-icmp",role="upstream_gateway"}'';
+              title = "Proxy Web";
+              x = 5;
+              w = 5;
+              expr = ''max(probe_success{job="blackbox-http-proxy"})'';
             })
             (mkStat {
               id = 3;
+              title = "Router";
+              x = 10;
+              w = 4;
+              expr = ''probe_success{job="blackbox-icmp",role="router"}'';
+            })
+            (mkStat {
+              id = 4;
+              title = "Upstream";
+              x = 14;
+              w = 5;
+              expr = ''probe_success{job="blackbox-icmp",role="upstream_gateway"}'';
+            })
+            (mkStat {
+              id = 5;
               title = "MikroTik DNS";
-              x = 8;
+              x = 19;
+              w = 5;
               expr = ''probe_success{job="blackbox-dns-mikrotik",role="mikrotik_dns"}'';
             })
             {
-              id = 4;
+              id = 6;
               type = "timeseries";
-              title = "Interface Throughput";
+              title = "Top Active Router Interfaces";
               datasource.uid = "prometheus";
               gridPos = {
                 x = 0;
                 y = 4;
-                w = 12;
+                w = 14;
                 h = 8;
               };
               targets = [
                 {
                   refId = "A";
                   legendFormat = "down {{ifName}}";
-                  expr = ''sum by (ifName) (8 * rate(ifHCInOctets{job="mikrotik-snmp"}[5m]))'';
+                  expr = "topk(8, ${activeInBps})";
                 }
                 {
                   refId = "B";
                   legendFormat = "up {{ifName}}";
-                  expr = ''sum by (ifName) (8 * rate(ifHCOutOctets{job="mikrotik-snmp"}[5m]))'';
+                  expr = "topk(8, ${activeOutBps})";
                 }
               ];
               fieldConfig.defaults.unit = "bps";
+              options.legend = {
+                displayMode = "table";
+                placement = "bottom";
+                calcs = [
+                  "lastNotNull"
+                  "max"
+                ];
+              };
+            }
+            {
+              id = 7;
+              type = "timeseries";
+              title = "Web Probe Success";
+              datasource.uid = "prometheus";
+              gridPos = {
+                x = 14;
+                y = 4;
+                w = 10;
+                h = 4;
+              };
+              targets = [
+                {
+                  refId = "A";
+                  legendFormat = "{{path}} {{target_host}}";
+                  expr = ''probe_success{job=~"blackbox-http-direct|blackbox-http-proxy"}'';
+                }
+              ];
+              fieldConfig.defaults = {
+                min = 0;
+                max = 1;
+                unit = "bool";
+              };
               options.legend = {
                 displayMode = "list";
                 placement = "bottom";
               };
             }
             {
-              id = 5;
+              id = 8;
               type = "timeseries";
-              title = "Probe Success";
+              title = "Local Probe Success";
               datasource.uid = "prometheus";
               gridPos = {
-                x = 12;
-                y = 0;
-                w = 12;
-                h = 6;
+                x = 14;
+                y = 8;
+                w = 10;
+                h = 4;
               };
               targets = [
                 {
                   refId = "A";
                   legendFormat = "{{job}} {{role}}";
-                  expr = ''probe_success{job=~"blackbox-.*"}'';
+                  expr = ''probe_success{job=~"blackbox-icmp|blackbox-dns-mikrotik"}'';
                 }
               ];
               fieldConfig.defaults = {
@@ -156,13 +433,33 @@ let
               };
             }
             {
-              id = 6;
+              id = 9;
               type = "timeseries";
-              title = "Probe Latency";
+              title = "Web Latency";
+              datasource.uid = "prometheus";
+              gridPos = {
+                x = 0;
+                y = 12;
+                w = 12;
+                h = 6;
+              };
+              targets = [
+                {
+                  refId = "A";
+                  legendFormat = "{{path}} {{target_host}}";
+                  expr = ''probe_duration_seconds{job=~"blackbox-http-direct|blackbox-http-proxy"}'';
+                }
+              ];
+              fieldConfig.defaults.unit = "s";
+            }
+            {
+              id = 10;
+              type = "timeseries";
+              title = "Local Probe Latency";
               datasource.uid = "prometheus";
               gridPos = {
                 x = 12;
-                y = 6;
+                y = 12;
                 w = 12;
                 h = 6;
               };
@@ -170,10 +467,88 @@ let
                 {
                   refId = "A";
                   legendFormat = "{{job}} {{role}}";
-                  expr = ''probe_duration_seconds{job=~"blackbox-.*"}'';
+                  expr = ''probe_duration_seconds{job=~"blackbox-icmp|blackbox-dns-mikrotik"}'';
                 }
               ];
               fieldConfig.defaults.unit = "s";
+            }
+            {
+              id = 11;
+              type = "table";
+              title = "Top Visited Domains - 1h";
+              datasource.uid = "prometheus";
+              gridPos = {
+                x = 0;
+                y = 18;
+                w = 12;
+                h = 7;
+              };
+              targets = [
+                {
+                  refId = "A";
+                  expr = ''topk(20, network_monitor_top_site_visits{window="1h"})'';
+                  format = "table";
+                  instant = true;
+                }
+              ];
+              transformations = [
+                {
+                  id = "organize";
+                  options = {
+                    excludeByName = {
+                      Time = true;
+                      "__name__" = true;
+                      job = true;
+                      instance = true;
+                      window = true;
+                    };
+                    renameByName = {
+                      domain = "Domain";
+                      Value = "Visits";
+                    };
+                  };
+                }
+              ];
+              options.showHeader = true;
+            }
+            {
+              id = 12;
+              type = "table";
+              title = "Top Visited Domains - 24h";
+              datasource.uid = "prometheus";
+              gridPos = {
+                x = 12;
+                y = 18;
+                w = 12;
+                h = 7;
+              };
+              targets = [
+                {
+                  refId = "A";
+                  expr = ''topk(20, network_monitor_top_site_visits{window="24h"})'';
+                  format = "table";
+                  instant = true;
+                }
+              ];
+              transformations = [
+                {
+                  id = "organize";
+                  options = {
+                    excludeByName = {
+                      Time = true;
+                      "__name__" = true;
+                      job = true;
+                      instance = true;
+                      window = true;
+                    };
+                    renameByName = {
+                      domain = "Domain";
+                      Value = "Visits";
+                    };
+                  };
+                }
+              ];
+              options.showHeader = true;
             }
           ];
         }
@@ -233,6 +608,8 @@ in
           upstream_gateway="$(${jq} -r '.upstream_gateway' "$config_file")"
           isp_dns_servers="$(${jq} -c '.isp_dns_servers' "$config_file")"
           dns_probe_domain="$(${jq} -r '.dns_probe_domain' "$config_file")"
+          direct_http_probe_urls="$(${jq} -c '.direct_http_probe_urls // .http_probe_urls // ["https://digikala.com", "https://www.aparat.com", "https://cafebazaar.ir"]' "$config_file")"
+          proxy_http_probe_urls="$(${jq} -c '.proxy_http_probe_urls // ["https://cp.cloudflare.com/generate_204", "https://www.gstatic.com/generate_204"]' "$config_file")"
           snmp_community="$(${jq} -r '.snmp_community' "$config_file")"
 
           ${jq} -n \
@@ -250,6 +627,30 @@ in
             --arg router "$router" \
             '[{ targets: [($router + ":53")], labels: { role: "mikrotik_dns" } }]' \
             > ${runtimeDir}/blackbox-dns-mikrotik.json
+
+          ${jq} -n \
+            --argjson urls "$direct_http_probe_urls" \
+            '$urls | map({
+              targets: [.],
+              labels: {
+                path: "direct",
+                role: "direct_web",
+                target_host: (. | sub("^https?://"; "") | split("/")[0])
+              }
+            })' \
+            > ${runtimeDir}/blackbox-http-direct.json
+
+          ${jq} -n \
+            --argjson urls "$proxy_http_probe_urls" \
+            '$urls | map({
+              targets: [.],
+              labels: {
+                path: "proxy",
+                role: "proxy_web",
+                target_host: (. | sub("^https?://"; "") | split("/")[0])
+              }
+            })' \
+            > ${runtimeDir}/blackbox-http-proxy.json
 
           ${jq} -n \
             --arg router "$router" \
@@ -275,6 +676,15 @@ in
                     transport_protocol: "udp",
                     preferred_ip_protocol: "ip4",
                     recursion_desired: true
+                  }
+                },
+                http_usable_web: {
+                  prober: "http",
+                  timeout: "8s",
+                  http: {
+                    preferred_ip_protocol: "ip4",
+                    valid_status_codes: [200, 204, 301, 302, 307, 308],
+                    method: "GET"
                   }
                 }
               }
@@ -352,8 +762,43 @@ in
             > ${runtimeDir}/snmp.yml
 
           chmod 0444 ${runtimeDir}/blackbox-icmp.json ${runtimeDir}/blackbox-dns-mikrotik.json \
+            ${runtimeDir}/blackbox-http-direct.json ${runtimeDir}/blackbox-http-proxy.json \
             ${runtimeDir}/mikrotik-snmp.json ${runtimeDir}/blackbox.yml ${runtimeDir}/snmp.yml
         '';
+    };
+
+    systemd.services.network-monitor-top-sites = {
+      description = "Collect domain-only top visited sites from mihomo";
+      wantedBy = [ "multi-user.target" ];
+      after = [
+        "mihomo.service"
+        "network-online.target"
+      ];
+      wants = [
+        "mihomo.service"
+        "network-online.target"
+      ];
+      environment = {
+        MIHOMO_API_URL = "http://127.0.0.1:${toString config.mine.mihomo.apiPort}/connections";
+        TOP_SITES_DB = "/var/lib/network-monitor/top-sites.sqlite";
+        METRICS_HOST = "127.0.0.1";
+        METRICS_PORT = toString topSitesPort;
+        POLL_INTERVAL = "10";
+        TOP_LIMIT = "20";
+      };
+      serviceConfig = {
+        ExecStart = "${pkgs.python3}/bin/python3 ${topSitesCollector}";
+        Restart = "on-failure";
+        RestartSec = "5s";
+        DynamicUser = true;
+        StateDirectory = "network-monitor";
+        LoadCredential = [ "mihomo-api-secret:${config.age.secrets.mihomo-api-secret.path}" ];
+        RestrictAddressFamilies = [
+          "AF_INET"
+          "AF_INET6"
+          "AF_UNIX"
+        ];
+      };
     };
 
     services.prometheus = {
@@ -430,6 +875,56 @@ in
           ];
         }
         {
+          job_name = "blackbox-http-direct";
+          metrics_path = "/probe";
+          params.module = [ "http_usable_web" ];
+          file_sd_configs = [
+            {
+              files = [ "${runtimeDir}/blackbox-http-direct.json" ];
+              refresh_interval = "1m";
+            }
+          ];
+          relabel_configs = [
+            {
+              source_labels = [ "__address__" ];
+              target_label = "__param_target";
+            }
+            {
+              source_labels = [ "__param_target" ];
+              target_label = "instance";
+            }
+            {
+              target_label = "__address__";
+              replacement = "127.0.0.1:${toString config.services.prometheus.exporters.blackbox.port}";
+            }
+          ];
+        }
+        {
+          job_name = "blackbox-http-proxy";
+          metrics_path = "/probe";
+          params.module = [ "http_usable_web" ];
+          file_sd_configs = [
+            {
+              files = [ "${runtimeDir}/blackbox-http-proxy.json" ];
+              refresh_interval = "1m";
+            }
+          ];
+          relabel_configs = [
+            {
+              source_labels = [ "__address__" ];
+              target_label = "__param_target";
+            }
+            {
+              source_labels = [ "__param_target" ];
+              target_label = "instance";
+            }
+            {
+              target_label = "__address__";
+              replacement = "127.0.0.1:${toString config.services.prometheus.exporters.blackbox.port}";
+            }
+          ];
+        }
+        {
           job_name = "mikrotik-snmp";
           metrics_path = "/snmp";
           params = {
@@ -454,6 +949,14 @@ in
             {
               target_label = "__address__";
               replacement = "127.0.0.1:${toString config.services.prometheus.exporters.snmp.port}";
+            }
+          ];
+        }
+        {
+          job_name = "network-monitor-top-sites";
+          static_configs = [
+            {
+              targets = [ "127.0.0.1:${toString topSitesPort}" ];
             }
           ];
         }
@@ -485,6 +988,20 @@ in
                     severity: critical
                   annotations:
                     summary: MikroTik DNS probe failed
+                - alert: DirectWebDown
+                  expr: max(probe_success{job="blackbox-http-direct"}) == 0
+                  for: 2m
+                  labels:
+                    severity: critical
+                  annotations:
+                    summary: No configured direct HTTP probe target is reachable
+                - alert: ProxyWebDown
+                  expr: max(probe_success{job="blackbox-http-proxy"}) == 0
+                  for: 2m
+                  labels:
+                    severity: warning
+                  annotations:
+                    summary: No configured proxy HTTP probe target is reachable
                 - alert: MikroTikSnmpDown
                   expr: up{job="mikrotik-snmp"} == 0
                   for: 5m
@@ -492,13 +1009,24 @@ in
                     severity: warning
                   annotations:
                     summary: MikroTik SNMP scrape is failing
+                - alert: TopSitesCollectorDown
+                  expr: up{job="network-monitor-top-sites"} == 0 or network_monitor_top_sites_last_success == 0
+                  for: 5m
+                  labels:
+                    severity: warning
+                  annotations:
+                    summary: Top sites collector is not scraping mihomo successfully
         ''
       ];
     };
 
     systemd.services.prometheus = {
+      wants = [ "network-monitor-top-sites.service" ];
       requires = [ "network-monitor-runtime.service" ];
-      after = [ "network-monitor-runtime.service" ];
+      after = [
+        "network-monitor-runtime.service"
+        "network-monitor-top-sites.service"
+      ];
     };
     systemd.services.prometheus-blackbox-exporter = {
       requires = [ "network-monitor-runtime.service" ];

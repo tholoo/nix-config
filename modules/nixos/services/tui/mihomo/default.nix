@@ -290,6 +290,12 @@ in
       description = "Web UI package (e.g. pkgs.metacubexd)";
     };
 
+    apiSecretFile = mkOption {
+      type = types.nullOr types.path;
+      default = null;
+      description = "Path to a file containing the Clash API secret. Leave null to keep the API unauthenticated.";
+    };
+
     subscriptions = mkOption {
       type =
         with types;
@@ -467,6 +473,10 @@ in
         ${lib.optionalString (cfg.webui != null) ''
           ln -sfn ${cfg.webui} /var/lib/mihomo/ui
         ''}
+        ${lib.optionalString (cfg.apiSecretFile != null) ''
+          MIHOMO_API_SECRET="$(cat "$CREDENTIALS_DIRECTORY/api-secret")" \
+            ${lib.getExe pkgs.yq-go} -i '.secret = strenv(MIHOMO_API_SECRET)' /var/lib/mihomo/config.yaml
+        ''}
         ${providerScript}
       '';
 
@@ -476,7 +486,9 @@ in
         RestartSec = "5s";
         DynamicUser = true;
         StateDirectory = "mihomo";
-        LoadCredential = map (sub: "${sub.name}:${sub.urlFile}") cfg.subscriptions;
+        LoadCredential =
+          lib.optional (cfg.apiSecretFile != null) "api-secret:${cfg.apiSecretFile}"
+          ++ map (sub: "${sub.name}:${sub.urlFile}") cfg.subscriptions;
         AmbientCapabilities = [
           "CAP_NET_ADMIN"
           "CAP_NET_BIND_SERVICE"
