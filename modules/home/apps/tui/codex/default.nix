@@ -133,6 +133,7 @@ in
 
         features = {
           codex_hooks = true;
+          goals = true;
           multi_agent = true;
           shell_snapshot = true;
           terminal_resize_reflow = true;
@@ -188,5 +189,16 @@ in
         saiyan = ../claude/saiyan-skill.md;
       };
     };
+
+    home.activation.codexLegacyConfig = config.lib.dag.entryAfter [ "writeBoundary" ] ''
+      legacy_config="$HOME/.codex/config.toml"
+      xdg_config="$HOME/.config/codex/config.toml"
+
+      mkdir -p "$HOME/.codex"
+      if [ -e "$legacy_config" ] && [ ! -L "$legacy_config" ]; then
+        mv "$legacy_config" "$legacy_config.hm-backup"
+      fi
+      ln -sfn "$xdg_config" "$legacy_config"
+    '';
   };
 }
