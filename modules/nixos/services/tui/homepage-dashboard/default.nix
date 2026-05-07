@@ -32,6 +32,8 @@ let
   immich = config.mine.immich.enable;
   mihomo = config.mine.mihomo.enable;
   uptimeKuma = config.mine.uptime-kuma.enable;
+  networkMonitor =
+    (builtins.hasAttr "network-monitor" config.mine) && config.mine.network-monitor.enable;
 
   # Helper to filter empty categories
   filterEmpty = list: filter (cat: (builtins.head (builtins.attrValues cat)) != [ ]) list;
@@ -331,6 +333,22 @@ in
                 href = "http://${host}:3001";
                 siteMonitor = "http://${host}:3001";
                 description = "Service monitoring";
+              };
+            }
+            ++ optional networkMonitor {
+              "Grafana" = {
+                icon = "grafana";
+                href = "http://${host}:3000";
+                siteMonitor = "http://${host}:3000";
+                description = "Network health and WAN graphs";
+              };
+            }
+            ++ optional networkMonitor {
+              "Prometheus" = {
+                icon = "prometheus";
+                href = "http://${host}:9091";
+                siteMonitor = "http://${host}:9091/-/ready";
+                description = "Network metrics storage";
               };
             };
         }

@@ -29,6 +29,9 @@ in
 
   "mihomo/mihomo-sub-url-main.age".publicKeys = users.all ++ proxyHosts;
 
+  "network-monitor/grafana-secret-key.age".publicKeys = users.all ++ [ systems.elderwood ];
+  "network-monitor/config.age".publicKeys = users.all ++ [ systems.elderwood ];
+
   "mail/mail-user1-password.age".publicKeys = users.all ++ mailHosts;
 
   "dokploy/dokploy-db-password.age".publicKeys = users.all ++ dokployHosts;

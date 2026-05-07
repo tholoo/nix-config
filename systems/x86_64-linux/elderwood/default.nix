@@ -16,6 +16,7 @@
   imports = [
     ./hardware-configuration.nix
     ./disk-config.nix
+    ./network-monitor.nix
   ];
   mine = {
     host = {
@@ -48,6 +49,8 @@
         "runflare.com"
       ];
     };
+
+    network-monitor.enable = true;
 
     dokploy.enable = false;
 
