@@ -608,7 +608,7 @@ in
           upstream_gateway="$(${jq} -r '.upstream_gateway' "$config_file")"
           isp_dns_servers="$(${jq} -c '.isp_dns_servers' "$config_file")"
           dns_probe_domain="$(${jq} -r '.dns_probe_domain' "$config_file")"
-          direct_http_probe_urls="$(${jq} -c '.direct_http_probe_urls // .http_probe_urls // ["https://digikala.com", "https://www.aparat.com", "https://cafebazaar.ir"]' "$config_file")"
+          direct_http_probe_urls="$(${jq} -c '.direct_http_probe_urls // .http_probe_urls // ["https://digikala.com", "https://cafebazaar.ir"]' "$config_file")"
           proxy_http_probe_urls="$(${jq} -c '.proxy_http_probe_urls // ["https://cp.cloudflare.com/generate_204", "https://www.gstatic.com/generate_204"]' "$config_file")"
           snmp_community="$(${jq} -r '.snmp_community' "$config_file")"
 

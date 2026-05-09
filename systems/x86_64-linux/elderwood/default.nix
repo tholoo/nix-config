@@ -48,7 +48,6 @@
         }
       ];
       directDomains = [
-        "aparat.com"
         "cafebazaar.ir"
         "digikala.com"
         "runflare.com"
