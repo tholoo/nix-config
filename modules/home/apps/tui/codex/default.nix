@@ -137,6 +137,7 @@ in
           multi_agent = true;
           shell_snapshot = true;
           terminal_resize_reflow = true;
+          codex_git_commit = false;
         };
 
         notify = [ codexNotify ];
