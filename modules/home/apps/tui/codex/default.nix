@@ -143,6 +143,9 @@ in
         notify = [ codexNotify ];
 
         tui = {
+          vim_mode_default = true;
+          # Good for Zellij/tmux-style workflows: keep terminal scrollback usable.
+          alternate_screen = "auto";
           notification_condition = "always";
           notification_method = "auto";
           notifications = [
