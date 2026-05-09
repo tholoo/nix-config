@@ -26,6 +26,7 @@ in
       sshuttle
       tun2socks
       gost
+      mine.graftcp
     ];
   };
 }
