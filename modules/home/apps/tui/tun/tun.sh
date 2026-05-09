@@ -20,6 +20,7 @@ LOG_FILE="/var/log/tun2socks.log"
 DIRECT_CGROUP_SLICE="${DIRECT_CGROUP_SLICE:-tun-direct.slice}"
 DIRECT_KEEPALIVE_UNIT="${DIRECT_KEEPALIVE_UNIT:-tun-direct-keepalive}"
 CGROUP_ROOT="${CGROUP_ROOT:-/sys/fs/cgroup}"
+PROC_ROOT="${PROC_ROOT:-/proc}"
 
 log(){ printf '%s\n' "$*"; }
 need(){ command -v "$1" >/dev/null 2>&1 || { log "Missing: $1"; exit 1; }; }
@@ -83,6 +84,17 @@ nft_return_daddrs() {
   for cidr in "$@"; do
     [[ -n "${cidr}" ]] || continue
     printf '    %s daddr %s return\n' "${family}" "${cidr}"
+  done
+}
+
+nft_drop_daddrs() {
+  local family="$1"
+  shift
+
+  local cidr
+  for cidr in "$@"; do
+    [[ -n "${cidr}" ]] || continue
+    printf '    %s daddr %s drop\n' "${family}" "${cidr}"
   done
 }
 
@@ -155,6 +167,23 @@ direct_cgroup_paths() {
     | sort -u
 }
 
+proc_cgroupv2_paths() {
+  local pid line path
+  for pid in "$@"; do
+    [[ -n "${pid}" ]] || continue
+    [[ -r "${PROC_ROOT%/}/${pid}/cgroup" ]] || continue
+
+    while IFS= read -r line; do
+      case "${line}" in
+        0::/*)
+          path="${line#0::/}"
+          [[ -n "${path}" ]] && printf '%s\n' "${path}"
+          ;;
+      esac
+    done < "${PROC_ROOT%/}/${pid}/cgroup"
+  done | sort -u
+}
+
 nft_return_cgroupv2_paths() {
   local path level
   while read -r path; do
@@ -162,6 +191,47 @@ nft_return_cgroupv2_paths() {
     level="$(awk -F/ '{ print NF }' <<< "${path}")"
     printf '    socket cgroupv2 level %s "%s" return\n' "${level}" "${path}"
   done
+}
+
+nft_tun_mark_table() {
+  local tun_self_drop_rules="$1"
+  local direct_cgroup_rules="$2"
+  local proxy_cgroup_rules="$3"
+  local local_dns_bypass_rules="$4"
+  local local_bypass_rules="$5"
+  local upstream_bypass_rules="$6"
+
+  cat <<NFT
+table inet tun_mark {
+  chain output {
+    type route hook output priority -150; policy accept;
+
+    # loopback untouched
+    oifname "lo" return
+
+    # drop traffic addressed to the synthetic TUN gateway itself
+${tun_self_drop_rules}
+
+    # commands launched with 'direct' run in this user-systemd slice
+${direct_cgroup_rules}
+
+    # traffic emitted by the proxy engine itself must not be recaptured
+${proxy_cgroup_rules}
+
+    # LAN DNS stays on the normal LAN route
+${local_dns_bypass_rules}
+
+    # local networks, link-local, and multicast stay on the normal LAN route
+${local_bypass_rules}
+
+    # exempt Xray upstream IPs to prevent routing loops
+${upstream_bypass_rules}
+
+    # mark everything else to go through tun
+    meta mark set ${MARK_HEX}
+  }
+}
+NFT
 }
 
 is_tun_dev_up() {
@@ -339,16 +409,21 @@ cmd_on() {
     -loglevel info \
     >"${LOG_FILE}" 2>&1 &
 
-  log "[7/8] Policy routing + nft marking (exempt: direct command slice, loopback, LAN/link-local/multicast, LAN DNS, Xray upstream IPs)..."
+  log "[7/8] Policy routing + nft marking (drop: TUN gateway self-traffic; exempt: Throne/Core cgroups, direct command slice, loopback, LAN/link-local/multicast, LAN DNS, Xray upstream IPs)..."
   ip route replace default via "${TUN_GW}" dev "${TUN_DEV}" table "${RT_TABLE}"
   ip rule add fwmark "${MARK_HEX}" lookup "${RT_TABLE}" priority "${RT_PRIO}" 2>/dev/null || true
 
   ensure_direct_cgroup_slice
 
-  local direct_cgroup_rules local_bypass_rules local_dns_bypass_rules upstream_bypass_rules
+  local tun_self_drop_rules direct_cgroup_rules proxy_cgroup_rules local_bypass_rules local_dns_bypass_rules upstream_bypass_rules
+  tun_self_drop_rules="$(nft_drop_daddrs ip "${TUN_GW}")"
   direct_cgroup_rules="$(direct_cgroup_paths | nft_return_cgroupv2_paths)"
   if [[ -z "${direct_cgroup_rules}" ]]; then
     log "WARNING: Could not find ${DIRECT_CGROUP_SLICE}; direct/dg command bypass is unavailable."
+  fi
+  proxy_cgroup_rules="$(proc_cgroupv2_paths ${pids} | nft_return_cgroupv2_paths)"
+  if [[ -z "${proxy_cgroup_rules}" ]]; then
+    log "WARNING: Could not find SOCKS/Core cgroup paths; relying on upstream IP exemptions only."
   fi
 
   read -r -a local_bypass_cidrs <<< "${LOCAL_BYPASS_CIDRS}"
@@ -373,36 +448,19 @@ cmd_on() {
   )"
 
   nft list table inet tun_mark >/dev/null 2>&1 && nft delete table inet tun_mark || true
-  nft -f /dev/stdin <<NFT
-table inet tun_mark {
-  chain output {
-    type route hook output priority -150; policy accept;
-
-    # loopback untouched
-    oifname "lo" return
-
-    # commands launched with 'direct' run in this user-systemd slice
-${direct_cgroup_rules}
-
-    # LAN DNS stays on the normal LAN route
-${local_dns_bypass_rules}
-
-    # local networks, link-local, and multicast stay on the normal LAN route
-${local_bypass_rules}
-
-    # exempt Xray upstream IPs to prevent routing loops
-${upstream_bypass_rules}
-
-    # mark everything else to go through tun
-    meta mark set ${MARK_HEX}
-  }
-}
-NFT
+  nft_tun_mark_table \
+    "${tun_self_drop_rules}" \
+    "${direct_cgroup_rules}" \
+    "${proxy_cgroup_rules}" \
+    "${local_dns_bypass_rules}" \
+    "${local_bypass_rules}" \
+    "${upstream_bypass_rules}" \
+    | nft -f /dev/stdin
 
   log "[8/8] Tests..."
   log "checkip (normal):"
   curl -fsS --max-time 10 https://checkip.amazonaws.com
-  log "OK: traffic is routed through ${TUN_DEV} -> ${SOCKS_URL} (direct command slice + LAN/link-local/multicast + Xray-upstream exempted)."
+  log "OK: traffic is routed through ${TUN_DEV} -> ${SOCKS_URL} (TUN gateway self-traffic dropped; Throne/Core cgroups + direct command slice + LAN/link-local/multicast + Xray-upstream exempted)."
 }
 
 cmd_off() {
