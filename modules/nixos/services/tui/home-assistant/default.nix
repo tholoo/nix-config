@@ -1,6 +1,7 @@
 {
   config,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -39,12 +40,18 @@ in
         "isal"
         # Useful for Xiaomi devices added from the UI
         "xiaomi_miio"
+        # Required by the official Xiaomi Home custom component.
+        "ffmpeg"
+        "zeroconf"
         # Yeelight LAN protocol (TCP 55443); works on yeelink.light.color5 once
         # developer mode is enabled on the bulb.
         "yeelight"
         # LG webOS TV — local WebSocket control + Wake-on-LAN for power-on.
         "webostv"
         "wake_on_lan"
+      ];
+      customComponents = with pkgs.home-assistant-custom-components; [
+        xiaomi_home
       ];
       config = {
         # Includes dependencies for a basic setup
