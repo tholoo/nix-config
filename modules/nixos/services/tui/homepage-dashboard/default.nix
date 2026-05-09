@@ -85,7 +85,7 @@ in
     services.homepage-dashboard = {
       enable = true;
       listenPort = 8082;
-      allowedHosts = "localhost:8082,127.0.0.1:8082,${host}:8082,elderwood:8082";
+      allowedHosts = "localhost:8082,127.0.0.1:8082,${host}:8082,elderwood:8082,homepage.elderwood";
       openFirewall = true;
 
       settings = {

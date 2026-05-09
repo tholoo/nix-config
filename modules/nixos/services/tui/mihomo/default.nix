@@ -155,7 +155,7 @@ let
         enable = true;
         device = "mihomo";
         stack = "mixed";
-        "dns-hijack" = [ "any:53" ];
+        "dns-hijack" = cfg.dnsHijack;
         "auto-route" = true;
         "auto-detect-interface" = true;
       };
@@ -191,6 +191,9 @@ let
           "geoip-code" = "IR";
           domain = [ "+.ir" ];
         };
+      }
+      // lib.optionalAttrs (cfg.dnsListen != null) {
+        listen = cfg.dnsListen;
       };
 
       # proxy-providers injected at runtime from agenix secrets via preStart
@@ -294,6 +297,18 @@ in
       type = types.nullOr types.path;
       default = null;
       description = "Path to a file containing the Clash API secret. Leave null to keep the API unauthenticated.";
+    };
+
+    dnsListen = mkOption {
+      type = types.nullOr types.str;
+      default = null;
+      description = "Optional Mihomo DNS listen address, for example 127.0.0.1:1053.";
+    };
+
+    dnsHijack = mkOption {
+      type = with types; listOf str;
+      default = [ "any:53" ];
+      description = "Mihomo TUN DNS hijack destinations.";
     };
 
     subscriptions = mkOption {

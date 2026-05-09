@@ -17,6 +17,7 @@
     ./hardware-configuration.nix
     ./disk-config.nix
     ./network-monitor.nix
+    ./adguardhome.nix
   ];
   mine = {
     host = {
@@ -67,6 +68,15 @@
 
   age.secrets.mihomo-api-secret.file = inputs.self + /secrets/mihomo/mihomo-api-secret.age;
   age.secrets.mihomo-sub-url-main.file = inputs.self + /secrets/mihomo/mihomo-sub-url-main.age;
+
+  # Caddy is the LAN frontend for elderwood. Keep Nixflix services running, but
+  # stop its generated nginx vhosts from binding port 80.
+  nixflix.nginx.enable = lib.mkForce false;
+
+  # Firefly still uses nginx internally on 8080; move nginx's generated default
+  # listeners away from the HTTP/HTTPS frontend ports reserved for Caddy.
+  services.nginx.defaultHTTPListenPort = lib.mkForce 8088;
+  services.nginx.defaultSSLListenPort = lib.mkForce 8443;
 
   environment.sessionVariables = {
     LIBVA_DRIVER_NAME = "iHD";
