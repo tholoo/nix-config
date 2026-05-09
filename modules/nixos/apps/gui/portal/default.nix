@@ -57,10 +57,11 @@ in
       GTK_USE_PORTAL = 1;
       GDK_DEBUG = "portals";
       XDG_CURRENT_DESKTOP = "Hyprland";
-      # QT_QPA_PLATFORMTHEME managed by stylix
       TERMCMD = "ghostty --gtk-single-instance=false --class=dev.ghostty.chooser -e";
-      # QT_QPA_PLATFORMTHEME = "xdgdesktopportal";
+      TDESKTOP_USE_PORTAL = 1;
       # TDESKTOP_USE_GTK_FILE_DIALOG = 1;
     };
+
+    environment.variables.QT_QPA_PLATFORMTHEME = lib.mkForce "xdgdesktopportal";
   };
 }
