@@ -132,7 +132,7 @@ in
         };
 
         features = {
-          codex_hooks = true;
+          hooks = true;
           goals = true;
           multi_agent = true;
           shell_snapshot = true;
@@ -192,10 +192,14 @@ in
       xdg_config="$HOME/.config/codex/config.toml"
 
       mkdir -p "$HOME/.codex"
-      if [ -e "$legacy_config" ] && [ ! -L "$legacy_config" ]; then
-        mv "$legacy_config" "$legacy_config.hm-backup"
+      if [ -L "$legacy_config" ]; then
+        rm "$legacy_config"
+        cp "$xdg_config" "$legacy_config"
+        chmod u+w "$legacy_config"
+      elif [ ! -e "$legacy_config" ]; then
+        cp "$xdg_config" "$legacy_config"
+        chmod u+w "$legacy_config"
       fi
-      ln -sfn "$xdg_config" "$legacy_config"
     '';
   };
 }
