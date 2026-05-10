@@ -192,6 +192,9 @@ let
           domain = [ "+.ir" ];
         };
       }
+      // lib.optionalAttrs (cfg.directNameservers != [ ]) {
+        "direct-nameserver" = cfg.directNameservers;
+      }
       // lib.optionalAttrs (cfg.dnsListen != null) {
         listen = cfg.dnsListen;
       };
@@ -340,6 +343,16 @@ in
       type = with types; listOf str;
       default = [ ];
       description = "Extra domain suffixes to route directly";
+    };
+
+    directNameservers = mkOption {
+      type = with types; listOf str;
+      default = [ ];
+      description = ''
+        DNS resolvers to use for DIRECT outbound connections. This is useful for
+        Iranian .com domains routed directly via local rule sets, where the
+        default encrypted DNS pool may be unavailable or unsuitable.
+      '';
     };
 
     iranRules = {

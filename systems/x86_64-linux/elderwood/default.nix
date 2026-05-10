@@ -52,6 +52,10 @@
         "digikala.com"
         "runflare.com"
       ];
+      directNameservers = [
+        "192.168.88.1"
+        "78.157.42.100"
+      ];
     };
 
     network-monitor.enable = true;
