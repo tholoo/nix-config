@@ -135,8 +135,8 @@ in
           "[workspace 1 silent] $terminal"
           "[workspace 2 silent] $browser"
           "[workspace 3 silent] ${lib.getExe pkgs.ayugram-desktop}"
-          "[workspace 4 silent] ${lib.getExe pkgs.v2rayn}"
-          "[workspace 5 silent] ${lib.getExe pkgs.pear-desktop}; sleep 5; pkill youtube-music; ${lib.getExe pkgs.pear-desktop}"
+          "[workspace 4 silent] ${lib.getExe pkgs.throne}"
+          "[workspace 5 silent] ${lib.getExe pkgs.pear-desktop}; sleep 15; pkill youtube-music; ${lib.getExe pkgs.pear-desktop}"
 
           "${lib.getExe' pkgs.awww "awww-daemon"}"
           "${lib.getExe pkgs.wl-clip-persist} --clipboard both"
