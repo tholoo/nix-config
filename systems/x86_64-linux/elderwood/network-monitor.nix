@@ -14,6 +14,7 @@ let
   runtimeDir = "/run/network-monitor";
   prometheusPort = 9091;
   topSitesPort = 9914;
+  serviceStatusPort = 9915;
 
   mkStat =
     {
@@ -85,6 +86,70 @@ let
         };
       };
     };
+
+  mkMetricStat =
+    {
+      id,
+      title,
+      expr,
+      unit,
+      x,
+      y ? 4,
+      w ? 4,
+      h ? 3,
+      decimals ? 0,
+    }:
+    {
+      inherit id title;
+      type = "stat";
+      datasource.uid = "prometheus";
+      gridPos = {
+        inherit
+          x
+          y
+          w
+          h
+          ;
+      };
+      targets = [
+        {
+          refId = "A";
+          instant = true;
+          inherit expr;
+        }
+      ];
+      fieldConfig.defaults = {
+        inherit unit decimals;
+        noValue = "No data";
+        thresholds = {
+          mode = "absolute";
+          steps = [
+            {
+              color = "red";
+              value = null;
+            }
+            {
+              color = "green";
+              value = 99;
+            }
+          ];
+        };
+      };
+      options = {
+        colorMode = "none";
+        graphMode = "none";
+        justifyMode = "center";
+        textMode = "value";
+        reduceOptions = {
+          calcs = [ "lastNotNull" ];
+          fields = "";
+          values = false;
+        };
+      };
+    };
+
+  uptimeExpr = expr: ''100 * avg_over_time((${expr})[24h:])'';
+  downForExpr = expr: ''((${expr}) == bool 0) * (time() - max_over_time(timestamp((${expr}) == 1)[30d:]))'';
 
   activeInBps = ''sum by (ifName) (8 * rate(ifHCInOctets{job="mikrotik-snmp"}[5m]) * on(instance, ifIndex) group_left() (ifOperStatus{job="mikrotik-snmp"} == 1))'';
 
@@ -292,6 +357,217 @@ let
       ThreadingHTTPServer((METRICS_HOST, METRICS_PORT), Handler).serve_forever()
   '';
 
+  serviceStatusCollector = pkgs.writeText "network-monitor-service-status.py" ''
+    import json
+    import os
+    import sqlite3
+    import time
+    import urllib.error
+    import urllib.request
+    from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+    from threading import Lock, Thread
+
+    DB_PATH = os.environ.get("SERVICE_STATUS_DB", "/var/lib/network-monitor-service-status/service-status.sqlite")
+    METRICS_HOST = os.environ.get("METRICS_HOST", "127.0.0.1")
+    METRICS_PORT = int(os.environ.get("METRICS_PORT", "9915"))
+    POLL_INTERVAL = float(os.environ.get("POLL_INTERVAL", "30"))
+    RETENTION_SECONDS = int(os.environ.get("RETENTION_SECONDS", str(30 * 24 * 60 * 60)))
+    UPTIME_WINDOW_SECONDS = int(os.environ.get("UPTIME_WINDOW_SECONDS", str(24 * 60 * 60)))
+    SERVICES = [
+      {
+        "id": "grafana",
+        "name": "Grafana",
+        "url": os.environ.get("GRAFANA_HEALTH_URL", "http://127.0.0.1:3000/api/health"),
+      },
+      {
+        "id": "prometheus",
+        "name": "Prometheus",
+        "url": os.environ.get("PROMETHEUS_HEALTH_URL", "http://127.0.0.1:9091/-/ready"),
+      },
+    ]
+    lock = Lock()
+    current = {}
+
+
+    def init_db(conn):
+      conn.execute("PRAGMA journal_mode = WAL")
+      conn.execute("""
+        CREATE TABLE IF NOT EXISTS service_samples (
+          service TEXT NOT NULL,
+          ts INTEGER NOT NULL,
+          up INTEGER NOT NULL,
+          error TEXT NOT NULL DEFAULT "",
+          PRIMARY KEY (service, ts)
+        )
+      """)
+      conn.execute("CREATE INDEX IF NOT EXISTS idx_service_samples_service_ts ON service_samples(service, ts)")
+      conn.commit()
+
+
+    def check_url(url):
+      req = urllib.request.Request(url, headers={"User-Agent": "elderwood-network-monitor/1.0"})
+      with urllib.request.urlopen(req, timeout=5) as response:
+        response.read(256)
+        return 200 <= response.status < 400
+
+
+    def record_sample(conn, service, up, error):
+      now = int(time.time())
+      conn.execute(
+        "INSERT OR REPLACE INTO service_samples (service, ts, up, error) VALUES (?, ?, ?, ?)",
+        (service["id"], now, 1 if up else 0, error),
+      )
+      conn.execute("DELETE FROM service_samples WHERE ts < ?", (now - RETENTION_SECONDS,))
+      conn.commit()
+      with lock:
+        current[service["id"]] = {
+          "service": service["id"],
+          "name": service["name"],
+          "url": service["url"],
+          "up": 1 if up else 0,
+          "status": "UP" if up else "DOWN",
+          "lastChecked": now,
+          "error": error,
+        }
+
+
+    def poll_loop():
+      os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
+      conn = sqlite3.connect(DB_PATH, timeout=10)
+      init_db(conn)
+      while True:
+        for service in SERVICES:
+          try:
+            up = check_url(service["url"])
+            record_sample(conn, service, up, "" if up else "bad_status")
+          except Exception as exc:
+            record_sample(conn, service, False, exc.__class__.__name__)
+        time.sleep(POLL_INTERVAL)
+
+
+    def service_summary(service_id):
+      now = int(time.time())
+      conn = sqlite3.connect(DB_PATH, timeout=10)
+      row = conn.execute(
+        "SELECT up, ts, error FROM service_samples WHERE service = ? ORDER BY ts DESC LIMIT 1",
+        (service_id,),
+      ).fetchone()
+      if row is None:
+        conn.close()
+        service = next(item for item in SERVICES if item["id"] == service_id)
+        return {
+          "service": service_id,
+          "name": service["name"],
+          "status": "UNKNOWN",
+          "up": 0,
+          "uptimePercent": 0,
+          "uptimeRatio": 0,
+          "downSeconds": 0,
+          "lastChecked": 0,
+          "error": "no_samples",
+        }
+
+      up, last_checked, error = row
+      uptime_row = conn.execute(
+        "SELECT AVG(up) FROM service_samples WHERE service = ? AND ts >= ?",
+        (service_id, now - UPTIME_WINDOW_SECONDS),
+      ).fetchone()
+      uptime_ratio = float(uptime_row[0] or 0)
+      down_seconds = 0
+      if up == 0:
+        last_up = conn.execute(
+          "SELECT MAX(ts) FROM service_samples WHERE service = ? AND up = 1",
+          (service_id,),
+        ).fetchone()[0]
+        if last_up is None:
+          down_since = conn.execute(
+            "SELECT MIN(ts) FROM service_samples WHERE service = ?",
+            (service_id,),
+          ).fetchone()[0]
+        else:
+          down_since = conn.execute(
+            "SELECT MIN(ts) FROM service_samples WHERE service = ? AND up = 0 AND ts > ?",
+            (service_id, last_up),
+          ).fetchone()[0]
+        down_seconds = max(0, now - int(down_since or last_checked))
+      conn.close()
+      service = next(item for item in SERVICES if item["id"] == service_id)
+      return {
+        "service": service_id,
+        "name": service["name"],
+        "status": "UP" if up else "DOWN",
+        "up": int(up),
+        "uptimePercent": round(uptime_ratio * 100, 2),
+        "uptimeRatio": uptime_ratio,
+        "downSeconds": int(down_seconds),
+        "lastChecked": int(last_checked),
+        "error": error,
+      }
+
+
+    def metric_escape(value):
+      return str(value).replace("\\", "\\\\").replace("\n", "\\n").replace('"', '\\"')
+
+
+    def render_metrics():
+      lines = [
+        "# HELP network_monitor_service_up Whether the last local service health check succeeded.",
+        "# TYPE network_monitor_service_up gauge",
+        "# HELP network_monitor_service_uptime_ratio Ratio of successful local service health checks in the selected rolling window.",
+        "# TYPE network_monitor_service_uptime_ratio gauge",
+        "# HELP network_monitor_service_down_seconds Seconds the local service has been continuously down. Zero when up.",
+        "# TYPE network_monitor_service_down_seconds gauge",
+        "# HELP network_monitor_service_last_check_timestamp_seconds Unix timestamp of the last local service health check.",
+        "# TYPE network_monitor_service_last_check_timestamp_seconds gauge",
+      ]
+      for service in SERVICES:
+        summary = service_summary(service["id"])
+        labels = f'service="{metric_escape(service["id"])}",name="{metric_escape(service["name"])}"'
+        lines.extend([
+          f"network_monitor_service_up{{{labels}}} {summary['up']}",
+          f'network_monitor_service_uptime_ratio{{{labels},window="24h"}} {summary["uptimeRatio"]}',
+          f"network_monitor_service_down_seconds{{{labels}}} {summary['downSeconds']}",
+          f"network_monitor_service_last_check_timestamp_seconds{{{labels}}} {summary['lastChecked']}",
+          f'network_monitor_service_error{{{labels},error="{metric_escape(summary["error"])}"}} {0 if summary["error"] == "" else 1}',
+        ])
+      return ("\n".join(lines) + "\n").encode("utf-8")
+
+
+    class Handler(BaseHTTPRequestHandler):
+      def do_GET(self):
+        if self.path == "/metrics":
+          body = render_metrics()
+          self.send_response(200)
+          self.send_header("Content-Type", "text/plain; version=0.0.4; charset=utf-8")
+          self.send_header("Content-Length", str(len(body)))
+          self.end_headers()
+          self.wfile.write(body)
+          return
+        if self.path.startswith("/status/"):
+          service_id = self.path.rsplit("/", 1)[-1]
+          if service_id not in {service["id"] for service in SERVICES}:
+            self.send_response(404)
+            self.end_headers()
+            return
+          body = (json.dumps(service_summary(service_id)) + "\n").encode("utf-8")
+          self.send_response(200)
+          self.send_header("Content-Type", "application/json")
+          self.send_header("Content-Length", str(len(body)))
+          self.end_headers()
+          self.wfile.write(body)
+          return
+        self.send_response(404)
+        self.end_headers()
+
+      def log_message(self, fmt, *args):
+        return
+
+
+    if __name__ == "__main__":
+      Thread(target=poll_loop, daemon=True).start()
+      ThreadingHTTPServer((METRICS_HOST, METRICS_PORT), Handler).serve_forever()
+  '';
+
   dashboardDir =
     let
       dashboard = pkgs.writeText "network-health-dashboard.json" (
@@ -347,6 +623,96 @@ let
               w = 5;
               expr = ''probe_success{job="blackbox-dns-mikrotik",role="mikrotik_dns"}'';
             })
+            (mkMetricStat {
+              id = 13;
+              title = "Direct ISP Web Uptime 24h";
+              x = 0;
+              w = 5;
+              unit = "percent";
+              decimals = 2;
+              expr = uptimeExpr ''max(probe_success{job="blackbox-http-direct"})'';
+            })
+            (mkMetricStat {
+              id = 14;
+              title = "Proxy Web Uptime 24h";
+              x = 5;
+              w = 5;
+              unit = "percent";
+              decimals = 2;
+              expr = uptimeExpr ''max(probe_success{job="blackbox-http-proxy"})'';
+            })
+            (mkMetricStat {
+              id = 15;
+              title = "Router Uptime 24h";
+              x = 10;
+              w = 4;
+              unit = "percent";
+              decimals = 2;
+              expr = uptimeExpr ''probe_success{job="blackbox-icmp",role="router"}'';
+            })
+            (mkMetricStat {
+              id = 16;
+              title = "Upstream Uptime 24h";
+              x = 14;
+              w = 5;
+              unit = "percent";
+              decimals = 2;
+              expr = uptimeExpr ''probe_success{job="blackbox-icmp",role="upstream_gateway"}'';
+            })
+            (mkMetricStat {
+              id = 17;
+              title = "MikroTik DNS Uptime 24h";
+              x = 19;
+              w = 5;
+              unit = "percent";
+              decimals = 2;
+              expr = uptimeExpr ''probe_success{job="blackbox-dns-mikrotik",role="mikrotik_dns"}'';
+            })
+            (mkMetricStat {
+              id = 18;
+              title = "Direct ISP Web Down For";
+              x = 0;
+              y = 7;
+              w = 5;
+              unit = "s";
+              expr = downForExpr ''max(probe_success{job="blackbox-http-direct"})'';
+            })
+            (mkMetricStat {
+              id = 19;
+              title = "Proxy Web Down For";
+              x = 5;
+              y = 7;
+              w = 5;
+              unit = "s";
+              expr = downForExpr ''max(probe_success{job="blackbox-http-proxy"})'';
+            })
+            (mkMetricStat {
+              id = 20;
+              title = "Router Down For";
+              x = 10;
+              y = 7;
+              w = 4;
+              unit = "s";
+              expr = downForExpr ''probe_success{job="blackbox-icmp",role="router"}'';
+            })
+            (mkMetricStat {
+              id = 21;
+              title = "Upstream Down For";
+              x = 14;
+              y = 7;
+              w = 5;
+              unit = "s";
+              expr = downForExpr ''probe_success{job="blackbox-icmp",role="upstream_gateway"}'';
+            })
+            (mkMetricStat {
+              id = 22;
+              title = "MikroTik DNS Down For";
+              x = 19;
+              y = 7;
+              w = 5;
+              unit = "s";
+              expr = downForExpr ''probe_success{job="blackbox-dns-mikrotik",role="mikrotik_dns"}'';
+            })
             {
               id = 6;
               type = "timeseries";
@@ -354,7 +720,7 @@ let
               datasource.uid = "prometheus";
               gridPos = {
                 x = 0;
-                y = 4;
+                y = 10;
                 w = 14;
                 h = 8;
               };
@@ -387,7 +753,7 @@ let
               datasource.uid = "prometheus";
               gridPos = {
                 x = 14;
-                y = 4;
+                y = 10;
                 w = 10;
                 h = 4;
               };
@@ -415,7 +781,7 @@ let
               datasource.uid = "prometheus";
               gridPos = {
                 x = 14;
-                y = 8;
+                y = 14;
                 w = 10;
                 h = 4;
               };
@@ -439,7 +805,7 @@ let
               datasource.uid = "prometheus";
               gridPos = {
                 x = 0;
-                y = 12;
+                y = 18;
                 w = 12;
                 h = 6;
               };
@@ -459,7 +825,7 @@ let
               datasource.uid = "prometheus";
               gridPos = {
                 x = 12;
-                y = 12;
+                y = 18;
                 w = 12;
                 h = 6;
               };
@@ -479,7 +845,7 @@ let
               datasource.uid = "prometheus";
               gridPos = {
                 x = 0;
-                y = 18;
+                y = 24;
                 w = 12;
                 h = 7;
               };
@@ -518,7 +884,7 @@ let
               datasource.uid = "prometheus";
               gridPos = {
                 x = 12;
-                y = 18;
+                y = 24;
                 w = 12;
                 h = 7;
               };
@@ -801,6 +1167,38 @@ in
       };
     };
 
+    systemd.services.network-monitor-service-status = {
+      description = "Collect local Grafana and Prometheus availability history";
+      wantedBy = [ "multi-user.target" ];
+      after = [
+        "grafana.service"
+        "prometheus.service"
+      ];
+      wants = [
+        "grafana.service"
+        "prometheus.service"
+      ];
+      environment = {
+        SERVICE_STATUS_DB = "/var/lib/network-monitor-service-status/service-status.sqlite";
+        METRICS_HOST = "127.0.0.1";
+        METRICS_PORT = toString serviceStatusPort;
+        POLL_INTERVAL = "30";
+        UPTIME_WINDOW_SECONDS = toString (24 * 60 * 60);
+      };
+      serviceConfig = {
+        ExecStart = "${pkgs.python3}/bin/python3 ${serviceStatusCollector}";
+        Restart = "on-failure";
+        RestartSec = "5s";
+        DynamicUser = true;
+        StateDirectory = "network-monitor-service-status";
+        RestrictAddressFamilies = [
+          "AF_INET"
+          "AF_INET6"
+          "AF_UNIX"
+        ];
+      };
+    };
+
     services.prometheus = {
       enable = true;
       listenAddress = "0.0.0.0";
@@ -876,6 +1274,7 @@ in
         }
         {
           job_name = "blackbox-http-direct";
+          scrape_interval = "2m";
           metrics_path = "/probe";
           params.module = [ "http_usable_web" ];
           file_sd_configs = [
@@ -901,6 +1300,7 @@ in
         }
         {
           job_name = "blackbox-http-proxy";
+          scrape_interval = "2m";
           metrics_path = "/probe";
           params.module = [ "http_usable_web" ];
           file_sd_configs = [
@@ -949,6 +1349,14 @@ in
             {
               target_label = "__address__";
               replacement = "127.0.0.1:${toString config.services.prometheus.exporters.snmp.port}";
+            }
+          ];
+        }
+        {
+          job_name = "network-monitor-service-status";
+          static_configs = [
+            {
+              targets = [ "127.0.0.1:${toString serviceStatusPort}" ];
             }
           ];
         }
@@ -1016,12 +1424,36 @@ in
                     severity: warning
                   annotations:
                     summary: Top sites collector is not scraping mihomo successfully
+                - alert: LocalServiceStatusCollectorDown
+                  expr: up{job="network-monitor-service-status"} == 0
+                  for: 5m
+                  labels:
+                    severity: warning
+                  annotations:
+                    summary: Local Grafana/Prometheus status collector is down
+                - alert: GrafanaDown
+                  expr: network_monitor_service_up{service="grafana"} == 0
+                  for: 2m
+                  labels:
+                    severity: warning
+                  annotations:
+                    summary: Grafana is down on elderwood
+                - alert: PrometheusDown
+                  expr: network_monitor_service_up{service="prometheus"} == 0
+                  for: 2m
+                  labels:
+                    severity: critical
+                  annotations:
+                    summary: Prometheus is down on elderwood
         ''
       ];
     };
 
     systemd.services.prometheus = {
-      wants = [ "network-monitor-top-sites.service" ];
+      wants = [
+        "network-monitor-service-status.service"
+        "network-monitor-top-sites.service"
+      ];
       requires = [ "network-monitor-runtime.service" ];
       after = [
         "network-monitor-runtime.service"
