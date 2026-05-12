@@ -67,11 +67,15 @@ in
   };
 
   config = mkIf cfg.enable {
-    home.packages = lib.optionals cfg.enableUsageTools [
-      llmAgents.ccusage-codex
-      llmAgents.agentsview
-      llmAgents.oh-my-codex
-    ];
+    home = {
+      packages = lib.optionals cfg.enableUsageTools [
+        llmAgents.ccusage-codex
+        llmAgents.agentsview
+        llmAgents.oh-my-codex
+      ];
+
+      sessionVariables.CODEX_HOME = "${config.xdg.configHome}/codex";
+    };
 
     programs.mcp = mkIf cfg.enableSharedMcp {
       enable = true;
@@ -178,13 +182,9 @@ in
         };
       };
 
-      custom-instructions = optionalString (cfg.hostContext != null) cfg.hostContext;
+      context = optionalString (cfg.hostContext != null) cfg.hostContext;
 
-      skills = {
-        debug = ../claude/debug-skill.md;
-        grill = ../claude/grill-skill.md;
-        saiyan = ../claude/saiyan-skill.md;
-      };
+      skills = ../ai/skills;
     };
 
     home.activation.codexLegacyConfig = config.lib.dag.entryAfter [ "writeBoundary" ] ''

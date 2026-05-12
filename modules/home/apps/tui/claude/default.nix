@@ -375,11 +375,7 @@ in
           };
         };
 
-      skills = {
-        debug = ./debug-skill.md;
-        grill = ./grill-skill.md;
-        saiyan = ./saiyan-skill.md;
-      };
+      skills = ../ai/skills;
 
       agents = {
         animation-critic = ./animation-critic-agent.md;
