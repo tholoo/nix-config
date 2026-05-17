@@ -456,12 +456,20 @@ in
         # ];
 
         workspace = [
+          "1, monitor:HDMI-A-1, default:true, persistent:true"
+          "2, monitor:HDMI-A-1, persistent:true"
+          "3, monitor:eDP-1, default:true, persistent:true"
           "w[t1], gapsout:0, gapsin:0"
           "w[tg1], gapsout:0, gapsin:0"
           "f[1], gapsout:0, gapsin:0"
         ];
 
         windowrule = [
+          "workspace 1 silent, match:class ^(com\\.mitchellh\\.ghostty|ghostty)$"
+          "workspace 1 silent, match:initial_class ^(com\\.mitchellh\\.ghostty|ghostty)$"
+          "workspace 3 silent, match:class ^(com\\.ayugram\\.desktop)$"
+          "workspace 3 silent, match:initial_class ^(com\\.ayugram\\.desktop)$"
+
           "border_size 0, match:float 0, match:workspace w[t1]"
           "rounding 0,    match:float 0, match:workspace w[t1]"
 
