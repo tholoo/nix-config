@@ -54,6 +54,12 @@ in
       // DEFAULT: https://github.com/zellij-org/zellij/blob/main/zellij-utils/assets/config/default.kdl
 
       default_shell "nu"
+      session_name "default"
+      attach_to_session true
+      session_serialization true
+      pane_viewport_serialization true
+      scrollback_lines_to_serialize 10000
+      serialization_interval 1
       show_startup_tips false
 
       plugins {

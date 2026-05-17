@@ -97,7 +97,7 @@ def la [
 
 def start_zellij [] {
   if 'ZELLIJ' not-in ($env | columns) {
-      zellij attach --create --index 0
+      zellij attach --create default
   }
 }
 
