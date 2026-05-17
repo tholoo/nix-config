@@ -224,7 +224,11 @@ $env.config = {
         pre_prompt: [
             {||
                 if ("ZELLIJ" in $env) {
-                    zellij-update-tabname-git
+                    let initialized = (zellij-cache-get "initialized")
+                    let needs_restore = (zellij-cache-get "needs_restore")
+                    if ($initialized != "1") or ($needs_restore == "1") {
+                        zellij-update-tabname-git
+                    }
                 }
             }
         ]
@@ -252,6 +256,122 @@ export def psgrep [query: string] {
     ps
     | each {|e| if ($e.name | str contains --ignore-case $query) { $e }}
     | compact
+}
+
+def zellij-cache-dir [] {
+    let session_name = (
+        $env
+        | get -o ZELLIJ_SESSION_NAME
+        | default "unknown-session"
+        | into string
+        | str replace -ar '[^A-Za-z0-9_.-]' '_'
+    )
+    let pane_id = (
+        $env
+        | get -o ZELLIJ_PANE_ID
+        | default "unknown-pane"
+        | into string
+        | str replace -ar '[^A-Za-z0-9_.-]' '_'
+    )
+
+    ["/tmp" $"nushell-zellij-tabname-($session_name)-($pane_id)"] | path join
+}
+
+def zellij-cache-get [key: string] {
+    let path = ([(zellij-cache-dir) $key] | path join)
+    if ($path | path exists) {
+        open --raw $path | str trim
+    } else {
+        ""
+    }
+}
+
+def zellij-cache-set [key: string, value: string] {
+    let dir = (zellij-cache-dir)
+    mkdir $dir
+    $value | save --force ([$dir $key] | path join)
+}
+
+def zellij-current-pane-tab-id [] {
+    if ("ZELLIJ_PANE_ID" not-in $env) {
+        return null
+    }
+
+    let current_pane_id = ($env.ZELLIJ_PANE_ID | into string)
+    let cached_tab_id = (zellij-cache-get "tab_id")
+    if $cached_tab_id != "" {
+        return $cached_tab_id
+    }
+
+    let panes = (try {
+        zellij action list-panes --json --all --tab | from json
+    } catch {
+        []
+    })
+
+    let current_pane = (
+        $panes
+        | where {|pane|
+            let is_plugin = ($pane | get -o is_plugin | default false)
+            let raw_pane_id = ($pane | get -o pane_id | default ($pane | get -o id))
+            let pane_id = ($raw_pane_id | default "" | into string)
+            let is_current_pane = (
+                ($pane_id == $current_pane_id)
+                or ($pane_id == $"terminal_($current_pane_id)")
+                or ($"terminal_($pane_id)" == $current_pane_id)
+            )
+
+            (not $is_plugin) and $is_current_pane
+        }
+        | get -o 0
+    )
+
+    if $current_pane == null {
+        return null
+    }
+
+    let tab_id = ($current_pane | get -o tab_id)
+    if $tab_id != null {
+        zellij-cache-set "tab_id" ($tab_id | into string)
+        return $tab_id
+    }
+
+    let tab = ($current_pane | get -o tab)
+    if $tab != null {
+        let nested_id = ($tab | get -o id)
+        if $nested_id != null {
+            zellij-cache-set "tab_id" ($nested_id | into string)
+            return $nested_id
+        }
+
+        let nested_tab_id = ($tab | get -o tab_id)
+        if $nested_tab_id != null {
+            zellij-cache-set "tab_id" ($nested_tab_id | into string)
+            return $nested_tab_id
+        }
+    }
+
+    null
+}
+
+def zellij-rename-current-pane-tab [name: string] {
+    if ("ZELLIJ" not-in $env) {
+        return
+    }
+
+    let last_name = (zellij-cache-get "last_name")
+    if $last_name == $name {
+        return
+    }
+
+    let tab_id = (zellij-current-pane-tab-id)
+    if $tab_id != null {
+        zellij action rename-tab-by-id ($tab_id | into string) $name err> /dev/null
+    } else {
+        zellij action rename-tab $name err> /dev/null
+    }
+
+    zellij-cache-set "last_name" $name
 }
 
 def zellij-update-tabname-git [] {
@@ -283,7 +403,9 @@ def zellij-update-tabname-git [] {
         }
 
         # Update the zellij tab name.
-        zellij action rename-tab $tab_name;
+        zellij-rename-current-pane-tab $tab_name
+        zellij-cache-set "initialized" "1"
+        zellij-cache-set "needs_restore" "0"
     }
 }
 
@@ -425,7 +547,8 @@ def zellij-update-tabname-ssh-or-git [] {
     # with the working directory, so non-ssh commands need nothing here.
     let ssh_target = (extract-ssh-target (commandline))
     if $ssh_target != null {
-        zellij action rename-tab $ssh_target
+        zellij-rename-current-pane-tab $ssh_target
+        zellij-cache-set "needs_restore" "1"
     }
 }
 
