@@ -189,9 +189,11 @@ in
 
     home.activation.codexLegacyConfig = config.lib.dag.entryAfter [ "writeBoundary" ] ''
       legacy_config="$HOME/.codex/config.toml"
+      legacy_skills="$HOME/.codex/skills"
       xdg_config="$HOME/.config/codex/config.toml"
+      xdg_skills="$HOME/.config/codex/skills"
 
-      mkdir -p "$HOME/.codex"
+      mkdir -p "$HOME/.codex" "$legacy_skills"
       if [ -L "$legacy_config" ]; then
         rm "$legacy_config"
         cp "$xdg_config" "$legacy_config"
@@ -199,6 +201,20 @@ in
       elif [ ! -e "$legacy_config" ]; then
         cp "$xdg_config" "$legacy_config"
         chmod u+w "$legacy_config"
+      fi
+
+      if [ -d "$xdg_skills" ]; then
+        for skill in "$xdg_skills"/*; do
+          [ -e "$skill" ] || continue
+          target="$legacy_skills/$(basename "$skill")"
+
+          if [ -e "$target" ] && [ ! -L "$target" ]; then
+            echo "Skipping existing non-symlink Codex skill: $target"
+            continue
+          fi
+
+          ln -sfn "$skill" "$target"
+        done
       fi
     '';
   };
