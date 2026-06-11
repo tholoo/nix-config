@@ -122,11 +122,6 @@
 
     nix-dokploy.url = "github:el-kurto/nix-dokploy";
 
-    claude-code-nix = {
-      url = "github:sadjow/claude-code-nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     llm-agents.url = "github:numtide/llm-agents.nix";
 
     # Source-of-truth for the auto-mark-known Anki addon and the mpv lua
