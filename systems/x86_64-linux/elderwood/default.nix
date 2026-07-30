@@ -69,6 +69,12 @@
     k8s.enable = false;
   };
 
+  age.secrets.tholo-authorized-key = {
+    file = inputs.self + /secrets/ssh/asus-public-key.age;
+    path = "/run/agenix/authorized-keys/tholo";
+    mode = "0444";
+  };
+
   age.secrets.mihomo-api-secret.file = inputs.self + /secrets/mihomo/mihomo-api-secret.age;
   age.secrets.mihomo-sub-url-main.file = inputs.self + /secrets/mihomo/mihomo-sub-url-main.age;
 

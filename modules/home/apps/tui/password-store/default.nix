@@ -31,5 +31,9 @@ in
       );
     };
     services.pass-secret-service.enable = true;
+
+    # Do not fail every login before a password store has been initialized.
+    systemd.user.services."pass-secret-service".Unit.ConditionPathExists =
+      "%h/.password-store/.gpg-id";
   };
 }

@@ -1,4 +1,9 @@
-{ ... }:
+{
+  config,
+  inputs,
+  lib,
+  ...
+}:
 {
   imports = [ ./hardware-configuration.nix ];
   mine = {
@@ -15,6 +20,19 @@
     grub.enable = true;
     systemd-boot.enable = false;
   };
+
+  age.secrets.tholo-authorized-key = {
+    file = inputs.self + /secrets/ssh/asus-public-key.age;
+    path = "/run/agenix/authorized-keys/tholo";
+    mode = "0444";
+  };
+
+  # srvos' desktop profile force-locks this list, so include the agenix path
+  # explicitly while retaining its hardened system key location.
+  services.openssh.authorizedKeysFiles = lib.mkOverride 40 [
+    "/run/agenix/authorized-keys/%u"
+    "/etc/ssh/authorized_keys.d/%u"
+  ];
 
   services.resolved = {
     enable = true;

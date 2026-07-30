@@ -25,21 +25,34 @@ in
       enable = true;
       package = pkgs.aw-server-rust;
       watchers = {
-        aw-watcher-afk = {
-          package = pkgs.aw-watcher-afk;
-          settings = {
-            timeout = 300;
-            poll_time = 2;
-          };
-        };
-        aw-watcher-window = {
-          package = pkgs.aw-watcher-window;
-          settings = {
-            poll_time = 1;
-            exclude_title = true;
-          };
+        awatcher = {
+          package = pkgs.awatcher;
         };
       };
+    };
+
+    # The stock watchers require X11. awatcher supports both window and idle
+    # tracking natively on Hyprland.
+    xdg.configFile."awatcher/config.toml".source = (pkgs.formats.toml { }).generate "awatcher-config.toml" {
+      server = {
+        host = "127.0.0.1";
+        port = 5600;
+      };
+      awatcher = {
+        idle-timeout-seconds = 300;
+        poll-time-idle-seconds = 2;
+        poll-time-window-seconds = 1;
+      };
+    };
+
+    # Start after Hyprland has imported DISPLAY/WAYLAND_DISPLAY into the user
+    # manager, and stop the tracker when the graphical session ends.
+    systemd.user.targets.activitywatch = {
+      Unit = {
+        After = lib.mkForce [ "graphical-session.target" ];
+        PartOf = [ "graphical-session.target" ];
+      };
+      Install.WantedBy = lib.mkForce [ "graphical-session.target" ];
     };
   };
 }

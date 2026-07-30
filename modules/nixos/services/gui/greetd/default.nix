@@ -25,15 +25,15 @@ in
       enable = true;
       settings = {
         default_session = {
-          command = ''
-            ${pkgs.tuigreet}/bin/tuigreet \
-              --time \
-              --remember \
-              --remember-session \
-              --asterisks \
-              --user-menu \
-              --cmd Hyprland
-          '';
+          command = lib.concatStringsSep " " [
+            "${pkgs.tuigreet}/bin/tuigreet"
+            "--time"
+            "--remember"
+            "--remember-session"
+            "--asterisks"
+            "--user-menu"
+            "--cmd Hyprland"
+          ];
           user = "tholo";
         };
       };
@@ -50,7 +50,7 @@ in
       StandardOutput = "tty";
       StandardError = "journal";
       TTYReset = true;
-      TTYHangup = true;
+      TTYVHangup = true;
       TTYVTDisallocate = true;
     };
   };
