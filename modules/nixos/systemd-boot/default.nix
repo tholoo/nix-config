@@ -1,4 +1,4 @@
-{ config, lib, ... }:
+{ config, lib, pkgs, ... }:
 let
   inherit (lib) mkIf;
   inherit (lib.mine) mkEnable;
@@ -15,6 +15,8 @@ in
   };
 
   config = mkIf cfg.enable {
+    environment.systemPackages = [ pkgs.efibootmgr ];
+
     boot.loader = {
       systemd-boot = {
         enable = true;

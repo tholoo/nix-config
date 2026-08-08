@@ -1,4 +1,4 @@
-{ config, lib, ... }:
+{ config, lib, pkgs, ... }:
 let
   inherit (lib) mkIf;
   inherit (lib.mine) mkEnable;
@@ -21,6 +21,8 @@ in
   };
 
   config = mkIf cfg.enable {
+    environment.systemPackages = [ pkgs.efibootmgr ];
+
     boot.loader = {
       efi.canTouchEfiVariables = if cfg.server then false else true;
 
