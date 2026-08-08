@@ -403,7 +403,7 @@ def zellij-update-tabname-git [] {
             };
 
             # If current directory isn’t the same as the git root, prepend the repo’s basename.
-            if (($git_root | str downcase) != ($current_dir | str downcase)) {
+            if (($git_root | str lowercase) != ($current_dir | str lowercase)) {
                 let repo_name = ($git_root | path parse | get stem);
                 let subpath = ($current_dir | str replace $"($git_root)/" "");
                 $tab_name = $"($repo_name):($subpath)"
@@ -581,7 +581,7 @@ export def my_ip [
 
 def _ai-confirm [msg: string]: nothing -> bool {
     let answer = (input $"($msg) [y/N] ")
-    ($answer | str downcase | str trim) in ["y" "yes"]
+    ($answer | str lowercase | str trim) in ["y" "yes"]
 }
 
 def _ai-confirm-strict [msg: string]: nothing -> bool {
@@ -742,7 +742,7 @@ def "ai filter" [
             true
         } else {
             let payload = $"Does this row match the criterion?\nCriterion: ($criterion)\nRow: ($r | to json)\nReply with exactly 'yes' or 'no', nothing else."
-            (^claude ...$model_args -p $payload | str trim | str downcase | str starts-with "yes")
+            (^claude ...$model_args -p $payload | str trim | str lowercase | str starts-with "yes")
         }
         { __keep: $keep, __row: $r }
     }

@@ -33,7 +33,7 @@ in
           with lib;
           ''
             export def extract [name: string] {
-              let lower_name = ($name | str downcase)
+              let lower_name = ($name | str lowercase)
 
               let handlers = [
                 [extension command args]
@@ -41,7 +41,7 @@ in
                 ['tar\.gz|tgz'       '${getExe gnutar}' ['xvzf']]
                 ['tar\.xz|txz'       '${getExe gnutar}' ['xvf']]
                 ['tar\.Z'            '${getExe gnutar}' ['xvZf']]
-                ['bz2'               '${getExe bzip2}'  ['-d']]
+                ['bz2'               '${getExe' bzip2 "bzip2"}'  ['-d']]
                 ['deb'               '${getExe' binutils "ar"}' ['x']]
                 ['gz'                '${getExe gzip}'   ['-d']]
                 ['rar'               '${getExe unar}'   []]
