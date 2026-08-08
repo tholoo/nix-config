@@ -69,7 +69,6 @@ in
   config = mkIf cfg.enable {
     home = {
       packages = lib.optionals cfg.enableUsageTools [
-        llmAgents.ccusage-codex
         llmAgents.agentsview
         llmAgents.oh-my-codex
       ];
