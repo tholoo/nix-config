@@ -9,6 +9,7 @@ let
   inherit (lib.mine) mkEnable;
   cfg = config.mine.${name};
   name = "opengl";
+  intel-vaapi-driver-hybrid = pkgs.intel-vaapi-driver.override { enableHybridCodec = true; };
 in
 {
   options.mine.${name} = mkEnable config {
@@ -19,9 +20,6 @@ in
   };
 
   config = mkIf cfg.enable {
-    nixpkgs.config.packageOverrides = pkgs: {
-      intel-vaapi-driver = pkgs.intel-vaapi-driver.override { enableHybridCodec = true; };
-    };
     services.xserver.videoDrivers = [
       "amdgpu"
       "ati"
@@ -33,7 +31,7 @@ in
       enable32Bit = true;
       extraPackages = with pkgs; [
         intel-media-driver # LIBVA_DRIVER_NAME=iHD
-        intel-vaapi-driver # LIBVA_DRIVER_NAME=i965 (older but works better for Firefox/Chromium)
+        intel-vaapi-driver-hybrid # LIBVA_DRIVER_NAME=i965 (older but works better for Firefox/Chromium)
         vulkan-loader
         vulkan-tools
         libvdpau-va-gl
