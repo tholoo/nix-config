@@ -47,7 +47,7 @@ in
       [
         ubuntu-classic
         liberation_ttf
-        vazir-fonts # persian font
+        vazirmatn # persian font
         vazir-code-font # persian font
         noto-fonts
         # symbola
