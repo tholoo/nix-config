@@ -27,7 +27,7 @@
     # formatters = {inherit }
     settings = {
       formatters =
-        lib.fold
+        lib.foldr
           (
             pkg_name: c:
             {

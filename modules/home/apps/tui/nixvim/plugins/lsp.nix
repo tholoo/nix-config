@@ -54,7 +54,7 @@
         })
       '';
     servers =
-      lib.fold (name: c: { "${name}".enable = true; } // c)
+      lib.foldr (name: c: { "${name}".enable = true; } // c)
         {
           nil_ls = {
             enable = true;
