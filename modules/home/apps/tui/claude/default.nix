@@ -17,7 +17,6 @@ let
 
   jsonFormat = pkgs.formats.json { };
 
-  notificationsBin = "${pkgs.mine.claude-notifications-go}/bin/claude-notifications";
 in
 {
   options.mine.${name} = mkEnable config {
@@ -402,23 +401,6 @@ in
           }
         ];
       };
-    };
-
-    # The claude-notifications-go plugin downloads its hook binary at runtime
-    # from GitHub Releases. We override that with our Nix-built, audio-wrapped
-    # binary so /init isn't needed and audio works on NixOS.
-    # Runs idempotently — if the marketplace dir doesn't exist yet (plugin not
-    # installed), it does nothing and re-checks on the next switch.
-    home.activation = mkIf cfg.enableNotifications {
-      claudeNotificationsBinary = config.lib.dag.entryAfter [ "writeBoundary" ] ''
-        pluginBin="$HOME/.claude/plugins/marketplaces/claude-notifications-go/bin"
-        if [ -d "$pluginBin" ]; then
-          run ln -sfn ${notificationsBin} "$pluginBin/claude-notifications-linux-amd64"
-          run ln -sfn claude-notifications-linux-amd64 "$pluginBin/claude-notifications"
-          run mkdir -p "$HOME/.cache/claude-notifications-go"
-          run sh -c 'echo ${pkgs.mine.claude-notifications-go.version} > "$HOME/.cache/claude-notifications-go/verified-version"'
-        fi
-      '';
     };
   };
 }
