@@ -27,7 +27,7 @@ in
     programs.ssh = {
       enable = true;
       enableDefaultConfig = false;
-      matchBlocks =
+      settings =
         let
           cat = lib.getExe' pkgs.coreutils "cat";
           sed = lib.getExe pkgs.gnused;
@@ -36,58 +36,58 @@ in
         with config.age.secrets;
         {
           "*" = {
-            addKeysToAgent = "yes";
-            serverAliveInterval = 15;
-            serverAliveCountMax = 5;
+            AddKeysToAgent = "yes";
+            ServerAliveInterval = 15;
+            ServerAliveCountMax = 5;
           };
           github = {
-            hostname = "github.com";
-            user = "git";
+            HostName = "github.com";
+            User = "git";
           };
           gitlab = {
-            hostname = "gitlab.com";
-            user = "git";
+            HostName = "gitlab.com";
+            User = "git";
           };
           granite = {
-            user = "tholo";
-            checkHostIP = false;
+            User = "tholo";
+            CheckHostIP = false;
             # get the ip from secrets
-            proxyCommand = "bash -c '${nc} $(${cat} ${ip-granite.path}) %p'";
+            ProxyCommand = "bash -c '${nc} $(${cat} ${ip-granite.path}) %p'";
           };
           parsa-hetzner-germany = {
-            user = "poweruser";
-            checkHostIP = false;
-            proxyCommand = "bash -c '${nc} $(${cat} ${ip-parsa-hetzner-germany.path}) %p'";
+            User = "poweruser";
+            CheckHostIP = false;
+            ProxyCommand = "bash -c '${nc} $(${cat} ${ip-parsa-hetzner-germany.path}) %p'";
           };
           ahmad-hetzner-germany = {
-            user = "root";
-            checkHostIP = false;
-            proxyCommand = "bash -c '${nc} $(${cat} ${ip-ahmad-hetzner-germany.path}) %p'";
+            User = "root";
+            CheckHostIP = false;
+            ProxyCommand = "bash -c '${nc} $(${cat} ${ip-ahmad-hetzner-germany.path}) %p'";
           };
           parsa-iranserver-tehran = {
-            user = "root";
-            checkHostIP = false;
-            proxyCommand = "bash -c '${nc} $(${cat} ${ip-parsa-iranserver-tehran.path}) %p'";
+            User = "root";
+            CheckHostIP = false;
+            ProxyCommand = "bash -c '${nc} $(${cat} ${ip-parsa-iranserver-tehran.path}) %p'";
           };
           parsa-asiatech-tehran = {
-            user = "root";
-            checkHostIP = false;
-            proxyCommand = "bash -c '${nc} $(${cat} ${ip-parsa-asiatech-tehran.path}) %p'";
+            User = "root";
+            CheckHostIP = false;
+            ProxyCommand = "bash -c '${nc} $(${cat} ${ip-parsa-asiatech-tehran.path}) %p'";
           };
           flint = {
-            user = "tholo";
-            checkHostIP = false;
-            proxyCommand = "bash -c '${nc} $(${cat} ${ip-flint.path}) %p'";
+            User = "tholo";
+            CheckHostIP = false;
+            ProxyCommand = "bash -c '${nc} $(${cat} ${ip-flint.path}) %p'";
           };
           parsa-asiatech-tehran2 = {
-            user = "root";
-            checkHostIP = false;
-            proxyCommand = "bash -c '${nc} $(${cat} ${ip-parsa-asiatech-tehran2.path}) %p'";
+            User = "root";
+            CheckHostIP = false;
+            ProxyCommand = "bash -c '${nc} $(${cat} ${ip-parsa-asiatech-tehran2.path}) %p'";
           };
           mohammad-do = {
-            user = "root";
-            checkHostIP = false;
-            proxyCommand = "bash -c '${nc} $(${cat} ${ip-mohammad-do.path}) %p'";
+            User = "root";
+            CheckHostIP = false;
+            ProxyCommand = "bash -c '${nc} $(${cat} ${ip-mohammad-do.path}) %p'";
           };
         };
     };
