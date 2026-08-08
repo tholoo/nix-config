@@ -1,4 +1,5 @@
 {
+  inputs,
   pkgs,
   config,
   lib,
@@ -29,6 +30,7 @@ let
   base0F = "be5046";
 
   zellij-switch-script = ./zellij-switch.nu;
+  zellij-switch = inputs.zellij-switch.packages.${pkgs.stdenv.hostPlatform.system}.default;
 in
 {
   options.mine.${name} = mkEnable config {
@@ -40,7 +42,7 @@ in
   };
 
   config = mkIf cfg.enable {
-    home.packages = with pkgs; [
+    home.packages = [
       zellij-switch
     ];
 
