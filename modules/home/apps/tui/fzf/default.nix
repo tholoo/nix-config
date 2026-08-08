@@ -40,10 +40,15 @@ in
         # changeDirWidgetCommand = "${fd_cmd} --type d";
         # changeDirWidgetOptions = [ "--preview '${tre_cmd} | head -100'" ];
 
-        fileWidgetCommand = fd_cmd;
-        fileWidgetOptions = [ "--ansi --preview '${bat_cmd} 2> /dev/null || ${tre_cmd} | head -100'" ];
+        fileWidget = {
+          command = fd_cmd;
+          options = [ "--ansi --preview '${bat_cmd} 2> /dev/null || ${tre_cmd} | head -100'" ];
+        };
 
-        historyWidgetOptions = [ "--reverse" ];
+        historyWidget = {
+          options = [ "--reverse" ];
+          nushell.command = "";
+        };
 
         tmux.enableShellIntegration = false;
       };
