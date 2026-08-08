@@ -69,8 +69,8 @@ in
   config = mkIf cfg.enable {
     home = {
       packages = lib.optionals cfg.enableUsageTools [
-        llmAgents.agentsview
-        llmAgents.oh-my-codex
+        # llmAgents.agentsview
+        # llmAgents.oh-my-codex
       ];
 
       sessionVariables.CODEX_HOME = "${config.xdg.configHome}/codex";
