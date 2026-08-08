@@ -31,7 +31,7 @@ in
       kns
       kubie
       krew
-      minikube
+      # minikube
     ];
   };
 }
