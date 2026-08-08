@@ -3,7 +3,6 @@
   config,
   lib,
   inputs,
-  system,
   ...
 }:
 let
@@ -30,7 +29,7 @@ in
       devenv
       manix
       nurl
-      inputs.nix-alien.packages.${system}.nix-alien
+      inputs.nix-alien.packages.${pkgs.stdenv.hostPlatform.system}.nix-alien
       comma
     ];
 
