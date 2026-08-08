@@ -57,7 +57,7 @@ in
       xsel
       xclip
       wl-clipboard
-      inputs.vigiland.packages.${pkgs.system}.vigiland
+      inputs.vigiland.packages.${pkgs.stdenv.hostPlatform.system}.vigiland
     ];
 
     programs.hyprlock = {
@@ -88,6 +88,7 @@ in
 
     wayland.windowManager.hyprland = {
       enable = true;
+      configType = "hyprlang";
       systemd = {
         enable = true;
         variables = [ "--all" ];
@@ -377,8 +378,8 @@ in
             # "$mainMod, Y, exec, $terminal --class=\"com.example.clipse\" -e '${lib.getExe pkgs.clipse}'"
             "$mainMod, Y, exec, vicinae vicinae://extensions/vicinae/clipboard/history"
             "$mainMod SHIFT, Z, exec, ${getExe wlogout}"
-            "$mainMod SHIFT, n, exec, ${getExe hyprpanel} toggleWindow notificationsmenu"
-            "$mainMod, period, exec, ${getExe hyprpanel} clearNotifications"
+            "$mainMod SHIFT, n, exec, ${getExe wayle} notify dnd"
+            "$mainMod, period, exec, ${getExe wayle} notify dismiss-all"
 
             # Special audio keys (piped into wob, using pipewire)
 
@@ -466,6 +467,8 @@ in
         windowrule = [
           "workspace 1 silent, match:class ^(com\\.mitchellh\\.ghostty|ghostty)$"
           "workspace 1 silent, match:initial_class ^(com\\.mitchellh\\.ghostty|ghostty)$"
+          "workspace 2 silent, match:class ^(zen-beta)$"
+          "workspace 2 silent, match:initial_class ^(zen-beta)$"
           "workspace 3 silent, match:class ^(com\\.ayugram\\.desktop)$"
           "workspace 3 silent, match:initial_class ^(com\\.ayugram\\.desktop)$"
 
