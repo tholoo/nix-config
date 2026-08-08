@@ -123,7 +123,7 @@ resources/                         # Static resources (wallpapers, old nvim lua 
 - **agenix** - Secret management
 - **disko** - Declarative disk partitioning (granite)
 - **deploy-rs** - Remote deployment (granite)
-- **stylix** - Theming (module exists but mostly commented out)
+- **stylix** - Theming
 - **nixos-hardware** - Hardware-specific modules (glacier)
 - **srvos** - Server/desktop profiles (glacier=desktop, granite=server+hetzner)
 - **fenix** - Rust toolchain
@@ -203,7 +203,7 @@ Uses **nixflix** module for self-hosted media:
 
 - **Nushell as default shell** with zellij auto-start, vi mode, abbreviations, and custom completers (carapace, fish, zoxide)
 - **Zellij** as terminal multiplexer with custom plugins (monocle, room) and keybindings
-- **Hyprland** as Wayland compositor with hyprpanel, hypridle, hyprlock
+- **Hyprland** as Wayland compositor with wayle, hypridle, hyprlock
 - **Ghostty** as primary terminal emulator
 - **Zen Browser** as primary browser (with Tridactyl for vim keybindings)
 - **Floorp** as secondary browser

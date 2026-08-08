@@ -52,7 +52,7 @@ in
       };
 
       targets = {
-        hyprpanel.enable = true;
+        wayle.enable = true;
         zen-browser.profileNames = [ "default" ];
         floorp.profileNames = [ "Default" ];
       };
