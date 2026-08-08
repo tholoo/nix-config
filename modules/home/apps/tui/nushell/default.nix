@@ -28,34 +28,39 @@ in
 
       configFile.text =
         builtins.readFile ./config.nu
-        # nu
         + (
           with pkgs;
           with lib;
           ''
-            export def extract [name:string] {
-              let handlers = [ [extension command];
-                               ['tar\.bz2|tbz|tbz2' '${getExe gnutar} xvjf']
-                               ['tar\.gz|tgz'       '${getExe gnutar} xvzf']
-                               ['tar\.xz|txz'       '${getExe gnutar} xvf']
-                               ['tar\.Z'            '${getExe gnutar} xvZf']
-                               ['bz2'               'bunzip2']
-                               ['deb'               'ar x']
-                               ['gz'                'gunzip']
-                               ['pkg'               'pkgutil --expand']
-                               ['rar'               '${getExe unrar} x']
-                               ['tar'               '${getExe gnutar} xvf']
-                               ['xz'                '${getExe' xz "xz"} --decompress']
-                               ['zip|war|jar|nupkg' '${getExe unzip}']
-                               ['Z'                 'uncompress']
-                               ['7z'                '7za x']
-                             ]
-              let maybe_handler = ($handlers | where $name =~ $'\.(($it.extension))$')
+            export def extract [name: string] {
+              let lower_name = ($name | str downcase)
+
+              let handlers = [
+                [extension command args]
+                ['tar\.bz2|tbz|tbz2' '${getExe gnutar}' ['xvjf']]
+                ['tar\.gz|tgz'       '${getExe gnutar}' ['xvzf']]
+                ['tar\.xz|txz'       '${getExe gnutar}' ['xvf']]
+                ['tar\.Z'            '${getExe gnutar}' ['xvZf']]
+                ['bz2'               '${getExe bzip2}'  ['-d']]
+                ['deb'               '${getExe' binutils "ar"}' ['x']]
+                ['gz'                '${getExe gzip}'   ['-d']]
+                ['rar'               '${getExe unar}'   []]
+                ['tar'               '${getExe gnutar}' ['xvf']]
+                ['xz'                '${getExe' xz "xz"}' ['--decompress']]
+                ['zip|war|jar|nupkg' '${getExe unzip}'  []]
+                ['7z'                '${getExe' p7zip "7za"}' ['x']]
+              ]
+
+              let maybe_handler = (
+                $handlers
+                | where {|handler| $lower_name =~ $'\.($handler.extension)$' }
+              )
+
               if ($maybe_handler | is-empty) {
-                error make { msg: "unsupported file extension" }
+                error make { msg: $"unsupported file extension: ($name)" }
               } else {
                 let handler = ($maybe_handler | first)
-                nu -c ($handler.command + ' ' + $name)
+                run-external $handler.command ...$handler.args $name
               }
             }
           ''
