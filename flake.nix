@@ -166,7 +166,6 @@
         # neovim-nightly-overlay.overlays.default
         nur.overlays.default
         fenix.overlays.default
-        zellij-switch.overlays.default
       ];
 
       systems.modules.nixos = with inputs; [
