@@ -258,6 +258,14 @@ export def psgrep [query: string] {
     | compact
 }
 
+export def windows [] {
+    ^sudo efibootmgr -n 0000
+    if $env.LAST_EXIT_CODE != 0 {
+        error make { msg: "failed to set one-shot Windows boot entry" }
+    }
+    ^sudo reboot
+}
+
 def zellij-cache-dir [] {
     let session_name = (
         $env
