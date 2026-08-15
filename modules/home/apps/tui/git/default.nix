@@ -26,8 +26,11 @@ in
         settings = {
           git = {
             log.showWholeGraph = true;
-            pagers = [
-              { externalDiffCommand = "${lib.getExe pkgs.difftastic} --color=always"; }
+            diffRenderers = [
+              {
+                type = "extDiff";
+                command = "${lib.getExe pkgs.difftastic} --color=always";
+              }
             ];
           };
           gui = {
