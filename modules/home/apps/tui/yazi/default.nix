@@ -9,6 +9,11 @@ let
   inherit (lib.mine) mkEnable;
   cfg = config.mine.${name};
   name = "yazi";
+  glowPlugin = pkgs.yaziPlugins.glow.overrideAttrs (old: {
+    postPatch = (old.postPatch or "") + ''
+      substituteInPlace main.lua --replace-fail ":args({" ":arg({"
+    '';
+  });
 in
 {
   options.mine.${name} = mkEnable config {
@@ -23,7 +28,7 @@ in
       enable = true;
       shellWrapperName = "f";
       plugins = with pkgs.yaziPlugins; {
-        "glow" = glow;
+        "glow" = glowPlugin;
         "smart-enter" = smart-enter;
         "mediainfo" = mediainfo;
       };
