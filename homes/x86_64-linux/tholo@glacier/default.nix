@@ -40,5 +40,6 @@
     # since direct PyPI is blocked here. Once ~/.cache/uv is warm, restarts
     # don't hit the network at all.
     frdict.proxy = "http://127.0.0.1:10808";
+    glance.proxy = "http://127.0.0.1:10808";
   };
 }
