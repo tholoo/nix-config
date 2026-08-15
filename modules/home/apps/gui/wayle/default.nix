@@ -35,15 +35,15 @@ in
         bar = {
           location = "bottom";
           rounding = "sm";
-          scale = 0.65;
-          padding = 0.12;
-          padding-ends = 0.18;
-          module-gap = 0.15;
-          button-icon-size = 0.7;
-          button-icon-padding = 0.42;
-          button-label-size = 0.7;
-          button-label-padding = 0.42;
-          button-gap = 0.3;
+          scale = 0.82;
+          padding = 0.28;
+          padding-ends = 0.42;
+          module-gap = 0.36;
+          button-icon-size = 0.85;
+          button-icon-padding = 0.78;
+          button-label-size = 0.85;
+          button-label-padding = 0.78;
+          button-gap = 0.62;
           layout = [
             {
               monitor = "*";
@@ -102,6 +102,7 @@ in
 
         osd = {
           enabled = true;
+          monitor = "HDMI-A-1";
           position = "right";
         };
 
