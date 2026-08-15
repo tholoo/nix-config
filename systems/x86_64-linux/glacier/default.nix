@@ -51,6 +51,10 @@
     all_proxy = "http://127.0.0.1:10808";
   };
 
+  security.sudo.extraConfig = ''
+    Defaults env_keep += "http_proxy https_proxy HTTP_PROXY HTTPS_PROXY all_proxy ALL_PROXY no_proxy NO_PROXY"
+  '';
+
   # Disable speaker buzzing sound
   boot.extraModprobeConfig = ''
     snd_hda_intel power_save=0
