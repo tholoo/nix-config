@@ -1,4 +1,9 @@
-{ config, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 let
   inherit (lib) mkIf;
   inherit (lib.mine) mkEnable;
@@ -21,6 +26,14 @@ in
         text = "auth include login";
       };
       pam.services.hyprlock = { };
+      wrappers.bwrap = {
+        owner = "root";
+        group = "root";
+        source = "${pkgs.bubblewrap}/bin/bwrap";
+        setuid = true;
+      };
     };
+
+    boot.kernel.sysctl."kernel.unprivileged_userns_clone" = 1;
   };
 }
