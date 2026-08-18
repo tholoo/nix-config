@@ -25,6 +25,9 @@ let
     # zoom
     "-" = "add video-zoom -.25";
     "+" = "add video-zoom .25";
+    # subtitle
+    "s" = "cycle sub";
+    "S" = "cycle sub down";
 
     # French study workflow
     "TAB" = "cycle secondary-sub-visibility";
@@ -61,6 +64,7 @@ let
     # the secondary track at the top of the screen by default, primary at the
     # bottom — they don't overlap. Tab toggles the secondary's visibility.
     slang = "fr,fra,fre,french";
+    subs-fallback = "yes";
     alang = "fr,fra,fre,french";
     secondary-sid = "auto";
     secondary-sub-visibility = "no";
@@ -113,10 +117,8 @@ in
     # next mpv launch without a home-manager rebuild — matches how
     # frdict/server.py is consumed by the systemd unit.
     xdg.configFile."mpv/scripts/sub-pause.lua".source =
-      config.lib.file.mkOutOfStoreSymlink
-        "${config.home.homeDirectory}/projects/french-learning/mpv/sub-pause.lua";
+      config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/projects/french-learning/mpv/sub-pause.lua";
     xdg.configFile."mpv/scripts/frmine.lua".source =
-      config.lib.file.mkOutOfStoreSymlink
-        "${config.home.homeDirectory}/projects/french-learning/mpv/frmine.lua";
+      config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/projects/french-learning/mpv/frmine.lua";
   };
 }
