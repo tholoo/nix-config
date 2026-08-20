@@ -18,6 +18,17 @@ let
 
   llmAgents = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system};
 
+  codexPackage = pkgs.symlinkJoin {
+    name = "${llmAgents.codex.name}-system-bwrap";
+    paths = [ llmAgents.codex ];
+    nativeBuildInputs = [ pkgs.makeWrapper ];
+    postBuild = ''
+      rm "$out/bin/codex"
+      makeWrapper "${llmAgents.codex}/bin/.codex-wrapped" "$out/bin/codex" \
+        --prefix PATH : "/run/wrappers/bin:${pkgs.bubblewrap}/bin"
+    '';
+  };
+
   npx = "${pkgs.nodejs}/bin/npx";
   npxPath = lib.makeBinPath [
     pkgs.nodejs
@@ -113,13 +124,15 @@ in
 
     programs.codex = {
       enable = true;
-      package = llmAgents.codex;
+      package = codexPackage;
       enableMcpIntegration = true;
 
       settings = {
         personality = "pragmatic";
+        model = "gpt-5.6-sol";
         model_reasoning_effort = "high";
         approval_policy = "on-request";
+        approvals_reviewer = "auto_review";
         default_mode_request_user_input = true;
         sandbox_mode = "workspace-write";
         web_search = "cached";
