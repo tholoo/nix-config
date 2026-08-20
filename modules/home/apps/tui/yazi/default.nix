@@ -9,11 +9,6 @@ let
   inherit (lib.mine) mkEnable;
   cfg = config.mine.${name};
   name = "yazi";
-  glowPlugin = pkgs.yaziPlugins.glow.overrideAttrs (old: {
-    postPatch = (old.postPatch or "") + ''
-      substituteInPlace main.lua --replace-fail ":args({" ":arg({"
-    '';
-  });
 in
 {
   options.mine.${name} = mkEnable config {
@@ -27,8 +22,12 @@ in
     programs.yazi = {
       enable = true;
       shellWrapperName = "f";
+      extraPackages = with pkgs; [
+        glow
+        ueberzugpp
+      ];
       plugins = with pkgs.yaziPlugins; {
-        "glow" = glowPlugin;
+        "piper" = piper;
         "smart-enter" = smart-enter;
         "mediainfo" = mediainfo;
       };
@@ -94,7 +93,7 @@ in
           prepend_previewers = [
             {
               url = "*.md";
-              run = "glow";
+              run = "piper -- CLICOLOR_FORCE=1 glow -w=$w -s=dark \"$1\"";
             }
           ];
         };
