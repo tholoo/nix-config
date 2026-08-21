@@ -97,11 +97,19 @@ def la [
 
 def start_zellij [] {
   if 'ZELLIJ' not-in ($env | columns) {
-      zellij attach --create default
+      zellij attach default --create options --default-cwd $env.PWD
   }
 }
 
 start_zellij
+
+def zellij-report-cwd-to-terminal [] {
+    if ("ZELLIJ" in $env) {
+        let host = (try { hostname | str trim } catch { "" })
+        let cwd = ($env.PWD | url encode)
+        print -n $"(ansi osc)7;file://($host)($cwd)(ansi st)"
+    }
+}
 
 
 # https://github.com/nushell/nu_scripts/blob/main/modules/data_extraction/ultimate_extractor.nu
@@ -215,6 +223,7 @@ $env.config = {
     hooks: {
         env_change: {
             PWD: [
+                { |before, after| zellij-report-cwd-to-terminal }
                 { |before, after| zellij-update-tabname-git }
             ]
         }
@@ -223,6 +232,7 @@ $env.config = {
         ]
         pre_prompt: [
             {||
+                zellij-report-cwd-to-terminal
                 if ("ZELLIJ" in $env) {
                     let initialized = (zellij-cache-get "initialized")
                     let needs_restore = (zellij-cache-get "needs_restore")
