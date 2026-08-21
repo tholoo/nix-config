@@ -176,8 +176,8 @@ let
           "8.8.8.8"
         ];
         nameserver = [
-          "tls://1.1.1.1:853"
-          "tls://8.8.8.8:853"
+          "tls://1.1.1.1:853#PROXY"
+          "tls://8.8.8.8:853#PROXY"
         ];
         "nameserver-policy" = {
           "+.ir" = [
@@ -185,7 +185,7 @@ let
             "10.202.10.10"
           ];
         };
-        fallback = [ "tls://1.0.0.1:853" ];
+        fallback = [ "tls://1.0.0.1:853#PROXY" ];
         "fallback-filter" = {
           geoip = true;
           "geoip-code" = "IR";
