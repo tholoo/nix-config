@@ -137,7 +137,6 @@ in
           "[workspace 2 silent] $browser"
           "[workspace 3 silent] ${lib.getExe pkgs.ayugram-desktop}"
           "[workspace 4 silent] ${lib.getExe pkgs.throne}"
-          "[workspace 5 silent] ${lib.getExe pkgs.pear-desktop}; sleep 15; pkill youtube-music; ${lib.getExe pkgs.pear-desktop}"
 
           "${lib.getExe' pkgs.awww "awww-daemon"}"
           "${lib.getExe pkgs.wl-clip-persist} --clipboard both"
@@ -249,6 +248,8 @@ in
           mouse_move_enables_dpms = true;
           key_press_enables_dpms = true;
         };
+
+        ecosystem.no_update_news = true;
 
         #############
         ### INPUT ###
