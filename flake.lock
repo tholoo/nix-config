@@ -573,6 +573,22 @@
         "type": "github"
       }
     },
+    "matt-pocock-skills": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1787222114,
+        "narHash": "sha256-Zg64vWsmtVk7WCH/f+bifju+L8yHeAwYbDNh6Ah43V0=",
+        "owner": "mattpocock",
+        "repo": "skills",
+        "rev": "0ab1b63a410a03d3627979a109c8695de27af954",
+        "type": "github"
+      },
+      "original": {
+        "owner": "mattpocock",
+        "repo": "skills",
+        "type": "github"
+      }
+    },
     "mkdocs-catppuccin": {
       "flake": false,
       "locked": {
@@ -1043,6 +1059,7 @@
         "french-learning": "french-learning",
         "home-manager": "home-manager_2",
         "llm-agents": "llm-agents",
+        "matt-pocock-skills": "matt-pocock-skills",
         "nix-alien": "nix-alien",
         "nix-colors": "nix-colors",
         "nix-dokploy": "nix-dokploy",

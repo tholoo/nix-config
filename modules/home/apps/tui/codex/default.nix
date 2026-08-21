@@ -48,6 +48,8 @@ let
       text = builtins.readFile ./notify.sh;
     }
   }/bin/codex-notify";
+
+  agentSkills = import ../ai/skills.nix { inherit inputs lib; };
 in
 {
   options.mine.${name} = mkEnable config {
@@ -196,7 +198,7 @@ in
 
       context = optionalString (cfg.hostContext != null) cfg.hostContext;
 
-      skills = ../ai/skills;
+      skills = agentSkills;
     };
 
     home.activation.codexLegacyConfig = config.lib.dag.entryAfter [ "writeBoundary" ] ''

@@ -17,6 +17,8 @@ let
 
   jsonFormat = pkgs.formats.json { };
 
+  agentSkills = import ../ai/skills.nix { inherit inputs lib; };
+
 in
 {
   options.mine.${name} = mkEnable config {
@@ -376,7 +378,7 @@ in
           };
         };
 
-      skills = ../ai/skills;
+      skills = agentSkills;
 
       agents = {
         animation-critic = ./animation-critic-agent.md;

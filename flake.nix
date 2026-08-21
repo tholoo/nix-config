@@ -124,6 +124,12 @@
 
     llm-agents.url = "github:numtide/llm-agents.nix";
 
+    # modules/home/apps/tui/ai/skills.nix
+    matt-pocock-skills = {
+      url = "github:mattpocock/skills";
+      flake = false;
+    };
+
     # Source-of-truth for the auto-mark-known Anki addon and the mpv lua
     # scripts. Pulled in as a non-flake input so buildAnkiAddon can read
     # the addon dir under flake pure-eval. After editing files in the
