@@ -111,6 +111,40 @@ in
     # frmine.lua's lookup-only path uses espeak-ng for instant TTS.
     home.packages = [ pkgs.espeak-ng ];
 
+    # Keep mpvacious aligned with the French Mining note type. The new-note
+    # timer is unnecessary for our explicit mining workflow and otherwise
+    # polls AnkiConnect every two seconds for the lifetime of mpv.
+    xdg.configFile."mpv/script-opts/subs2srs.conf" = {
+      force = true;
+      text = ''
+        deck_name=French::Mining
+        model_name=French Mining
+
+        # Field mapping
+        sentence_field=Sentence
+        audio_field=SentenceAudio
+        image_field=Screenshot
+        secondary_field=
+        miscinfo_field=
+
+        # Behavior
+        enable_new_note_timer=no
+        autoclip_method=clipboard
+        nuke_spaces=no
+        clean_html_in_sentence_field=yes
+        miscinfo_enable=no
+
+        # Audio
+        audio_format=aac
+        audio_bitrate=32k
+
+        # Image
+        image_format=avif
+        image_width=400
+        image_height=-2
+      '';
+    };
+
     # Custom mpv Lua scripts live in the french-learning repo so the test
     # suite can lint them and the field-name contract with note-type.json is
     # testable from one place. Out-of-store symlinks let edits go live at the
