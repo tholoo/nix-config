@@ -20,7 +20,7 @@ in
 
   config = mkIf cfg.enable {
     programs.wezterm = {
-      enable = false;
+      enable = config.mine.terminal.emulator == name;
       extraConfig = ''
         -- Pull in the wezterm API
         local wezterm = require("wezterm")
@@ -45,7 +45,7 @@ in
 
         -- config.color_scheme = "Atom"
         config.enable_tab_bar = false
-        config.window_background_opacity = 0.93
+        config.window_background_opacity = 0.96
         -- config.default_cwd = "~"
 
         -- config.font = wezterm.font 'JetBrainsMono Nerd Font'
@@ -73,6 +73,21 @@ in
 
         config.bidi_enabled = true
         config.bidi_direction = "AutoLeftToRight"
+
+        -- Keep the session-level systemd SSH agent socket. WezTerm's default
+        -- per-process symlink can become stale when a terminal process exits.
+        config.mux_enable_ssh_agent = false
+
+        -- A WezTerm window launched from inside Zellij must start a fresh
+        -- shell context so Nushell's Zellij auto-start is not suppressed.
+        config.mux_env_remove = {
+          "SSH_AUTH_SOCK",
+          "SSH_CLIENT",
+          "SSH_CONNECTION",
+          "ZELLIJ",
+          "ZELLIJ_PANE_ID",
+          "ZELLIJ_SESSION_NAME",
+        }
 
         config.window_close_confirmation = "NeverPrompt"
 

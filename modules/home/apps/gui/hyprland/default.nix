@@ -10,6 +10,7 @@ let
   inherit (lib.mine) mkEnable;
   cfg = config.mine.${name};
   name = "hyprland";
+  terminal = config.mine.terminal;
 
   # for some reason pipes don't work
   screenshot = pkgs.writeShellScript "myhyprshot" (
@@ -112,8 +113,7 @@ in
 
         # See https://wiki.hyprland.org/Configuring/Keywords/
 
-        # "$terminal" = lib.getExe' pkgs.wezterm "wezterm";
-        "$terminal" = lib.getExe pkgs.ghostty;
+        "$terminal" = terminal.command;
         "$fileManager" = lib.getExe' pkgs.kdePackages.dolphin "dolphin";
         "$menu" = "vicinae open";
         "$browser" = "zen-beta";
@@ -465,8 +465,8 @@ in
         ];
 
         windowrule = [
-          "workspace 1 silent, match:class ^(com\\.mitchellh\\.ghostty|ghostty)$"
-          "workspace 1 silent, match:initial_class ^(com\\.mitchellh\\.ghostty|ghostty)$"
+          "workspace 1 silent, match:class ^(${terminal.classRegex})$"
+          "workspace 1 silent, match:initial_class ^(${terminal.classRegex})$"
           "workspace 2 silent, match:class ^(zen-beta)$"
           "workspace 2 silent, match:initial_class ^(zen-beta)$"
           "workspace 3 silent, match:class ^(com\\.ayugram\\.desktop)$"
@@ -483,9 +483,9 @@ in
 
           "match:class ^(com\\.ayugram\\.desktop)$, match:title ^(Media viewer)$, float on, fullscreen_state 0 0, fullscreen off, suppress_event fullscreen"
 
-          "match:initial_class ^(dev\\.ghostty\\.chooser)$, float on"
-          "match:initial_class ^(dev\\.ghostty\\.chooser)$, size 80% 60%"
-          "match:initial_class ^(dev\\.ghostty\\.chooser)$, center 1"
+          "match:initial_class ^(${terminal.chooserClassRegex})$, float on"
+          "match:initial_class ^(${terminal.chooserClassRegex})$, size 80% 60%"
+          "match:initial_class ^(${terminal.chooserClassRegex})$, center 1"
 
           # Pin Anki to workspace 5 silently — AnkiConnect updates from
           # mpvacious mining happen there without yanking focus from mpv.

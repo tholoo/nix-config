@@ -148,7 +148,7 @@ in
             format-ethernet = "󰛳 Online";
             format-disconnected = "󰅛 Offline";
             tooltip-format = "{essid}";
-            on-click = "ghostty -e nmtui";
+            on-click = "${config.mine.terminal.command} -e nmtui";
             format-icons = [
               "󰤯"
               "󰤟"

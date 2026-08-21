@@ -87,8 +87,8 @@ bind ;C composite hint_focus; !s xdotool key Menu
 " "
 
 
-" " set editorcmd to suckless terminal, or use the defaults on other platforms
-js tri.browserBg.runtime.getPlatformInfo().then(os=>{const editorcmd = os.os=="linux" ? "kitty nvim" : "auto"; tri.config.set("editorcmd", editorcmd)})
+" " edit text fields in Helix inside the selected terminal on Linux
+js tri.browserBg.runtime.getPlatformInfo().then(os=>{const editorcmd = os.os=="linux" ? "@terminal@ -e hx" : "auto"; tri.config.set("editorcmd", editorcmd)})
 
 " " set profile dir on Windows
 " jsb browser.runtime.getPlatformInfo().then(os=>{const profiledir = os.os=="win" ? "C:\\Users\\olie\\AppData\\Roaming\\Mozilla\\Firefox\\Profiles\\gwm76nmk.default" : "auto"; tri.config.set("profiledir", profiledir)})

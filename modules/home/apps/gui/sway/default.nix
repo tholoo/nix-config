@@ -61,7 +61,7 @@ in
       # Sway-specific Configuration
       config = rec {
         modifier = "Mod4";
-        terminal = "wezterm";
+        terminal = config.mine.terminal.command;
         workspaceAutoBackAndForth = true;
         # defaultWorkspace = "1";
         menu = "${lib.getExe pkgs.wofi} --show drun,run";

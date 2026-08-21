@@ -15,7 +15,7 @@ in
 
   config = mkIf cfg.enable {
     programs.ghostty = {
-      enable = true;
+      enable = config.mine.terminal.emulator == name;
       installBatSyntax = true;
       installVimSyntax = true;
       settings = {

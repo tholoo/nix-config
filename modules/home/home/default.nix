@@ -7,6 +7,22 @@
 }:
 let
   cfg = config.mine.user;
+  terminalCfg = config.mine.terminal;
+
+  terminals = {
+    ghostty = {
+      command = "ghostty";
+      chooserCommand = "ghostty --gtk-single-instance=false --class=dev.terminal.chooser -e";
+      desktopId = "com.mitchellh.ghostty.desktop";
+      classRegex = "com\\.mitchellh\\.ghostty|ghostty";
+    };
+    wezterm = {
+      command = "wezterm";
+      chooserCommand = "wezterm start --always-new-process --class dev.terminal.chooser --";
+      desktopId = "org.wezfurlong.wezterm.desktop";
+      classRegex = "org\\.wezfurlong\\.wezterm";
+    };
+  };
 
   is-linux = pkgs.stdenv.isLinux;
   is-darwin = pkgs.stdenv.isDarwin;
@@ -54,8 +70,53 @@ with lib.mine;
     };
   };
 
-  config = mkIf cfg.enable (mkMerge [
+  options.mine.terminal = {
+    emulator = mkOption {
+      type = types.enum (builtins.attrNames terminals);
+      default = "wezterm";
+      description = "Terminal emulator used by launchers and desktop integrations.";
+    };
+
+    command = mkOption {
+      type = types.str;
+      readOnly = true;
+      internal = true;
+    };
+
+    chooserCommand = mkOption {
+      type = types.str;
+      readOnly = true;
+      internal = true;
+    };
+
+    desktopId = mkOption {
+      type = types.str;
+      readOnly = true;
+      internal = true;
+    };
+
+    classRegex = mkOption {
+      type = types.str;
+      readOnly = true;
+      internal = true;
+    };
+
+    chooserClassRegex = mkOption {
+      type = types.str;
+      readOnly = true;
+      internal = true;
+    };
+  };
+
+  config = mkMerge [
     {
+      mine.terminal.command = terminals.${terminalCfg.emulator}.command;
+      mine.terminal.chooserCommand = terminals.${terminalCfg.emulator}.chooserCommand;
+      mine.terminal.desktopId = terminals.${terminalCfg.emulator}.desktopId;
+      mine.terminal.classRegex = terminals.${terminalCfg.emulator}.classRegex;
+      mine.terminal.chooserClassRegex = "dev\\.terminal\\.chooser";
+    }
+    (mkIf cfg.enable {
       assertions = [
         {
           assertion = cfg.name != null;
@@ -80,6 +141,6 @@ with lib.mine;
 
       # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
       home.stateVersion = lib.mkDefault (osConfig.system.stateVersion or "23.11");
-    }
-  ]);
+    })
+  ];
 }

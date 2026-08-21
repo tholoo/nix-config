@@ -9,6 +9,7 @@ let
   inherit (lib.mine) mkEnable;
   cfg = config.mine.${name};
   name = "xdg";
+  terminal = config.mine.terminal;
 in
 {
   options.mine.${name} = mkEnable config { tags = [ "tui" ]; };
@@ -21,7 +22,7 @@ in
         [filechooser]
         cmd=${pkgs.xdg-desktop-portal-termfilechooser}/share/xdg-desktop-portal-termfilechooser/yazi-wrapper.sh
         default_dir=${config.home.homeDirectory}/Downloads
-        env=TERMCMD=ghostty --gtk-single-instance=false --class=dev.ghostty.chooser -e
+        env=TERMCMD=${terminal.chooserCommand}
         open_mode=suggested
         save_mode=suggested
       '';
@@ -31,7 +32,7 @@ in
       enable = true;
       settings = {
         default = [
-          "com.mitchellh.ghostty.desktop"
+          terminal.desktopId
         ];
       };
     };
