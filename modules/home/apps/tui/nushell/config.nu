@@ -316,11 +316,6 @@ def zellij-current-pane-tab-id [] {
     }
 
     let current_pane_id = ($env.ZELLIJ_PANE_ID | into string)
-    let cached_tab_id = (zellij-cache-get "tab_id")
-    if $cached_tab_id != "" {
-        return $cached_tab_id
-    }
-
     let panes = (try {
         zellij action list-panes --json --all --tab | from json
     } catch {
@@ -350,7 +345,6 @@ def zellij-current-pane-tab-id [] {
 
     let tab_id = ($current_pane | get -o tab_id)
     if $tab_id != null {
-        zellij-cache-set "tab_id" ($tab_id | into string)
         return $tab_id
     }
 
@@ -358,13 +352,11 @@ def zellij-current-pane-tab-id [] {
     if $tab != null {
         let nested_id = ($tab | get -o id)
         if $nested_id != null {
-            zellij-cache-set "tab_id" ($nested_id | into string)
             return $nested_id
         }
 
         let nested_tab_id = ($tab | get -o tab_id)
         if $nested_tab_id != null {
-            zellij-cache-set "tab_id" ($nested_tab_id | into string)
             return $nested_tab_id
         }
     }
@@ -377,19 +369,14 @@ def zellij-rename-current-pane-tab [name: string] {
         return
     }
 
-    let last_name = (zellij-cache-get "last_name")
-    if $last_name == $name {
-        return
-    }
-
+    # Session names and pane IDs are reused after Zellij restarts, so neither
+    # the tab ID nor the last applied name is safe to persist in /tmp.
     let tab_id = (zellij-current-pane-tab-id)
     if $tab_id != null {
         zellij action rename-tab-by-id ($tab_id | into string) $name err> /dev/null
     } else {
         zellij action rename-tab $name err> /dev/null
     }
-
-    zellij-cache-set "last_name" $name
 }
 
 def zellij-update-tabname-git [] {
