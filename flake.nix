@@ -106,6 +106,12 @@
 
     zellij-switch.url = "github:mostafaqanbaryan/zellij-switch";
 
+    zellij-agent-deck = {
+      url = "github:tholoo/zellij-agent-deck";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.fenix.follows = "fenix";
+    };
+
     vigiland.url = "github:jappie3/vigiland";
 
     # simple-nixos-mailserver.url = "gitlab:simple-nixos-mailserver/nixos-mailserver";
