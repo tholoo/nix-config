@@ -41,5 +41,6 @@ if command -v dunstify >/dev/null 2>&1 && dunstify "$title" "$body" >/dev/null 2
   exit 0
 fi
 
-mkdir -p "$HOME/.codex"
-echo "$title: $body" >> "$HOME/.codex/notifications.log"
+codex_state_dir="${CODEX_HOME:-${XDG_CONFIG_HOME:-$HOME/.config}/codex}"
+mkdir -p "$codex_state_dir"
+echo "$title: $body" >> "$codex_state_dir/notifications.log"

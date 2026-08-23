@@ -36,18 +36,10 @@ let
     pkgs.coreutils
   ];
 
-  codexNotify = "${
-    pkgs.writeShellApplication {
-      name = "codex-notify";
-      runtimeInputs = [
-        pkgs.coreutils
-        pkgs.jq
-        pkgs.libnotify
-        pkgs.dunst
-      ];
-      text = builtins.readFile ./notify.sh;
-    }
-  }/bin/codex-notify";
+  codexHooks = import ../../../../shared/codex-hooks.nix {
+    inherit inputs lib pkgs;
+  };
+  codexNotify = codexHooks.notifyCommand;
 
   agentSkills = import ../ai/skills.nix { inherit inputs lib; };
 in
@@ -88,6 +80,8 @@ in
 
       sessionVariables.CODEX_HOME = "${config.xdg.configHome}/codex";
     };
+
+    programs.nushell.environmentVariables.CODEX_HOME = "${config.xdg.configHome}/codex";
 
     programs.mcp = mkIf cfg.enableSharedMcp {
       enable = true;
@@ -179,57 +173,11 @@ in
 
           model_availability_nux."gpt-5.5" = 3;
         };
-
-        hooks = {
-          PermissionRequest = [
-            {
-              hooks = [
-                {
-                  type = "command";
-                  command = codexNotify;
-                  timeout = 10;
-                  statusMessage = "Sending approval notification";
-                }
-              ];
-            }
-          ];
-        };
       };
 
       context = optionalString (cfg.hostContext != null) cfg.hostContext;
 
       skills = agentSkills;
     };
-
-    home.activation.codexLegacyConfig = config.lib.dag.entryAfter [ "writeBoundary" ] ''
-      legacy_config="$HOME/.codex/config.toml"
-      legacy_skills="$HOME/.codex/skills"
-      xdg_config="$HOME/.config/codex/config.toml"
-      xdg_skills="$HOME/.config/codex/skills"
-
-      mkdir -p "$HOME/.codex" "$legacy_skills"
-      if [ -L "$legacy_config" ]; then
-        rm "$legacy_config"
-        cp "$xdg_config" "$legacy_config"
-        chmod u+w "$legacy_config"
-      elif [ ! -e "$legacy_config" ]; then
-        cp "$xdg_config" "$legacy_config"
-        chmod u+w "$legacy_config"
-      fi
-
-      if [ -d "$xdg_skills" ]; then
-        for skill in "$xdg_skills"/*; do
-          [ -e "$skill" ] || continue
-          target="$legacy_skills/$(basename "$skill")"
-
-          if [ -e "$target" ] && [ ! -L "$target" ]; then
-            echo "Skipping existing non-symlink Codex skill: $target"
-            continue
-          fi
-
-          ln -sfn "$skill" "$target"
-        done
-      fi
-    '';
   };
 }
