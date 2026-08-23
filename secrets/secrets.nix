@@ -37,10 +37,12 @@ in
 
   "dokploy/dokploy-db-password.age".publicKeys = users.all ++ dokployHosts;
 
-  "ssh/asus-public-key.age".publicKeys = users.all ++ [
+  "ssh/windows-authorized-key.age".publicKeys = users.all ++ [
     systems.glacier
     systems.elderwood
   ];
+
+  "kb/windows-ssh-config.age".publicKeys = users.all;
 
   # IPs — all users and systems need these for SSH
   "ips/ip-granite.age".publicKeys = users.all ++ systems.all;

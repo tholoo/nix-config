@@ -22,7 +22,7 @@
   };
 
   age.secrets.tholo-authorized-key = {
-    file = inputs.self + /secrets/ssh/asus-public-key.age;
+    file = inputs.self + /secrets/ssh/windows-authorized-key.age;
     path = "/run/agenix/authorized-keys/tholo";
     mode = "0444";
   };

@@ -124,6 +124,11 @@
 
     llm-agents.url = "github:numtide/llm-agents.nix";
 
+    kb = {
+      url = "github:tholoo/kb";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # modules/home/apps/tui/ai/skills.nix
     matt-pocock-skills = {
       url = "github:mattpocock/skills";
@@ -216,6 +221,7 @@
       # };
 
       homes.modules = with inputs; [
+        kb.homeManagerModules.default
         nixvim.homeModules.nixvim
         agenix.homeManagerModules.default
         nix-index-database.homeModules.nix-index

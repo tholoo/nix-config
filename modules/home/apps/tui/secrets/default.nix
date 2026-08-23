@@ -30,6 +30,7 @@ in
         ip-parsa-asiatech-tehran.file = inputs.self + /secrets/ips/ip-parsa-asiatech-tehran.age;
         ip-parsa-asiatech-tehran2.file = inputs.self + /secrets/ips/ip-parsa-asiatech-tehran2.age;
         ip-mohammad-do.file = inputs.self + /secrets/ips/ip-mohammad-do.age;
+        kb-windows-ssh-config.file = inputs.self + /secrets/kb/windows-ssh-config.age;
       };
     };
   };
