@@ -58,7 +58,6 @@ in
       xsel
       xclip
       wl-clipboard
-      inputs.vigiland.packages.${pkgs.stdenv.hostPlatform.system}.vigiland
     ];
 
     programs.hyprlock = {
