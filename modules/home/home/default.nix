@@ -10,6 +10,12 @@ let
   terminalCfg = config.mine.terminal;
 
   terminals = {
+    cosmic-term = {
+      command = "cosmic-term-launch";
+      chooserCommand = "hyprctl dispatch exec '[workspace current; float; size 80% 60%; center]' cosmic-term-launch";
+      desktopId = "com.system76.CosmicTerm.desktop";
+      classRegex = "com\\.system76\\.CosmicTerm";
+    };
     ghostty = {
       command = "ghostty";
       chooserCommand = "ghostty --gtk-single-instance=false --class=dev.terminal.chooser -e";
