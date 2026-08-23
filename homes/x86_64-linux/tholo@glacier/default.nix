@@ -15,7 +15,7 @@ in
 
     gui.enable = true;
     tui.enable = true;
-    terminal.emulator = "wezterm";
+    terminal.emulator = "cosmic-term";
 
     # Disabled until `pass` is initialized and OAuth tokens are stored at
     # work/gmail/vdirsyncer/{clientid,clientsecret} + ~/secrets/access_tokens.
