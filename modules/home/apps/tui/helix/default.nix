@@ -183,6 +183,23 @@ with lib.mine;
           typos = {
             command = lib.getExe pkgs.typos-lsp;
           };
+          harper-ls = {
+            command = lib.getExe pkgs.harper;
+            args = [ "--stdio" ];
+            config.harper-ls = {
+              diagnosticSeverity = "hint";
+              isolateEnglish = true;
+              linters = {
+                SpellCheck = false;
+                SentenceCapitalization = false;
+                LongSentences = false;
+                AnA = true;
+                UnclosedQuotes = true;
+                RepeatedWords = true;
+                Spaces = true;
+              };
+            };
+          };
           ruff = {
             command = lib.getExe pkgs.ruff;
             args = [ "server" ];
@@ -324,6 +341,26 @@ with lib.mine;
             language-servers = [
               "godot"
               "typos"
+            ];
+          }
+          {
+            name = "markdown";
+            language-servers = [
+              "markdown-oxide"
+              {
+                name = "harper-ls";
+                only-features = [
+                  "diagnostics"
+                  "code-action"
+                ];
+              }
+              {
+                name = "typos";
+                only-features = [
+                  "diagnostics"
+                  "code-action"
+                ];
+              }
             ];
           }
           {
