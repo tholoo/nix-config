@@ -73,6 +73,7 @@ in
           compact-bar location="zellij:compact-bar"
           agent-deck location="file:~/.config/zellij/plugins/agent-deck.wasm" {
               helper "${lib.getExe agentDeck}"
+              show_subagents "false"
           }
       }
 
