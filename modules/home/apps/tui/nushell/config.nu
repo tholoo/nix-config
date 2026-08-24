@@ -125,7 +125,12 @@ let abbreviations = {
 
 $env.config = {
    show_banner: false,
-   edit_mode: vi,
+   edit_mode: helix,
+   cursor_shape: {
+      helix_normal: block
+      helix_select: underscore
+      helix_insert: line
+   }
    completions: {
    external: {
       enable: true
@@ -168,7 +173,7 @@ $env.config = {
         name: paste_bash_multiline
         modifier: alt
         keycode: char_v
-        mode: [emacs, vi_normal, vi_insert]
+        mode: [emacs, helix_normal, helix_insert, helix_select]
         event: { send: ExecuteHostCommand 
             cmd: r#'commandline edit (
                     wl-paste
@@ -181,7 +186,7 @@ $env.config = {
       name: fuzzy_file_dir_completion
       modifier: control
       keycode: char_t
-      mode: [emacs, vi_normal, vi_insert]
+      mode: [emacs, helix_normal, helix_insert, helix_select]
       event: [
         {
           send: ExecuteHostCommand
@@ -202,7 +207,7 @@ $env.config = {
       name: abbr_menu
       modifier: none
       keycode: enter
-      mode: [emacs, vi_normal, vi_insert]
+      mode: [emacs, helix_normal, helix_insert, helix_select]
       event: [
           { send: menu name: abbr_menu }
           { send: enter }
@@ -212,7 +217,7 @@ $env.config = {
       name: abbr_menu
       modifier: none
       keycode: space
-      mode: [emacs, vi_normal, vi_insert]
+      mode: [emacs, helix_normal, helix_insert, helix_select]
       event: [
           { send: menu name: abbr_menu }
           { edit: insertchar value: ' '}
