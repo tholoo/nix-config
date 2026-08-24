@@ -34,6 +34,8 @@ let
   agentDeck = inputs.zellij-agent-deck.packages.${pkgs.stdenv.hostPlatform.system}.default;
 in
 {
+  imports = [ inputs.zellij-agent-deck.homeManagerModules.default ];
+
   options.mine.${name} = mkEnable config {
     tags = [
       "tui"
@@ -45,17 +47,14 @@ in
   config = mkIf cfg.enable {
     home.packages = [
       zellij-switch
-      agentDeck
     ];
 
+    programs.zellij-agent-deck.enable = true;
     programs.zellij.enable = true;
     # xdg.configFile."zellij/config.kdl".source = ./config.kdl;
     xdg.configFile."zellij/plugins/monocle.wasm".source =
       "${pkgs.mine.zellij-monocle}/zellij-monocle.wasm";
     xdg.configFile."zellij/plugins/room.wasm".source = "${pkgs.mine.zellij-room}/zellij-room.wasm";
-    xdg.configFile."zellij/plugins/agent-deck.wasm".source =
-      "${agentDeck}/share/zellij/plugins/agent-deck.wasm";
-
     xdg.configFile."zellij/config.kdl".text = ''
       // DEFAULT: https://github.com/zellij-org/zellij/blob/main/zellij-utils/assets/config/default.kdl
 

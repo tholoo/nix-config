@@ -35,6 +35,7 @@ let
           --set-default all_proxy ${lib.escapeShellArg cfg.proxyUrl}
         ''}
     '';
+    meta.mainProgram = "codex";
   };
 
   npx = "${pkgs.nodejs}/bin/npx";
@@ -48,22 +49,11 @@ let
     inherit inputs lib pkgs;
   };
   codexNotify = codexHooks.notifyCommand;
-
-  codexSupervisor = pkgs.writeShellApplication {
-    name = "codex";
-    text = ''
-      exec ${lib.escapeShellArg codexHooks.codexResurrectionCommand} codex-supervisor \
-        --codex ${lib.escapeShellArg (lib.getExe' codexRuntimePackage "codex")} -- "$@"
-    '';
-  };
-
-  codexPackage = pkgs.symlinkJoin {
+  agentDeck = inputs.zellij-agent-deck.packages.${pkgs.stdenv.hostPlatform.system}.default;
+  codexPackage = inputs.zellij-agent-deck.lib.mkCodexWrapper {
+    inherit pkgs agentDeck;
+    codex = codexRuntimePackage;
     name = "${llmAgents.codex.name}-zellij-resume";
-    paths = [ codexRuntimePackage ];
-    postBuild = ''
-      rm "$out/bin/codex"
-      ln -s ${lib.getExe codexSupervisor} "$out/bin/codex"
-    '';
   };
 
   agentSkills = import ../ai/skills.nix { inherit inputs lib; };
@@ -262,24 +252,5 @@ in
       skills = agentSkills;
     };
 
-    systemd.user = {
-      services.zellij-agent-deck-codex-gc = {
-        Unit.Description = "Clean unreferenced Codex Zellij resurrection mappings";
-        Service = {
-          Type = "oneshot";
-          ExecStart = "${codexHooks.codexResurrectionCommand} gc";
-        };
-      };
-
-      timers.zellij-agent-deck-codex-gc = {
-        Unit.Description = "Daily Codex Zellij resurrection mapping cleanup";
-        Timer = {
-          OnCalendar = "daily";
-          Persistent = true;
-          RandomizedDelaySec = "1h";
-        };
-        Install.WantedBy = [ "timers.target" ];
-      };
-    };
   };
 }

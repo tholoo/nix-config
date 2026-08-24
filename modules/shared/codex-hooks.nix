@@ -38,47 +38,17 @@ let
     timeout = 4;
   };
 
-  deckHooks = [
-    {
-      hooks = [ agentDeckHook ];
-    }
-  ];
+  deckRequirements = inputs.zellij-agent-deck.lib.mkCodexRequirements {
+    agentDeckCommand = "${managedDir}/agent-deck";
+    resurrectionCommand = "${managedDir}/agent-deck-codex";
+    managedDir = "${managedDir}";
+  };
 in
 {
   notifyCommand = lib.getExe codexNotify;
-  codexResurrectionCommand = "${agentDeck}/bin/zellij-agent-deck-codex";
 
-  requirements = {
-    features.hooks = true;
-
-    hooks = {
-      managed_dir = "${managedDir}";
-
-      SessionStart = [
-        {
-          hooks = [
-            agentDeckHook
-            {
-              type = "command";
-              command = "${managedDir}/agent-deck-codex hook";
-              timeout = 4;
-            }
-          ];
-        }
-      ];
-      SessionEnd = [
-        {
-          hooks = [
-            (agentDeckHook // { timeout = 3; })
-          ];
-        }
-      ];
-      UserPromptSubmit = deckHooks;
-      PreToolUse = deckHooks;
-      Stop = deckHooks;
-      SubagentStart = deckHooks;
-      SubagentStop = deckHooks;
-
+  requirements = deckRequirements // {
+    hooks = deckRequirements.hooks // {
       PermissionRequest = [
         {
           hooks = [
