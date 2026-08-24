@@ -23,14 +23,13 @@
 
   age.secrets.tholo-authorized-key = {
     file = inputs.self + /secrets/ssh/windows-authorized-key.age;
-    path = "/run/agenix/authorized-keys/tholo";
     mode = "0444";
   };
 
-  # srvos' desktop profile force-locks this list, so include the agenix path
-  # explicitly while retaining its hardened system key location.
+  # srvos' desktop profile force-locks this list, so include agenix's default
+  # generation path explicitly while retaining its hardened system key location.
   services.openssh.authorizedKeysFiles = lib.mkOverride 40 [
-    "/run/agenix/authorized-keys/%u"
+    "/run/agenix/%u-authorized-key"
     "/etc/ssh/authorized_keys.d/%u"
   ];
 

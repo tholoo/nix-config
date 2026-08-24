@@ -37,7 +37,7 @@ with lib.mine;
   config = mkIf cfg.enable (mkMerge [
     {
       services.openssh.authorizedKeysFiles = [
-        "/run/agenix/authorized-keys/%u"
+        "/run/agenix/%u-authorized-key"
       ];
 
       assertions = [
