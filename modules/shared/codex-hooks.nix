@@ -23,10 +23,6 @@ let
       path = lib.getExe agentDeck;
     }
     {
-      name = "notify";
-      path = lib.getExe codexNotify;
-    }
-    {
       name = "agent-deck-codex";
       path = "${agentDeck}/bin/zellij-agent-deck-codex";
     }
@@ -51,14 +47,10 @@ in
     hooks = deckRequirements.hooks // {
       PermissionRequest = [
         {
+          # Keep lifecycle tracking here, but leave notifications to
+          # tui.notifications after auto-review has had a chance to decide.
           hooks = [
             agentDeckHook
-            {
-              type = "command";
-              command = "${managedDir}/notify";
-              timeout = 10;
-              statusMessage = "Sending approval notification";
-            }
           ];
         }
       ];
