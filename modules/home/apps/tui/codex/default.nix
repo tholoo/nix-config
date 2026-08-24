@@ -18,7 +18,7 @@ let
 
   llmAgents = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system};
 
-  codexPackage = pkgs.symlinkJoin {
+  codexRuntimePackage = pkgs.symlinkJoin {
     name = "${llmAgents.codex.name}-system-bwrap";
     paths = [ llmAgents.codex ];
     nativeBuildInputs = [ pkgs.makeWrapper ];
@@ -48,6 +48,24 @@ let
     inherit inputs lib pkgs;
   };
   codexNotify = codexHooks.notifyCommand;
+
+  codexSupervisor = pkgs.writeShellApplication {
+    name = "codex";
+    text = ''
+      export CODEX_ZELLIJ_REAL_CODEX=${lib.escapeShellArg (lib.getExe' codexRuntimePackage "codex")}
+      export CODEX_ZELLIJ_SESSION_COMMAND=${lib.escapeShellArg codexHooks.zellijSessionCommand}
+      ${builtins.readFile ./zellij-supervisor.sh}
+    '';
+  };
+
+  codexPackage = pkgs.symlinkJoin {
+    name = "${llmAgents.codex.name}-zellij-resume";
+    paths = [ codexRuntimePackage ];
+    postBuild = ''
+      rm "$out/bin/codex"
+      ln -s ${lib.getExe codexSupervisor} "$out/bin/codex"
+    '';
+  };
 
   agentSkills = import ../ai/skills.nix { inherit inputs lib; };
 

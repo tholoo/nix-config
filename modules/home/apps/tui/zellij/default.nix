@@ -31,6 +31,7 @@ let
 
   zellij-switch-script = ./zellij-switch.nu;
   zellij-switch = inputs.zellij-switch.packages.${pkgs.stdenv.hostPlatform.system}.default;
+  agentDeck = inputs.zellij-agent-deck.packages.${pkgs.stdenv.hostPlatform.system}.default;
 in
 {
   options.mine.${name} = mkEnable config {
@@ -44,6 +45,7 @@ in
   config = mkIf cfg.enable {
     home.packages = [
       zellij-switch
+      agentDeck
     ];
 
     programs.zellij.enable = true;
@@ -51,6 +53,8 @@ in
     xdg.configFile."zellij/plugins/monocle.wasm".source =
       "${pkgs.mine.zellij-monocle}/zellij-monocle.wasm";
     xdg.configFile."zellij/plugins/room.wasm".source = "${pkgs.mine.zellij-room}/zellij-room.wasm";
+    xdg.configFile."zellij/plugins/agent-deck.wasm".source =
+      "${agentDeck}/share/zellij/plugins/agent-deck.wasm";
 
     xdg.configFile."zellij/config.kdl".text = ''
       // DEFAULT: https://github.com/zellij-org/zellij/blob/main/zellij-utils/assets/config/default.kdl
@@ -64,12 +68,22 @@ in
       serialization_interval 1
       show_startup_tips false
 
+      nested_session_handling "ask"
+
       plugins {
           compact-bar location="zellij:compact-bar"
+          agent-deck location="file:~/.config/zellij/plugins/agent-deck.wasm" {
+              helper "${lib.getExe agentDeck}"
+          }
+      }
+
+      // One invisible instance per session receives Codex lifecycle events.
+      load_plugins {
+          agent-deck
       }
 
       // simplified_ui true
-      pane_frames false
+      pane_frame_style "titles"
 
       themes {
           base16 {
@@ -120,6 +134,7 @@ in
               bind "l" "Right" { NewPane "Right" ; SwitchToMode "Normal" ; }
               bind "n"         { NewPane ; SwitchToMode "Normal" ; }
               bind "p"         { SwitchFocus ; SwitchToMode "Normal" ; }
+              bind ";"         { FocusLastPane ; }
               bind "r"         { SwitchToMode "RenamePane" ; PaneNameInput 0 ; }
               bind "w"         { ToggleFloatingPanes ; SwitchToMode "Normal" ; }
               bind "x"         { CloseFocus ; SwitchToMode "Normal" ; }
@@ -156,9 +171,16 @@ in
               bind "Ctrl u"   { PageScrollUp ; }
               bind "s"        { SwitchToMode "EnterSearch" ; SearchInput 0 ; }
               bind "e" { EditScrollback; SwitchToMode "Normal"; }
+              bind "[" { ScrollToPreviousPrompt; }
+              bind "]" { ScrollToNextPrompt; }
+              bind "m" { SelectCommandAtScrollPosition; }
+              bind "c" { CopyLastCommandOutput; SwitchToMode "Normal"; }
           }
           search {
               bind "Alt s" { SwitchToMode "Normal" ; }
+              bind "["     { ScrollToPreviousPrompt ; }
+              bind "]"     { ScrollToNextPrompt ; }
+              bind "m"     { SelectCommandAtScrollPosition ; }
               bind "n"     { Search "down" ; }
               bind "p"     { Search "up" ; }
               bind "c"     { SearchToggleOption "CaseSensitivity" ; }
@@ -180,6 +202,9 @@ in
           session {
               bind "Alt o" { SwitchToMode "Normal" ; }
               bind "d"     { Detach ; }
+              bind "]"     { FocusHostSession ; SwitchToMode "Normal" ; }
+              bind "["     { FocusGuestSession ; SwitchToMode "Normal" ; }
+              bind "f"     { ToggleHostFullscreen ; SwitchToMode "Normal" ; }
               bind "o"     {
                   LaunchOrFocusPlugin "session-manager" {
                       floating true
@@ -191,6 +216,13 @@ in
                   LaunchOrFocusPlugin "plugin-manager" {
                       floating true
                           move_to_focused_tab true
+                  };
+                  SwitchToMode "Normal"
+              }
+              bind "s" {
+                  LaunchOrFocusPlugin "zellij:share" {
+                      floating true
+                      move_to_focused_tab true
                   };
                   SwitchToMode "Normal"
               }
@@ -226,18 +258,19 @@ in
                   };
               }
 
-              bind "Alt o" {
-                  LaunchOrFocusPlugin "session-manager" {
-                      floating true
-                      move_to_focused_tab true
-                  };
-                  SwitchToMode "Normal"
-              }
-
               bind "Alt i" {
                 Run "zellij" "run" "--floating" "--close-on-exit" "--" "${zellij-switch-script}" {
                   close_on_exit true
                 }
+              }
+
+              // Toggle the floating, cross-session Codex agent deck.
+              bind "Alt a" {
+                  LaunchOrFocusPlugin "agent-deck" {
+                      floating true
+                      move_to_focused_tab true
+                  }
+                  SwitchToMode "Normal"
               }
 
               // open monocle in a new floating pane and open any results in a new tiled/floating pane
@@ -287,9 +320,9 @@ in
           shared_except "scroll" "locked" {
               bind "Alt s" { SwitchToMode "Scroll" ; }
           }
-          // shared_except "session" "locked" {
-          //     bind "Alt o" { SwitchToMode "Session" ; }
-          // }
+          shared_except "session" "locked" {
+              bind "Alt o" { SwitchToMode "Session" ; }
+          }
           shared_except "tab" "locked" {
               bind "Alt t" { SwitchToMode "Tab" ; }
           }
