@@ -25,7 +25,15 @@ let
     postBuild = ''
       rm "$out/bin/codex"
       makeWrapper "${llmAgents.codex}/bin/.codex-wrapped" "$out/bin/codex" \
-        --prefix PATH : "/run/wrappers/bin:${pkgs.bubblewrap}/bin"
+        --prefix PATH : "/run/wrappers/bin:${pkgs.bubblewrap}/bin" \
+        ${optionalString (cfg.proxyUrl != null) ''
+          --set-default HTTP_PROXY ${lib.escapeShellArg cfg.proxyUrl} \
+          --set-default HTTPS_PROXY ${lib.escapeShellArg cfg.proxyUrl} \
+          --set-default ALL_PROXY ${lib.escapeShellArg cfg.proxyUrl} \
+          --set-default http_proxy ${lib.escapeShellArg cfg.proxyUrl} \
+          --set-default https_proxy ${lib.escapeShellArg cfg.proxyUrl} \
+          --set-default all_proxy ${lib.escapeShellArg cfg.proxyUrl}
+        ''}
     '';
   };
 
@@ -62,6 +70,7 @@ let
       hooks = true;
       goals = true;
       multi_agent = true;
+      respect_system_proxy = true;
       shell_snapshot = true;
       terminal_resize_reflow = true;
       codex_git_commit = false;
@@ -127,6 +136,13 @@ in
       type = types.nullOr types.str;
       default = null;
       description = "Host-specific context for Codex (rendered as custom instructions).";
+    };
+
+    proxyUrl = mkOption {
+      type = types.nullOr types.str;
+      default = null;
+      example = "http://127.0.0.1:10808";
+      description = "Default proxy URL exported to Codex when no proxy environment override is set.";
     };
 
     enableSharedMcp = mkOption {

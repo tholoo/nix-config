@@ -34,6 +34,7 @@ in
       This is the primary mobile dev machine with full GUI + TUI suites.
     '';
     claude-code.proxyUrl = "http://127.0.0.1:10808";
+    codex.proxyUrl = "http://127.0.0.1:10808";
 
     pi.hostContext = ''
       # Host: glacier
