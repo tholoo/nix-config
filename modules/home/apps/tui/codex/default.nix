@@ -52,9 +52,8 @@ let
   codexSupervisor = pkgs.writeShellApplication {
     name = "codex";
     text = ''
-      export CODEX_ZELLIJ_REAL_CODEX=${lib.escapeShellArg (lib.getExe' codexRuntimePackage "codex")}
-      export CODEX_ZELLIJ_SESSION_COMMAND=${lib.escapeShellArg codexHooks.zellijSessionCommand}
-      ${builtins.readFile ./zellij-supervisor.sh}
+      exec ${lib.escapeShellArg codexHooks.codexResurrectionCommand} codex-supervisor \
+        --codex ${lib.escapeShellArg (lib.getExe' codexRuntimePackage "codex")} -- "$@"
     '';
   };
 
@@ -261,6 +260,26 @@ in
       context = optionalString (cfg.hostContext != null) cfg.hostContext;
 
       skills = agentSkills;
+    };
+
+    systemd.user = {
+      services.zellij-agent-deck-codex-gc = {
+        Unit.Description = "Clean unreferenced Codex Zellij resurrection mappings";
+        Service = {
+          Type = "oneshot";
+          ExecStart = "${codexHooks.codexResurrectionCommand} gc";
+        };
+      };
+
+      timers.zellij-agent-deck-codex-gc = {
+        Unit.Description = "Daily Codex Zellij resurrection mapping cleanup";
+        Timer = {
+          OnCalendar = "daily";
+          Persistent = true;
+          RandomizedDelaySec = "1h";
+        };
+        Install.WantedBy = [ "timers.target" ];
+      };
     };
   };
 }

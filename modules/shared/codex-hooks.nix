@@ -26,6 +26,10 @@ let
       name = "notify";
       path = lib.getExe codexNotify;
     }
+    {
+      name = "agent-deck-codex";
+      path = "${agentDeck}/bin/zellij-agent-deck-codex";
+    }
   ];
 
   agentDeckHook = {
@@ -42,6 +46,7 @@ let
 in
 {
   notifyCommand = lib.getExe codexNotify;
+  codexResurrectionCommand = "${agentDeck}/bin/zellij-agent-deck-codex";
 
   requirements = {
     features.hooks = true;
@@ -49,7 +54,18 @@ in
     hooks = {
       managed_dir = "${managedDir}";
 
-      SessionStart = deckHooks;
+      SessionStart = [
+        {
+          hooks = [
+            agentDeckHook
+            {
+              type = "command";
+              command = "${managedDir}/agent-deck-codex hook";
+              timeout = 4;
+            }
+          ];
+        }
+      ];
       SessionEnd = [
         {
           hooks = [
