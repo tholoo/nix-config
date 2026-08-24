@@ -103,7 +103,7 @@ in
       };
       "${configDir}/font_size" = {
         force = true;
-        text = "14";
+        text = "16";
       };
       "${configDir}/opacity" = {
         force = true;
