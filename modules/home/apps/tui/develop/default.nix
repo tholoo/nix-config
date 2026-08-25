@@ -29,6 +29,7 @@ in
       fenix.complete.toolchain
 
       python314
+      kaggle
     ];
 
     programs.uv.enable = true;
