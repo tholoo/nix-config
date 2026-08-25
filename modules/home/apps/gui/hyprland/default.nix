@@ -482,6 +482,9 @@ in
           "match:initial_class ^(${terminal.chooserClassRegex})$, float on"
           "match:initial_class ^(${terminal.chooserClassRegex})$, size 80% 60%"
           "match:initial_class ^(${terminal.chooserClassRegex})$, center 1"
+          "match:class ^(${terminal.classRegex})$, match:initial_title ^(dev\\.terminal\\.chooser.*)$, float on"
+          "match:class ^(${terminal.classRegex})$, match:initial_title ^(dev\\.terminal\\.chooser.*)$, size 80% 60%"
+          "match:class ^(${terminal.classRegex})$, match:initial_title ^(dev\\.terminal\\.chooser.*)$, center 1"
 
           # Pin Anki to workspace 5 silently — AnkiConnect updates from
           # mpvacious mining happen there without yanking focus from mpv.
