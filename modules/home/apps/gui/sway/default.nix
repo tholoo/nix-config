@@ -73,8 +73,6 @@ in
           { command = "'${lib.getExe pkgs.swaysome} init 1'"; }
           # { command = "vivaldi"; }
           # { command = "wezterm"; }
-          # make copied data persist after closing the application
-          { command = "exec ${lib.getExe pkgs.wl-clip-persist} --clipboard both"; }
           {
             command = "${lib.getExe' pkgs.systemd "systemctl"} --user reload-or-restart kanshi.service";
             always = true;
@@ -135,8 +133,6 @@ in
 
             "${modifier}+period" = "exec ${getExe' swaynotificationcenter "swaync-client"} --hide-latest";
 
-            "${modifier}+y" =
-              "exec ${getExe cliphist} list | ${getExe wofi} --show dmenu | ${getExe cliphist} decode | ${getExe' wl-clipboard "wl-copy"}";
             # "Insert" =
             #   "exec ${pkgs.grim}/bin/grim -o $(swaymsg -t get_outputs | ${pkgs.jq}/bin/jq -r '.[] | select(.focused) | .name') - | ${pkgs.satty}/bin/satty --filename - --fullscreen";
             # Screen recording

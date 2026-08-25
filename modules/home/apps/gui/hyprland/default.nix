@@ -138,9 +138,7 @@ in
           "[workspace 4 silent] ${lib.getExe pkgs.throne}"
 
           "${lib.getExe' pkgs.awww "awww-daemon"}"
-          "${lib.getExe pkgs.wl-clip-persist} --clipboard both"
           "QT_QPA_PLATFORM=xcb ${lib.getExe' pkgs.kdePackages.kdeconnect-kde "kdeconnectd"}"
-          "${lib.getExe pkgs.clipse} -listen"
 
           ''hyprctl setcursor "Bibata-Modern-Ice" 22''
           "${lib.getExe' pkgs.systemd "systemctl"} --user reload-or-restart kanshi.service"
@@ -374,8 +372,6 @@ in
             # TODO: switch to watershot?
             ", Print, exec, ${screenshot}"
             ", Insert, exec, ${getExe wayshot} --stdout | ${getExe satty} --filename - --fullscreen --initial-tool brush"
-            # "$mainMod, Y, exec, ${getExe cliphist} list | ${getExe wofi} --show dmenu | ${getExe cliphist} decode | ${getExe' wl-clipboard "wl-copy"}"
-            # "$mainMod, Y, exec, $terminal --class=\"com.example.clipse\" -e '${lib.getExe pkgs.clipse}'"
             "$mainMod, Y, exec, vicinae cmd launch clipboard:history"
             "$mainMod SHIFT, Z, exec, ${getExe wlogout}"
             "$mainMod SHIFT, n, exec, ${getExe wayle} notify dnd"
@@ -505,11 +501,6 @@ in
 
         #   "noanim, class:^(Godot)$"
         #   "tile, class:^(Godot)$, initialTitle:^(Godot)$"
-
-        #   "float,class:(com.example.clipse)"
-        #   "float,class:(floatingAppFocus)"
-        #   "noanim,class:^(com.example.clipse|floatingAppFocus)$"
-        #   "size 622 652,class:(com.example.clipse)"
 
         #   # "nofocus,class:(org.kde.kdeconnect.daemon)"
         #   # "float,class:(org.kde.kdeconnect.daemon)"
