@@ -9,18 +9,21 @@ let
   inherit (lib.mine) mkEnable;
   cfg = config.mine.${name};
   name = "atuin";
-  nushellConfig = pkgs.runCommand "atuin-nushell-config-helix.nu" {
-    nativeBuildInputs = [ pkgs.writableTmpDirAsHomeHook ];
-  } ''
-    ${lib.getExe config.programs.atuin.package} init nu ${lib.escapeShellArgs config.programs.atuin.flags} > "$out"
-    substituteInPlace "$out" \
-      --replace-fail \
-      'name: atuin' \
-      'name: history_menu' \
-      --replace-fail \
-      'mode: [emacs, vi_normal, vi_insert]' \
-      'mode: [emacs, vi_normal, vi_insert, helix_normal, helix_select, helix_insert]'
-  '';
+  nushellConfig =
+    pkgs.runCommand "atuin-nushell-config-helix.nu"
+      {
+        nativeBuildInputs = [ pkgs.writableTmpDirAsHomeHook ];
+      }
+      ''
+        ${lib.getExe config.programs.atuin.package} init nu ${lib.escapeShellArgs config.programs.atuin.flags} > "$out"
+        substituteInPlace "$out" \
+          --replace-fail \
+          'name: atuin' \
+          'name: history_menu' \
+          --replace-fail \
+          'mode: [emacs, vi_normal, vi_insert]' \
+          'mode: [emacs, vi_normal, vi_insert, helix_normal, helix_select, helix_insert]'
+      '';
 in
 {
   options.mine.${name} = mkEnable config {
@@ -38,7 +41,6 @@ in
         enableNushellIntegration = false;
         flags = [ "--disable-up-arrow" ];
         settings = {
-          search_mode = "skim";
           style = "compact";
           invert = true;
           show_preview = true;
