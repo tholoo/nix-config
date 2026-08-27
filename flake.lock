@@ -596,11 +596,11 @@
         "qmd": "qmd"
       },
       "locked": {
-        "lastModified": 1787487681,
-        "narHash": "sha256-Fk2T58HJFxZGhrTUOXYVl4Pm4WANwxovaSYRyPAscZI=",
+        "lastModified": 1787869645,
+        "narHash": "sha256-ck9u1TqJbwOF1Y7UT2aA6CqP8sksoNw282OQh3riYhI=",
         "owner": "tholoo",
         "repo": "kb",
-        "rev": "3d31b0942ceb8d4ccfadf6e368ddd55eba8eefa3",
+        "rev": "a1f84b797693f3fdaad51655ce120d01967b49ec",
         "type": "github"
       },
       "original": {

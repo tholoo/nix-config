@@ -77,7 +77,7 @@ in
       # The agenix Home Manager path contains a literal ${XDG_RUNTIME_DIR},
       # while kb passes this value directly to OpenSSH without shell expansion.
       configFile = "/run/user/1000/agenix/kb-windows-ssh-config";
-      remoteScriptsDir = ''D:\KB\scripts'';
+      remoteScriptsDir = ''D:\ali\KB\scripts'';
     };
     tunnel = {
       enable = true;
@@ -86,11 +86,13 @@ in
     };
     windows = {
       enable = true;
-      root = "D:\\KB";
+      root = "D:\\ali";
+      instanceDir = "KB";
       taskName = "KB-llama-server";
       downloadProxy = "http://127.0.0.1:2080";
       server = {
-        model = "models\\${kbModelFile}";
+        executable = "Shared\\Inference\\bin\\llama-server.exe";
+        model = "Shared\\Inference\\models\\${kbModelFile}";
         modelAlias = kbModel;
         port = 18080;
         arguments = [
@@ -123,23 +125,23 @@ in
           name = "llama-runtime";
           url = "https://github.com/ggml-org/llama.cpp/releases/download/b10549/llama-b10549-bin-win-cuda-12.4-x64.zip";
           sha256 = "2e980ae28b40c92c9c30bdbcf3f28064b40104472e213c52edbeb89b920d65fe";
-          destination = "cache\\downloads\\llama-b10549-bin-win-cuda-12.4-x64.zip";
-          extractTo = "bin";
+          destination = "Shared\\Inference\\cache\\downloads\\llama-b10549-bin-win-cuda-12.4-x64.zip";
+          extractTo = "Shared\\Inference\\bin";
           flatten = true;
         }
         {
           name = "cuda-runtime";
           url = "https://github.com/ggml-org/llama.cpp/releases/download/b10549/cudart-llama-bin-win-cuda-12.4-x64.zip";
           sha256 = "8c79a9b226de4b3cacfd1f83d24f962d0773be79f1e7b75c6af4ded7e32ae1d6";
-          destination = "cache\\downloads\\cudart-llama-bin-win-cuda-12.4-x64.zip";
-          extractTo = "bin";
+          destination = "Shared\\Inference\\cache\\downloads\\cudart-llama-bin-win-cuda-12.4-x64.zip";
+          extractTo = "Shared\\Inference\\bin";
           flatten = true;
         }
         {
           name = "model";
           url = "https://huggingface.co/unsloth/Qwen3.5-9B-GGUF/resolve/main/${kbModelFile}";
           sha256 = "6f5d30666c2d8ae16a306e616d95341dcf3cc46810df84d7e6f5a7d1e4c1b293";
-          destination = "models\\${kbModelFile}";
+          destination = "Shared\\Inference\\models\\${kbModelFile}";
         }
       ];
     };
