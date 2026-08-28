@@ -76,8 +76,8 @@ failure. The daemon itself polls for the ESP32 and reconnects after unplugging.
 | `PermissionRequest` | Mark the root task `INPUT` |
 | `Stop` | Mark `DONE`, or `INPUT` when the final response asks a question; keep it visible while the session remains open |
 | `SessionEnd` | Delete the root row and all of that session's subagent rows |
-| `SubagentStart` | Add a separate running subagent row |
-| `SubagentStop` | Mark the subagent row complete |
+| `SubagentStart` | Retain a separate running subagent row for lifecycle bookkeeping; do not send it to the board |
+| `SubagentStop` | Mark the retained subagent row complete; do not change the board LEDs |
 
 On `UserPromptSubmit`, a separate `codex-title` hook gives Codex a short
 developer-context instruction to choose a 2-4 word title. The generic registry
@@ -96,7 +96,8 @@ notification over silently treating a question as complete.
 ## Task state and timing
 
 Root-task duration begins at `UserPromptSubmit` and freezes when the task
-becomes `DONE`. Subagent duration begins at `SubagentStart`. Each state also
+becomes `DONE`. Subagent duration begins at `SubagentStart`, but subagent rows
+remain host-only and do not contribute to any board LED. Each root state also
 has a separate age used for the delayed strobing alert.
 
 A completed task remains retained so the user can notice it while its Codex
@@ -105,7 +106,7 @@ the row when it jumps to that pane; resuming the session also acknowledges it.
 Acknowledged rows use state `A` and no longer illuminate green. Closing the
 session removes its root and subagent rows immediately.
 
-The host returns at most six rows. Ordering is:
+The host sends at most six root-task rows to the board. Ordering is:
 
 1. input required
 2. error
@@ -120,10 +121,10 @@ The LEDs are independent; several may be illuminated simultaneously.
 
 | LED | On when |
 |---|---|
-| Green | At least one tracked task is unacknowledged `DONE` |
-| Yellow | At least one tracked task is `RUN` |
-| Red | A task is `ERROR`, the network is offline, or the host heartbeat is lost |
-| Blue | At least one tracked task is `INPUT` |
+| Green | At least one root task is unacknowledged `DONE` |
+| Yellow | At least one root task is `RUN` |
+| Red | A root task is `ERROR`, the network is offline, or the host heartbeat is lost |
+| Blue | At least one root task is `INPUT` |
 | Harder blue | Host heartbeat is present and the network probe is online |
 | Self-cycling | Input or any continuous red alert has remained for at least 180 seconds |
 
@@ -294,9 +295,10 @@ Completed in software:
 - `dashboard` PlatformIO environment builds successfully.
 - preserved `bringup` PlatformIO environment builds successfully.
 - Python syntax compilation succeeds.
-- Eight dashboard unit tests cover root task states, input detection, tool failure
-  recovery, subagent rows, session-close removal, serial sanitization, hook
-  rendering, and safe hook installation/removal.
+- Thirteen dashboard unit tests cover root task states, input detection, tool
+  failure recovery, host-only subagent rows, session-close removal, serial
+  filtering/sanitization, usage parsing, hook rendering, and safe hook
+  installation/removal.
 - Eight registry unit tests cover private storage, canonical title cleanup,
   lookup/list/clear behavior, generic hook output, sink fan-out, and publisher
   replay.

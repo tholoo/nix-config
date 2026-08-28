@@ -13,10 +13,10 @@ modify files in the projects being displayed.
 
 | LED / GPIO | Meaning |
 |---|---|
-| Green / GPIO4 | At least one completed task has not been acknowledged |
-| Yellow / GPIO5 | At least one tracked task is working |
-| Red / GPIO6 | Task error, network offline, or laptop bridge lost |
-| Blue / GPIO7 | A task needs user input or approval |
+| Green / GPIO4 | At least one completed root task has not been acknowledged |
+| Yellow / GPIO5 | At least one root task is working |
+| Red / GPIO6 | Root-task error, network offline, or laptop bridge lost |
+| Blue / GPIO7 | A root task needs user input or approval |
 | Harder blue / GPIO10 | Laptop bridge is alive and the network probe succeeds |
 | Self-cycling / GPIO11 | Blue input or any continuous red alert has lasted at least three minutes |
 
@@ -46,11 +46,12 @@ until reset. If Codex exposes only one main quota window, the second row uses
 the next model-specific limit; if no second window exists, it says
 `NO SECOND QUOTA`. Usage failure does not disable session-driven LEDs.
 
-When Agent Deck jumps to a completed root task or subagent, its existing
-`mark-read` action also acknowledges the matching dashboard row. Green turns
-off if no other unread completion remains. Resuming a completed Codex session
-does the same through `SessionStart`. Simply focusing an already-open pane by
-other means has no reliable Codex event and cannot be detected.
+When Agent Deck jumps to a completed root task, its existing `mark-read` action
+also acknowledges the matching dashboard row. Green turns off if no other
+unread root completion remains. Subagent rows remain host-side bookkeeping and
+never illuminate LEDs. Resuming a completed Codex session does the same through
+`SessionStart`. Simply focusing an already-open pane by other means has no
+reliable Codex event and cannot be detected.
 
 ## 1. Build and flash
 
@@ -144,11 +145,12 @@ These events are recorded:
 - `PermissionRequest`: marks the root task as `INPUT`.
 - `Stop`: marks the task `DONE`, or `INPUT` when the final response asks a
   question. A completed task stays visible while its Codex session is open.
-- `SubagentStart` and `SubagentStop`: add and finish separate subagent rows.
+- `SubagentStart` and `SubagentStop`: retain host-side lifecycle rows for
+  bookkeeping; subagents are not sent to the board and do not affect its LEDs.
 - `SessionEnd`: removes the root task and all subagents belonging to the closed
   session. Green turns off when no remaining session is `DONE`.
-- Agent Deck `mark-read` or a resumed `SessionStart`: changes a completed row
-  to acknowledged (`SEEN` internally), clearing its green alert without
+- Agent Deck `mark-read` or a resumed `SessionStart`: changes a completed root
+  row to acknowledged (`SEEN` internally), clearing its green alert without
   deleting the retained row.
 
 The hooks are global managed hooks, so they can show `~/nix-config`,

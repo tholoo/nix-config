@@ -112,6 +112,22 @@ class CodexBoardTests(unittest.TestCase):
         )
         self.assertEqual(self.row("thread-1:agent-2")["status"], "D")
 
+    def test_packet_only_includes_root_tasks(self):
+        codex_board.handle_hook(self.event("UserPromptSubmit"), self.database)
+        codex_board.handle_hook(
+            self.event("SubagentStart", agent_id="agent-2", agent_type="research"),
+            self.database,
+        )
+        codex_board.handle_hook(
+            self.event("SubagentStop", agent_id="agent-2", agent_type="research"),
+            self.database,
+        )
+
+        packet = codex_board.build_packet(True, self.database).decode("ascii")
+        task_lines = [line for line in packet.splitlines() if line.startswith("TASK|")]
+        self.assertEqual(len(task_lines), 1)
+        self.assertIn("TASK|nix-config|_|W|", task_lines[0])
+
     def test_session_end_removes_root_and_subagents(self):
         codex_board.handle_hook(self.event("UserPromptSubmit"), self.database)
         codex_board.handle_hook(

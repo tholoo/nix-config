@@ -399,10 +399,14 @@ def handle_hook(event: dict[str, Any], path: Path | None = None) -> dict[str, An
     return None
 
 
-def task_rows(connection: sqlite3.Connection) -> list[sqlite3.Row]:
+def task_rows(
+    connection: sqlite3.Connection, *, roots_only: bool = False
+) -> list[sqlite3.Row]:
+    kind_filter = "WHERE kind = 'root'" if roots_only else ""
     return connection.execute(
-        """
+        f"""
         SELECT * FROM tasks
+        {kind_filter}
         ORDER BY
             CASE status WHEN 'I' THEN 0 WHEN 'E' THEN 1
                         WHEN 'W' THEN 2 WHEN 'D' THEN 3 ELSE 4 END,
@@ -422,7 +426,7 @@ def build_packet(
     now = time.time() if now is None else now
     connection = open_database(path)
     try:
-        rows = task_rows(connection)
+        rows = task_rows(connection, roots_only=True)
     finally:
         connection.close()
 

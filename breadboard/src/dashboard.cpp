@@ -7,10 +7,10 @@
 constexpr uint8_t I2C_SDA_PIN = 8;
 constexpr uint8_t I2C_SCL_PIN = 9;
 
-constexpr uint8_t LED_GREEN_PIN = 4;       // A completed Codex task exists.
-constexpr uint8_t LED_YELLOW_PIN = 5;      // A Codex task is working.
-constexpr uint8_t LED_RED_PIN = 6;         // Task error, network loss, or host loss.
-constexpr uint8_t LED_BLUE_PIN = 7;        // Codex needs user input/approval.
+constexpr uint8_t LED_GREEN_PIN = 4;       // A completed root Codex task exists.
+constexpr uint8_t LED_YELLOW_PIN = 5;      // A root Codex task is working.
+constexpr uint8_t LED_RED_PIN = 6;         // Root-task error, network loss, or host loss.
+constexpr uint8_t LED_BLUE_PIN = 7;        // A root Codex task needs user input/approval.
 constexpr uint8_t LED_LINK_PIN = 10;       // Laptop bridge and network are online.
 constexpr uint8_t LED_STROBE_PIN = 11;     // An alert has waited too long.
 
