@@ -21,6 +21,22 @@ in
   };
 
   config = mkIf cfg.enable {
+    # Wayle's audio/OSD watcher must start after the user PipeWire graph is
+    # available. Otherwise it can bind to the transient auto_null sink during
+    # login and never follow the real default output afterward.
+    systemd.user.services.wayle.Unit = {
+      Wants = [
+        "pipewire.service"
+        "pipewire-pulse.service"
+        "wireplumber.service"
+      ];
+      After = [
+        "pipewire.service"
+        "pipewire-pulse.service"
+        "wireplumber.service"
+      ];
+    };
+
     home.packages = with pkgs; [
       libnotify
       power-profiles-daemon
