@@ -32,6 +32,10 @@ in
             "--remember-session"
             "--asterisks"
             "--user-menu"
+            # Keep system/service accounts (including Nix's nixbld workers) out
+            # of the graphical user picker while retaining normal users.
+            "--user-menu-min-uid 1000"
+            "--user-menu-max-uid 29999"
             "--cmd Hyprland"
           ];
           user = "tholo";
