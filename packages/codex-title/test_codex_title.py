@@ -38,6 +38,18 @@ class CodexTitleTests(unittest.TestCase):
         self.assertNotIn("private-session-id", files[0].name)
         self.assertEqual(files[0].stat().st_mode & 0o777, 0o600)
 
+    def test_state_directory_rejects_a_precreated_symlink(self):
+        target = self.root / "target"
+        target.mkdir()
+        link = self.root / "codex-titles"
+        link.symlink_to(target, target_is_directory=True)
+
+        with (
+            patch.dict(os.environ, {"CODEX_TITLE_STATE_DIR": str(link)}),
+            self.assertRaisesRegex(RuntimeError, "unsafe Codex title state directory"),
+        ):
+            codex_title.state_directory()
+
     def test_set_notifies_each_executable_sink(self):
         sinks = self.root / "sinks"
         sinks.mkdir()
@@ -61,6 +73,22 @@ class CodexTitleTests(unittest.TestCase):
             [
                 [str(first), "--session", "session-1", "--title", "Shared title"],
                 [str(second), "--session", "session-1", "--title", "Shared title"],
+            ],
+        )
+
+    def test_publish_replays_every_canonical_title_to_sinks(self):
+        first = codex_title.write_title("session-1", "First title", self.root)
+        second = codex_title.write_title("session-2", "Second title", self.root)
+
+        with patch.object(codex_title, "notify_sinks") as notify:
+            published = codex_title.publish_titles(self.root)
+
+        self.assertEqual(published, 2)
+        self.assertCountEqual(
+            [call.args for call in notify.call_args_list],
+            [
+                (first["session"], first["title"]),
+                (second["session"], second["title"]),
             ],
         )
 

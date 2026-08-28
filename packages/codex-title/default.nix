@@ -8,6 +8,7 @@ writeShellApplication {
   name = "codex-title";
   text = ''
     export CODEX_TITLE_COMMAND="$0"
+    export CODEX_TITLE_STATE_DIR="''${CODEX_TITLE_STATE_DIR:-/tmp/codex-titles-$UID}"
     ${lib.optionalString (sinkDirectory != null) ''
       export CODEX_TITLE_SINK_DIR=${lib.escapeShellArg (toString sinkDirectory)}
     ''}

@@ -1,7 +1,8 @@
 # Security and privacy
 
 This project needs no API key, Codex token, Wi-Fi password, or other secret.
-The ESP32 receives only compact task-status metadata over the local USB cable.
+The ESP32 receives only compact task-status and aggregate usage metadata over
+the local USB cable.
 
 ## Data handled
 
@@ -16,28 +17,37 @@ state directory. `codex-board clear` deletes the tracked rows. State is
 normally removed by the operating system at reboot.
 
 Generated titles also live in private JSON records under
-`$XDG_RUNTIME_DIR/codex-titles-$UID` (or `$CODEX_TITLE_STATE_DIR`). Filenames
-contain a hash rather than the session ID. `codex-title clear` deletes these
-records. The immutable Nix sink directory contains only the configured local
-Breadboard and Agent Deck adapters; sinks receive the session ID and short
-title, never the original prompt.
+`/tmp/codex-titles-$UID` (or `$CODEX_TITLE_STATE_DIR`). The directory is mode
+`0700`, records are mode `0600`, and filenames contain a hash rather than the
+session ID. `codex-title clear` deletes these records. The immutable Nix sink
+directory contains only the configured local Breadboard and Agent Deck
+adapters; sinks receive the session ID and short title, never the original
+prompt. A user-level path unit republishes changed records outside the Codex
+sandbox; it does not add fields or copy them into the source repository.
 
 The managed `SessionEnd` hook deletes the matching shared title record. A
 reboot removes any record left behind if session cleanup was interrupted.
+
+The Nix composition wraps Agent Deck's existing `mark-read` command only to
+forward the sanitized task key to `codex-board acknowledge`. It does not pass
+the title, prompt, message, project path, or Agent Deck record contents.
 
 The `SessionEnd` hook deletes the closed root session and all of its subagent
 rows. Completed task metadata therefore remains only while that Codex session
 is open, unless the hook is unavailable or interrupted.
 
 The serial protocol carries project basename, short title, state, elapsed
-time, state age, and the network result. It carries no device serial number,
-USB identifier, source content, or authentication material.
+time, state age, aggregate remaining percentages/reset times, today's token
+count, and the network result. It carries no account or installation
+identifier, plan name, device serial number, USB identifier, source content,
+or authentication material.
 
 ## Network behavior
 
-The bridge makes a small HTTPS reachability probe to `https://chatgpt.com`.
-It does not call an AI API and sends no dashboard task data in that request.
-Standard proxy environment variables may be honored by Python's URL opener.
+The bridge makes a small HTTPS reachability probe to `https://chatgpt.com` and
+reads aggregate usage through the locally authenticated Codex app server. It
+does not embed or log authentication data, and sends no dashboard task data in
+the reachability request. Standard proxy environment variables may be honored.
 
 ## Codex hooks
 

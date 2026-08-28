@@ -1,8 +1,8 @@
 # Codex status dashboard
 
-The dashboard shows up to six current Codex root sessions or subagents. Three
-fit on the 128x64 OLED at once; additional entries rotate to another page every
-five seconds.
+The OLED is a fixed Codex usage panel. Session lifecycle tracking still runs in
+the background and drives the LEDs exactly as before, but individual sessions
+are no longer rendered on the small display.
 
 The integration uses documented Codex lifecycle hooks. Hooks update a small
 SQLite database under `/tmp/codex-board-$UID/`; the laptop bridge sends an
@@ -13,34 +13,44 @@ modify files in the projects being displayed.
 
 | LED / GPIO | Meaning |
 |---|---|
-| Green / GPIO4 | At least one displayed task is complete |
-| Yellow / GPIO5 | At least one displayed task is working |
+| Green / GPIO4 | At least one completed task has not been acknowledged |
+| Yellow / GPIO5 | At least one tracked task is working |
 | Red / GPIO6 | Task error, network offline, or laptop bridge lost |
 | Blue / GPIO7 | A task needs user input or approval |
 | Harder blue / GPIO10 | Laptop bridge is alive and the network probe succeeds |
-| Self-cycling / GPIO11 | Input or network failure has waited at least three minutes |
+| Self-cycling / GPIO11 | Blue input or any continuous red alert has lasted at least three minutes |
 
 Several LEDs may be on simultaneously. For example, green plus yellow means
-one task completed while another is still running. If red is on, the OLED
-distinguishes `ERROR`, network offline (`N:X`), and `HOST LINK LOST`.
+one unread task completed while another is still running. The OLED distinguishes
+network offline (`N:X`) and `HOST LINK LOST`; use `codex-board list` when red
+and the harder-blue link LED are both on to identify a tracked task error.
 
 ## OLED format
 
-Each task uses two lines. The project and elapsed time appear first, followed
-by the Codex-generated title and state:
+The two most useful quota windows show their remaining percentage, reset
+countdown, and a remaining-capacity bar. The bottom lines show today's token
+usage and the age of the last successful usage sync:
 
 ```text
-CODEX 3 L:OK N:+
-nix-config     3h22
-do xyz           RUN
-palimpsest
-another title   DONE
-projectA
-_              INPUT
+CODEX USAGE       N:+
+7D         L75% R4d00h
+[==============     ]
+SPARK5H    L80% R2h00m
+[===============    ]
+TODAY 12M TOKENS
+SYNC 12s
 ```
 
-`_` means Codex has not supplied the short title yet. States are `RUN`, `DONE`,
-`INPUT`, and `ERROR`.
+The example values are fictional. `L` means remaining/left and `R` means time
+until reset. If Codex exposes only one main quota window, the second row uses
+the next model-specific limit; if no second window exists, it says
+`NO SECOND QUOTA`. Usage failure does not disable session-driven LEDs.
+
+When Agent Deck jumps to a completed root task or subagent, its existing
+`mark-read` action also acknowledges the matching dashboard row. Green turns
+off if no other unread completion remains. Resuming a completed Codex session
+does the same through `SessionStart`. Simply focusing an already-open pane by
+other means has no reliable Codex event and cannot be detected.
 
 ## 1. Build and flash
 
@@ -69,7 +79,8 @@ Optionally inspect startup output, then close the monitor with `Ctrl-C`:
 
 ## 2. Test the display without Codex hooks
 
-Load the three example rows and start the USB bridge:
+Load the three example task states for the LEDs and start the USB bridge. The
+OLED itself reads live usage through the local Codex sign-in:
 
 ```bash
 .venv/bin/python host/codex_board.py clear
@@ -95,15 +106,14 @@ Override the URL only when diagnosing a network/proxy setup:
 In this `nix-config` repository, `modules/shared/codex-hooks.nix` packages the
 bridge as `codex-board` and merges the dashboard events with the existing
 managed agent-deck hooks. A separate `codex-title` registry owns generated
-session titles and publishes them to independent service adapters. No token or
-mutable user hook file is required.
+session titles. A user-level publisher fans changed canonical records out to
+independent adapters outside the Codex sandbox. No token or mutable user hook
+file is required.
 
-The `breadboard` directory is currently untracked, so a Git-backed flake omits
-it. When you are ready to activate the changes, stage only this new directory;
-no commit is required. First build the complete Glacier configuration:
+When you are ready to activate the host-side changes, first build the complete
+Glacier configuration; no commit is required:
 
 ```bash
-git add breadboard
 sudo nixos-rebuild build --flake .#glacier --accept-flake-config
 ```
 
@@ -113,14 +123,19 @@ If that succeeds, activate it explicitly:
 sudo nixos-rebuild switch --flake .#glacier --accept-flake-config
 ```
 
-After activation, restart Codex and unplug/reconnect the ESP32 once so the new
-udev access rule is applied. The hooks are supplied by the managed system
-requirements, the bridge CLI is available directly as `codex-board`, and the
-background service starts automatically at login.
+After activation, start a new Codex process and reload Agent Deck (a new Zellij
+session is sufficient) so both pick up the managed hooks and helper. Unplug and
+reconnect the ESP32 once so the new udev access rule is applied. The bridge CLI
+is available directly as `codex-board`, and the background service starts
+automatically at login.
+
+The NixOS switch does not update the ESP32 firmware. Flash the `dashboard`
+environment separately using the commands in section 1 to activate the OLED
+layout and LED timing changes.
 
 These events are recorded:
 
-- `UserPromptSubmit`: starts a task and places `_` on the display.
+- `UserPromptSubmit`: starts a task with `_` as its pending title.
 - A separate metadata hook asks Codex to store a 2-4 word title with
   `codex-title`. The registry publishes it to the independent Breadboard and
   Zellij Agent Deck adapters.
@@ -132,6 +147,9 @@ These events are recorded:
 - `SubagentStart` and `SubagentStop`: add and finish separate subagent rows.
 - `SessionEnd`: removes the root task and all subagents belonging to the closed
   session. Green turns off when no remaining session is `DONE`.
+- Agent Deck `mark-read` or a resumed `SessionStart`: changes a completed row
+  to acknowledged (`SEEN` internally), clearing its green alert without
+  deleting the retained row.
 
 The hooks are global managed hooks, so they can show `~/nix-config`,
 `palimpsest`, and other repositories without adding or changing anything
@@ -194,6 +212,10 @@ bridge snapshot. This does not use silence from an active Codex task as a
 disconnect signal: an agent may legitimately reason for several minutes
 without running a tool.
 
+Any continuously red condition (task error, network loss, or lost host) turns
+on the self-cycling LED after three minutes. Blue input retains its independent
+three-minute escalation.
+
 ## Troubleshooting
 
 ### Bridge says permission denied
@@ -217,7 +239,8 @@ normal local `users` group; it does not make every serial device user-writable.
 ### Red LED is on while harder blue is off
 
 The laptop probe has failed repeatedly or the USB bridge heartbeat expired.
-Read the OLED and bridge terminal for the specific state.
+Read the OLED and bridge terminal for link state. If the harder-blue link LED
+is still on, use `codex-board list` to check for a task error.
 
 ### Red and harder-blue LEDs are both on
 
@@ -242,7 +265,7 @@ Restore the dashboard afterward by flashing `-e dashboard` again.
   Connectivity is therefore measured independently by the laptop bridge.
 - A question mark in the final assistant message is treated as `INPUT`; this
   deliberately favors notifying you over silently marking a question done.
-- The OLED font is ASCII and limited to about 21 characters per line. Longer
-  project names and titles are clipped.
+- The OLED font is ASCII and limited to about 21 characters per line. Usage
+  labels and values are compacted to fit.
 - The bridge must own the USB serial port, so it cannot run alongside a serial
   monitor or firmware upload.

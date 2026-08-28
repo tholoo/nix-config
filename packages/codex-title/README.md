@@ -19,10 +19,12 @@ codex-title list
 ```
 
 Records are private per-session JSON files under
-`$CODEX_TITLE_STATE_DIR`, or under `$XDG_RUNTIME_DIR/codex-titles-$UID` by
-default. Session IDs are hashed in filenames. The JSON API contains `schema`,
-`session`, `title`, and `updated_at` fields. Hook payloads and prompts are never
-stored, and runtime records live outside the source repository.
+`$CODEX_TITLE_STATE_DIR`. The Nix package defaults this to the private,
+sandbox-writable `/tmp/codex-titles-$UID` directory so Codex can record a title
+without access to the user's runtime directory. Session IDs are hashed in
+filenames. The JSON interface contains `schema`, `session`, `title`, and
+`updated_at` fields. Hook payloads and prompts are never stored, and runtime
+records live outside the source repository.
 The managed `SessionEnd` hook removes a closed session's registry record;
 runtime-directory cleanup at reboot is the fallback.
 
@@ -40,3 +42,9 @@ not prevent the registry from storing the title or notifying other sinks. The
 Nix composition currently installs adapters for Breadboard and Zellij Agent
 Deck; neither service knows about the other. A future live consumer can add an
 adapter, while read-only consumers need only the CLI or JSON API.
+
+The managed user publisher runs `codex-title publish` outside the Codex sandbox
+at login and whenever the registry directory changes, replaying canonical
+records to every adapter. This lets adapters keep their own private runtime
+state while preserving the same small `set`/`get` registry interface for Codex
+and future consumers.

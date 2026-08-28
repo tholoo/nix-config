@@ -23,6 +23,7 @@ constexpr int SCREEN_WIDTH = 128;
 constexpr int SCREEN_HEIGHT = 64;
 constexpr int OLED_RESET = -1;
 constexpr size_t MAX_TASKS = 6;
+constexpr size_t MAX_USAGE_LIMITS = 2;
 constexpr size_t MAX_FIELD_LENGTH = 21;
 constexpr size_t MAX_SERIAL_LINE = 160;
 constexpr uint32_t HOST_TIMEOUT_MS = 15000;
@@ -36,6 +37,7 @@ enum class TaskState : uint8_t {
   Complete,
   Input,
   Error,
+  Acknowledged,
   Unknown,
 };
 
@@ -47,10 +49,26 @@ struct TaskItem {
   uint32_t stateAgeSeconds;
 };
 
+struct UsageLimit {
+  char label[9];
+  uint8_t remainingPercent;
+  uint32_t resetSeconds;
+};
+
 TaskItem tasks[MAX_TASKS];
 TaskItem pendingTasks[MAX_TASKS];
 size_t taskCount = 0;
 size_t pendingTaskCount = 0;
+UsageLimit usageLimits[MAX_USAGE_LIMITS] = {};
+UsageLimit pendingUsageLimits[MAX_USAGE_LIMITS] = {};
+size_t usageLimitCount = 0;
+size_t pendingUsageLimitCount = 0;
+bool usageAvailable = false;
+bool pendingUsageAvailable = false;
+int64_t todayTokens = -1;
+int64_t pendingTodayTokens = -1;
+uint32_t usageAgeSeconds = 0;
+uint32_t pendingUsageAgeSeconds = 0;
 
 bool oledReady = false;
 bool receivingSnapshot = false;
@@ -58,7 +76,8 @@ bool linkSeen = false;
 int8_t networkState = -1;        // -1 unknown, 0 offline, 1 online
 int8_t pendingNetworkState = -1;
 uint32_t lastHeartbeatMs = 0;
-uint32_t networkOfflineSinceMs = 0;
+bool redAlertActive = false;
+uint32_t redAlertSinceMs = 0;
 
 char serialLine[MAX_SERIAL_LINE];
 size_t serialLineLength = 0;
@@ -86,6 +105,7 @@ TaskState parseState(const char *value) {
   if (!strcmp(value, "D")) return TaskState::Complete;
   if (!strcmp(value, "I")) return TaskState::Input;
   if (!strcmp(value, "E")) return TaskState::Error;
+  if (!strcmp(value, "A")) return TaskState::Acknowledged;
   return TaskState::Unknown;
 }
 
@@ -95,6 +115,7 @@ const char *stateLabel(TaskState state) {
     case TaskState::Complete: return "DONE";
     case TaskState::Input: return "INPUT";
     case TaskState::Error: return "ERROR";
+    case TaskState::Acknowledged: return "SEEN";
     default: return "?";
   }
 }
@@ -130,20 +151,44 @@ void addPendingTask(char *cursor) {
   task.stateAgeSeconds = strtoul(stateAge, nullptr, 10);
 }
 
+void parsePendingUsage(char *cursor) {
+  char *available = nextField(cursor);
+  char *tokens = nextField(cursor);
+  char *age = nextField(cursor);
+  if (!available || !tokens || !age) return;
+  pendingUsageAvailable = available[0] == '1';
+  pendingTodayTokens = strtoll(tokens, nullptr, 10);
+  pendingUsageAgeSeconds = strtoul(age, nullptr, 10);
+}
+
+void addPendingUsageLimit(char *cursor) {
+  if (pendingUsageLimitCount >= MAX_USAGE_LIMITS) return;
+  char *label = nextField(cursor);
+  char *remaining = nextField(cursor);
+  char *reset = nextField(cursor);
+  if (!label || !remaining || !reset) return;
+
+  UsageLimit &limit = pendingUsageLimits[pendingUsageLimitCount++];
+  strncpy(limit.label, label, sizeof(limit.label) - 1);
+  limit.label[sizeof(limit.label) - 1] = '\0';
+  limit.remainingPercent = min(100UL, strtoul(remaining, nullptr, 10));
+  limit.resetSeconds = strtoul(reset, nullptr, 10);
+}
+
 void commitSnapshot() {
-  const int8_t previousNetworkState = networkState;
   taskCount = pendingTaskCount;
   for (size_t i = 0; i < taskCount; ++i) tasks[i] = pendingTasks[i];
+  usageLimitCount = pendingUsageLimitCount;
+  for (size_t i = 0; i < usageLimitCount; ++i) {
+    usageLimits[i] = pendingUsageLimits[i];
+  }
+  usageAvailable = pendingUsageAvailable;
+  todayTokens = pendingTodayTokens;
+  usageAgeSeconds = pendingUsageAgeSeconds;
   networkState = pendingNetworkState;
   receivingSnapshot = false;
   linkSeen = true;
   lastHeartbeatMs = millis();
-
-  if (networkState == 0 && previousNetworkState != 0) {
-    networkOfflineSinceMs = millis();
-  } else if (networkState != 0) {
-    networkOfflineSinceMs = 0;
-  }
 
   Serial.printf("Dashboard snapshot: %u task(s), network=%s\n",
                 static_cast<unsigned>(taskCount),
@@ -154,6 +199,10 @@ void commitSnapshot() {
 void processSerialLine(char *line) {
   if (!strcmp(line, "BEGIN")) {
     pendingTaskCount = 0;
+    pendingUsageLimitCount = 0;
+    pendingUsageAvailable = false;
+    pendingTodayTokens = -1;
+    pendingUsageAgeSeconds = 0;
     pendingNetworkState = -1;
     receivingSnapshot = true;
     return;
@@ -169,6 +218,12 @@ void processSerialLine(char *line) {
 
   if (!strncmp(line, "NET|", 4)) {
     pendingNetworkState = line[4] == '1' ? 1 : line[4] == '0' ? 0 : -1;
+  } else if (!strncmp(line, "USAGE|", 6)) {
+    char *cursor = line + 6;
+    parsePendingUsage(cursor);
+  } else if (!strncmp(line, "LIMIT|", 6)) {
+    char *cursor = line + 6;
+    addPendingUsageLimit(cursor);
   } else if (!strncmp(line, "TASK|", 5)) {
     char *cursor = line + 5;
     addPendingTask(cursor);
@@ -250,6 +305,39 @@ void formatDuration(uint32_t seconds, char *output, size_t outputSize) {
   }
 }
 
+void formatCountdown(uint32_t seconds, char *output, size_t outputSize) {
+  if (seconds >= 86400) {
+    snprintf(output, outputSize, "%lud%02luh",
+             static_cast<unsigned long>(seconds / 86400),
+             static_cast<unsigned long>((seconds / 3600) % 24));
+  } else if (seconds >= 3600) {
+    snprintf(output, outputSize, "%luh%02lum",
+             static_cast<unsigned long>(seconds / 3600),
+             static_cast<unsigned long>((seconds / 60) % 60));
+  } else {
+    snprintf(output, outputSize, "%lum",
+             static_cast<unsigned long>(seconds / 60));
+  }
+}
+
+void formatTokenCount(int64_t tokens, char *output, size_t outputSize) {
+  if (tokens < 0) {
+    snprintf(output, outputSize, "TODAY -- TOKENS");
+  } else if (tokens >= 1000000000LL) {
+    snprintf(output, outputSize, "TODAY %lluB TOKENS",
+             static_cast<unsigned long long>(tokens / 1000000000LL));
+  } else if (tokens >= 1000000LL) {
+    snprintf(output, outputSize, "TODAY %lluM TOKENS",
+             static_cast<unsigned long long>(tokens / 1000000LL));
+  } else if (tokens >= 1000LL) {
+    snprintf(output, outputSize, "TODAY %lluK TOKENS",
+             static_cast<unsigned long long>(tokens / 1000LL));
+  } else {
+    snprintf(output, outputSize, "TODAY %lld TOKENS",
+             static_cast<long long>(tokens));
+  }
+}
+
 void printAligned(const char *left, const char *right) {
   constexpr size_t columns = 21;
   char line[columns + 1];
@@ -267,6 +355,25 @@ void printAligned(const char *left, const char *right) {
 bool hostTimedOut() {
   if (!linkSeen) return millis() > HOST_TIMEOUT_MS;
   return millis() - lastHeartbeatMs > HOST_TIMEOUT_MS;
+}
+
+uint32_t currentUsageAge() {
+  return usageAgeSeconds + (millis() - lastHeartbeatMs) / 1000;
+}
+
+void drawUsageLimit(const UsageLimit &limit, uint8_t textY, uint8_t barY) {
+  const uint32_t elapsed = (millis() - lastHeartbeatMs) / 1000;
+  const uint32_t reset = limit.resetSeconds > elapsed ? limit.resetSeconds - elapsed : 0;
+  char countdown[12];
+  char right[16];
+  formatCountdown(reset, countdown, sizeof(countdown));
+  snprintf(right, sizeof(right), "L%u%% R%s", limit.remainingPercent, countdown);
+  display.setCursor(0, textY);
+  printAligned(limit.label, right);
+  display.drawRect(0, barY, SCREEN_WIDTH, 6, SSD1306_WHITE);
+  const uint8_t fill = static_cast<uint8_t>(
+      (124UL * limit.remainingPercent) / 100UL);
+  if (fill > 0) display.fillRect(2, barY + 2, fill, 2, SSD1306_WHITE);
 }
 
 void updateLeds() {
@@ -288,15 +395,23 @@ void updateLeds() {
   const bool lostHost = hostTimedOut();
   const bool offline = linkSeen && !lostHost && networkState == 0;
   const bool online = linkSeen && !lostHost && networkState == 1;
-  const bool overdueOffline = offline && networkOfflineSinceMs != 0 &&
-      millis() - networkOfflineSinceMs >= ALERT_AFTER_SECONDS * 1000UL;
+  const bool redAlert = hasError || lostHost || offline;
+  if (redAlert && !redAlertActive) {
+    redAlertActive = true;
+    redAlertSinceMs = millis();
+  } else if (!redAlert) {
+    redAlertActive = false;
+    redAlertSinceMs = 0;
+  }
+  const bool overdueRed = redAlertActive &&
+      millis() - redAlertSinceMs >= ALERT_AFTER_SECONDS * 1000UL;
 
   setOutput(LED_GREEN_PIN, hasComplete);
   setOutput(LED_YELLOW_PIN, hasWorking);
-  setOutput(LED_RED_PIN, hasError || lostHost || offline);
+  setOutput(LED_RED_PIN, redAlert);
   setOutput(LED_BLUE_PIN, hasInput);
   setOutput(LED_LINK_PIN, online);
-  setOutput(LED_STROBE_PIN, overdueInput || overdueOffline);
+  setOutput(LED_STROBE_PIN, overdueInput || overdueRed);
 }
 
 void drawDashboard() {
@@ -318,32 +433,39 @@ void drawDashboard() {
     return;
   }
 
-  char header[22];
-  snprintf(header, sizeof(header), "CODEX %u L:%s N:%s",
-           static_cast<unsigned>(taskCount), linkSeen ? "OK" : "--",
-           networkState == 1 ? "+" : networkState == 0 ? "X" : "?");
-  display.println(header);
+  char network[5];
+  snprintf(network, sizeof(network), "N:%c",
+           networkState == 1 ? '+' : networkState == 0 ? 'X' : '?');
+  printAligned("CODEX USAGE", network);
 
-  if (taskCount == 0) {
+  if (!usageAvailable || usageLimitCount == 0) {
+    display.setCursor(0, 16);
+    display.println("USAGE UNAVAILABLE");
     display.println();
-    display.println(linkSeen ? "No tracked agents" : "Waiting for bridge");
-    display.println(linkSeen ? "Start a Codex task" : "Host not connected");
+    display.println("LED task status is");
+    display.println("still active");
     display.display();
     return;
   }
 
-  const size_t pageCount = (taskCount + 2) / 3;
-  const size_t page = pageCount > 1 ? (millis() / PAGE_INTERVAL_MS) % pageCount : 0;
-  const size_t first = page * 3;
-  const size_t last = min(first + 3, taskCount);
-
-  for (size_t i = first; i < last; ++i) {
-    char duration[12];
-    formatDuration(tasks[i].elapsedSeconds, duration, sizeof(duration));
-    printAligned(tasks[i].project, duration);
-    printAligned(tasks[i].title[0] ? tasks[i].title : "_",
-                 stateLabel(tasks[i].state));
+  drawUsageLimit(usageLimits[0], 10, 19);
+  if (usageLimitCount > 1) {
+    drawUsageLimit(usageLimits[1], 27, 36);
+  } else {
+    display.setCursor(0, 29);
+    display.print("NO SECOND QUOTA");
   }
+
+  char tokens[22];
+  formatTokenCount(todayTokens, tokens, sizeof(tokens));
+  display.setCursor(0, 44);
+  display.print(tokens);
+
+  char sync[22];
+  snprintf(sync, sizeof(sync), "SYNC %lus",
+           static_cast<unsigned long>(currentUsageAge()));
+  display.setCursor(0, 54);
+  display.print(sync);
 
   display.display();
 }
@@ -363,7 +485,7 @@ void setup() {
 
   Serial.println();
   Serial.println("=== Codex status dashboard ===");
-  Serial.println("Protocol: BEGIN / NET / TASK / END at 115200 baud");
+  Serial.println("Protocol: BEGIN / NET / USAGE / LIMIT / TASK / END at 115200 baud");
   Serial.printf("I2C: SDA GPIO %u, SCL GPIO %u\n", I2C_SDA_PIN, I2C_SCL_PIN);
   initializeOled();
   lastHeartbeatMs = millis();

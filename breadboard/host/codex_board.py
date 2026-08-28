@@ -4,13 +4,17 @@
 from __future__ import annotations
 
 import argparse
+from dataclasses import dataclass
+from datetime import date
 import json
 import os
 from pathlib import Path
+import queue
 import re
 import shlex
 import shutil
 import sqlite3
+import subprocess
 import sys
 import tempfile
 import threading
@@ -23,6 +27,101 @@ from urllib.request import Request, urlopen
 MAX_TASKS = 6
 PROBE_URL = "https://chatgpt.com"
 SERIAL_BAUD = 115200
+USAGE_REFRESH_SECONDS = 60.0
+TOKEN_REFRESH_SECONDS = 15 * 60.0
+RPC_TIMEOUT_SECONDS = 15.0
+
+
+@dataclass(frozen=True)
+class UsageLimit:
+    label: str
+    remaining_percent: int
+    reset_seconds: int
+
+
+@dataclass(frozen=True)
+class UsageSnapshot:
+    limits: tuple[UsageLimit, ...]
+    today_tokens: int | None
+    fetched_at: float
+
+
+def duration_label(minutes: Any) -> str:
+    try:
+        value = max(1, int(minutes))
+    except (TypeError, ValueError):
+        return "LIMIT"
+    if value < 60:
+        return f"{value}M"
+    if value < 1440:
+        return f"{max(1, round(value / 60))}H"
+    return f"{max(1, round(value / 1440))}D"
+
+
+def product_label(value: Any) -> str:
+    words = re.findall(r"[A-Za-z]+", str(value or "").upper())
+    useful = [word for word in words if word not in {"GPT", "CODEX", "MODEL"}]
+    return (useful[-1] if useful else "ALT")[:5]
+
+
+def parse_usage_window(value: Any, prefix: str, now: float) -> UsageLimit | None:
+    if not isinstance(value, dict):
+        return None
+    try:
+        used = float(value["usedPercent"])
+        reset_at = int(value["resetsAt"])
+    except (KeyError, TypeError, ValueError):
+        return None
+    return UsageLimit(
+        f"{prefix}{duration_label(value.get('windowDurationMins'))}"[:8],
+        max(0, min(100, round(100.0 - used))),
+        max(0, reset_at - int(now)),
+    )
+
+
+def parse_rate_limits(payload: Any, now: float | None = None) -> tuple[UsageLimit, ...]:
+    now = time.time() if now is None else now
+    if not isinstance(payload, dict):
+        return ()
+
+    result: list[UsageLimit] = []
+    main = payload.get("rateLimits")
+    if isinstance(main, dict):
+        for key in ("primary", "secondary"):
+            window = parse_usage_window(main.get(key), "", now)
+            if window is not None:
+                result.append(window)
+
+    alternatives = payload.get("rateLimitsByLimitId")
+    if len(result) < 2 and isinstance(alternatives, dict):
+        main_id = main.get("limitId") if isinstance(main, dict) else None
+        for limit_id, limit in alternatives.items():
+            if len(result) >= 2:
+                break
+            if not isinstance(limit, dict) or limit_id == main_id:
+                continue
+            window = parse_usage_window(
+                limit.get("primary"), product_label(limit.get("limitName")), now
+            )
+            if window is not None:
+                result.append(window)
+    return tuple(result[:2])
+
+
+def parse_today_tokens(payload: Any, today: date | None = None) -> int | None:
+    if not isinstance(payload, dict):
+        return None
+    target = (today or date.today()).isoformat()
+    buckets = payload.get("dailyUsageBuckets")
+    if not isinstance(buckets, list):
+        return None
+    for bucket in reversed(buckets):
+        if isinstance(bucket, dict) and bucket.get("startDate") == target:
+            try:
+                return max(0, int(bucket["tokens"]))
+            except (KeyError, TypeError, ValueError):
+                return None
+    return 0
 
 
 def state_directory() -> Path:
@@ -153,6 +252,21 @@ def set_title(connection: sqlite3.Connection, task_id: str, title: str) -> bool:
     return result.rowcount > 0
 
 
+def acknowledge_task(connection: sqlite3.Connection, task_id: str) -> bool:
+    """Clear the completed alert without removing the retained task row."""
+    now = time.time()
+    result = connection.execute(
+        """
+        UPDATE tasks
+        SET status = 'A', status_since = ?, updated_at = ?
+        WHERE id = ? AND status = 'D'
+        """,
+        (now, now, task_id),
+    )
+    connection.commit()
+    return result.rowcount > 0
+
+
 def tool_response_failed(value: Any) -> bool:
     if isinstance(value, dict):
         for key, child in value.items():
@@ -211,6 +325,10 @@ def handle_hook(event: dict[str, Any], path: Path | None = None) -> dict[str, An
     connection = open_database(path)
 
     try:
+        if event_name == "SessionStart":
+            acknowledge_task(connection, session_id)
+            return {}
+
         if event_name == "UserPromptSubmit":
             update_task(
                 connection,
@@ -295,8 +413,13 @@ def task_rows(connection: sqlite3.Connection) -> list[sqlite3.Row]:
     ).fetchall()
 
 
-def build_packet(network_online: bool | None, path: Path | None = None) -> bytes:
-    now = time.time()
+def build_packet(
+    network_online: bool | None,
+    path: Path | None = None,
+    usage: UsageSnapshot | None = None,
+    now: float | None = None,
+) -> bytes:
+    now = time.time() if now is None else now
     connection = open_database(path)
     try:
         rows = task_rows(connection)
@@ -305,6 +428,15 @@ def build_packet(network_online: bool | None, path: Path | None = None) -> bytes
 
     network_value = "1" if network_online is True else "0" if network_online is False else "U"
     lines = ["BEGIN", f"NET|{network_value}"]
+    usage_age = max(0, int(now - usage.fetched_at)) if usage else 0
+    today_tokens = usage.today_tokens if usage and usage.today_tokens is not None else -1
+    lines.append(f"USAGE|{int(usage is not None)}|{today_tokens}|{usage_age}")
+    if usage is not None:
+        for limit in usage.limits:
+            lines.append(
+                f"LIMIT|{limit.label}|{limit.remaining_percent}|"
+                f"{max(0, limit.reset_seconds - usage_age)}"
+            )
     for row in rows:
         end = row["finished_at"] if row["finished_at"] is not None else now
         elapsed = max(0, int(end - row["started_at"]))
@@ -368,6 +500,152 @@ class NetworkMonitor:
             self._stop.wait(self.interval)
 
 
+class AppServerClient:
+    """Minimal JSONL client for the locally authenticated Codex app server."""
+
+    def __init__(self, codex_command: str = "codex") -> None:
+        self._next_id = 1
+        self._lines: queue.Queue[bytes | None] = queue.Queue()
+        self._process = subprocess.Popen(
+            [codex_command, "app-server", "--stdio"],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            bufsize=0,
+        )
+        self._reader = threading.Thread(target=self._read_lines, daemon=True)
+        self._reader.start()
+        try:
+            self._send(
+                {
+                    "method": "initialize",
+                    "id": 0,
+                    "params": {
+                        "clientInfo": {
+                            "name": "codex-board",
+                            "title": "Codex Board",
+                            "version": "1.0.0",
+                        }
+                    },
+                }
+            )
+            self._wait_for(0)
+            self._send({"method": "initialized", "params": {}})
+        except (OSError, RuntimeError, TimeoutError):
+            self.close()
+            raise
+
+    def _read_lines(self) -> None:
+        assert self._process.stdout is not None
+        try:
+            for line in self._process.stdout:
+                self._lines.put(line)
+        finally:
+            self._lines.put(None)
+
+    def _send(self, message: dict[str, Any]) -> None:
+        if self._process.poll() is not None or self._process.stdin is None:
+            raise RuntimeError("Codex app server is not running")
+        self._process.stdin.write(
+            json.dumps(message, separators=(",", ":")).encode() + b"\n"
+        )
+        self._process.stdin.flush()
+
+    def _wait_for(self, request_id: int) -> Any:
+        deadline = time.monotonic() + RPC_TIMEOUT_SECONDS
+        while True:
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                raise TimeoutError("Codex app server did not answer in time")
+            try:
+                line = self._lines.get(timeout=remaining)
+            except queue.Empty as error:
+                raise TimeoutError("Codex app server did not answer in time") from error
+            if line is None:
+                raise RuntimeError("Codex app server stopped unexpectedly")
+            try:
+                message = json.loads(line)
+            except (UnicodeDecodeError, json.JSONDecodeError):
+                continue
+            if not isinstance(message, dict) or message.get("id") != request_id:
+                continue
+            if message.get("error") is not None:
+                raise RuntimeError("Codex app server rejected the usage request")
+            return message.get("result")
+
+    def request(self, method: str) -> Any:
+        request_id = self._next_id
+        self._next_id += 1
+        self._send({"method": method, "id": request_id, "params": {}})
+        return self._wait_for(request_id)
+
+    def close(self) -> None:
+        if self._process.stdin is not None:
+            try:
+                self._process.stdin.close()
+            except BrokenPipeError:
+                pass
+        if self._process.poll() is None:
+            self._process.terminate()
+            try:
+                self._process.wait(timeout=1)
+            except subprocess.TimeoutExpired:
+                self._process.kill()
+                self._process.wait(timeout=1)
+
+
+class UsageMonitor:
+    def __init__(self, codex_command: str = "codex") -> None:
+        self.codex_command = codex_command
+        self.snapshot: UsageSnapshot | None = None
+        self.last_error: str | None = None
+        self._lock = threading.Lock()
+        self._stop = threading.Event()
+        self._thread = threading.Thread(target=self._run, daemon=True)
+
+    def start(self) -> None:
+        self._thread.start()
+
+    def stop(self) -> None:
+        self._stop.set()
+        self._thread.join(timeout=RPC_TIMEOUT_SECONDS + 1)
+
+    def read(self) -> tuple[UsageSnapshot | None, str | None]:
+        with self._lock:
+            return self.snapshot, self.last_error
+
+    def _run(self) -> None:
+        client: AppServerClient | None = None
+        next_tokens = 0.0
+        while not self._stop.is_set():
+            try:
+                if client is None:
+                    client = AppServerClient(self.codex_command)
+                now = time.time()
+                limits = parse_rate_limits(client.request("account/rateLimits/read"), now)
+                if not limits:
+                    raise RuntimeError("Codex returned no usable rate-limit windows")
+
+                previous, _ = self.read()
+                today_tokens = previous.today_tokens if previous else None
+                if time.monotonic() >= next_tokens:
+                    today_tokens = parse_today_tokens(client.request("account/usage/read"))
+                    next_tokens = time.monotonic() + TOKEN_REFRESH_SECONDS
+
+                with self._lock:
+                    self.snapshot = UsageSnapshot(limits, today_tokens, now)
+                    self.last_error = None
+            except (OSError, RuntimeError, TimeoutError) as error:
+                with self._lock:
+                    self.last_error = str(error)
+                if client is not None:
+                    client.close()
+                    client = None
+            self._stop.wait(USAGE_REFRESH_SECONDS)
+        if client is not None:
+            client.close()
+
+
 def find_serial_port(requested: str) -> str:
     if requested != "auto":
         return requested
@@ -388,12 +666,15 @@ def run_daemon(port_name: str, probe_url: str) -> None:
     import serial
 
     monitor = NetworkMonitor(probe_url)
+    usage_monitor = UsageMonitor()
     monitor.start()
+    usage_monitor.start()
     serial_port = None
     connected_name = None
     last_network = object()
     last_wait_error = None
     last_wait_log = 0.0
+    last_usage_error = None
 
     print("Codex board bridge starting. Press Ctrl-C to stop.", flush=True)
     try:
@@ -426,7 +707,14 @@ def run_daemon(port_name: str, probe_url: str) -> None:
                 last_wait_log = 0.0
 
             try:
-                serial_port.write(build_packet(monitor.online))
+                usage, usage_error = usage_monitor.read()
+                if usage_error != last_usage_error:
+                    if usage_error:
+                        print(f"Usage unavailable: {usage_error}", file=sys.stderr, flush=True)
+                    else:
+                        print("Codex usage synchronized.", flush=True)
+                    last_usage_error = usage_error
+                serial_port.write(build_packet(monitor.online, usage=usage))
                 serial_port.flush()
                 if monitor.online is not last_network:
                     label = "online" if monitor.online is True else "offline" if monitor.online is False else "checking"
@@ -442,6 +730,7 @@ def run_daemon(port_name: str, probe_url: str) -> None:
     except KeyboardInterrupt:
         print("\nCodex board bridge stopped.")
     finally:
+        usage_monitor.stop()
         monitor.stop()
         if serial_port is not None:
             serial_port.close()
@@ -583,6 +872,11 @@ def parse_args() -> argparse.Namespace:
     title_parser.add_argument("--session", required=True)
     title_parser.add_argument("--title", required=True)
 
+    acknowledge_parser = subparsers.add_parser(
+        "acknowledge", help="Mark one completed task as seen"
+    )
+    acknowledge_parser.add_argument("--task", required=True)
+
     clear_parser = subparsers.add_parser("clear", help="Clear dashboard task state")
     clear_parser.add_argument("--session")
 
@@ -622,6 +916,13 @@ def main() -> int:
             if not set_title(connection, args.session, args.title):
                 print(f"Unknown session: {args.session}", file=sys.stderr)
                 return 1
+        finally:
+            connection.close()
+
+    elif args.command == "acknowledge":
+        connection = open_database()
+        try:
+            acknowledge_task(connection, args.task)
         finally:
             connection.close()
 

@@ -32,6 +32,9 @@ let
   zellij-switch-script = ./zellij-switch.nu;
   zellij-switch = inputs.zellij-switch.packages.${pkgs.stdenv.hostPlatform.system}.default;
   agentDeck = inputs.zellij-agent-deck.packages.${pkgs.stdenv.hostPlatform.system}.default;
+  codexHooks = import ../../../../shared/codex-hooks.nix {
+    inherit inputs lib pkgs;
+  };
 in
 {
   imports = [ inputs.zellij-agent-deck.homeManagerModules.default ];
@@ -72,7 +75,7 @@ in
       plugins {
           compact-bar location="zellij:compact-bar"
           agent-deck location="file:~/.config/zellij/plugins/agent-deck.wasm" {
-              helper "${lib.getExe agentDeck}"
+              helper "${codexHooks.agentDeckCommand}"
               show_subagents "false"
           }
       }

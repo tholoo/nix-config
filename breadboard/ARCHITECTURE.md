@@ -5,11 +5,11 @@ Date: 2026-08-28
 ## Purpose
 
 This project turns the verified ESP32-S3 breadboard into an ambient Codex
-status display. It is intended to answer four questions without watching a
-terminal:
+status display. The OLED answers usage questions while the LEDs retain the
+original task-state behavior:
 
-1. Which project or agent is active?
-2. What short task is it doing, and for how long?
+1. How much usage remains and when does it reset?
+2. How many tokens have been used today?
 3. Is an agent finished, working, waiting for input, or reporting an error?
 4. Is the laptop bridge and its network path still reachable?
 
@@ -49,12 +49,15 @@ Codex lifecycle hooks ----------------> host/codex_board.py hook
                                       v
                               neutral title registry
                                       |
+                         user publisher path unit
+                                      |
                          generic executable sink contract
                                /                \
                               v                  v
                     Breadboard adapter    Agent Deck adapter
 
-codex-board state.sqlite3 --> systemd user daemon --> USB serial --> ESP32
+codex app-server usage ----> systemd user daemon --> USB serial --> ESP32
+codex-board state.sqlite3 --------------------------^ (LED state only)
 ```
 
 The hook commands are deliberately short-lived. They update SQLite and exit.
@@ -78,11 +81,13 @@ failure. The daemon itself polls for the ESP32 and reconnects after unplugging.
 
 On `UserPromptSubmit`, a separate `codex-title` hook gives Codex a short
 developer-context instruction to choose a 2-4 word title. The generic registry
-stores that title once, exposes it through text and JSON CLI queries, and
-publishes it through a stable executable-sink contract. Breadboard and Agent
-Deck are sibling sinks and have no knowledge of each other. Sink failures are
-isolated so metadata housekeeping cannot interrupt a Codex task. If the title
-has not been published, the OLED intentionally displays `_`.
+stores that title once and exposes it through text and JSON CLI queries. A
+user-level publisher replays canonical records outside the Codex sandbox
+through a stable executable-sink contract. Breadboard and Agent Deck are
+sibling sinks and have no knowledge of each other. Sink failures are isolated
+so metadata housekeeping cannot interrupt a Codex task. The title is still
+retained in task state and sent in the existing serial record, although the
+usage-focused OLED no longer renders it.
 
 Normal questions are inferred from a question mark or a small set of explicit
 input-request phrases in the final assistant message. This favors visible
@@ -94,9 +99,11 @@ Root-task duration begins at `UserPromptSubmit` and freezes when the task
 becomes `DONE`. Subagent duration begins at `SubagentStart`. Each state also
 has a separate age used for the delayed strobing alert.
 
-A completed task remains visible so the user can notice it while its Codex
-session is still open. Closing that session removes its root and subagent rows
-immediately. The green LED turns off when no other visible session is `DONE`.
+A completed task remains retained so the user can notice it while its Codex
+session is still open. Agent Deck's existing `mark-read` action acknowledges
+the row when it jumps to that pane; resuming the session also acknowledges it.
+Acknowledged rows use state `A` and no longer illuminate green. Closing the
+session removes its root and subagent rows immediately.
 
 The host returns at most six rows. Ordering is:
 
@@ -113,12 +120,12 @@ The LEDs are independent; several may be illuminated simultaneously.
 
 | LED | On when |
 |---|---|
-| Green | At least one displayed task is `DONE` |
-| Yellow | At least one displayed task is `RUN` |
+| Green | At least one tracked task is unacknowledged `DONE` |
+| Yellow | At least one tracked task is `RUN` |
 | Red | A task is `ERROR`, the network is offline, or the host heartbeat is lost |
-| Blue | At least one displayed task is `INPUT` |
+| Blue | At least one tracked task is `INPUT` |
 | Harder blue | Host heartbeat is present and the network probe is online |
-| Self-cycling | Input or network failure has remained for at least 180 seconds |
+| Self-cycling | Input or any continuous red alert has remained for at least 180 seconds |
 
 Useful combinations include:
 
@@ -130,18 +137,26 @@ Useful combinations include:
 ## OLED behavior
 
 The default Adafruit 6x8 font provides about 21 characters on each of eight
-lines. The first line is a compact header:
+lines. The fixed display shows two remaining-usage windows with reset
+countdowns and bars, followed by today's tokens and sync age:
 
 ```text
-CODEX 3 L:OK N:+
+CODEX USAGE       N:+
+7D         L75% R4d00h
+[==============     ]
+5H         L80% R2h00m
+[===============    ]
+TODAY 12M TOKENS
+SYNC 12s
 ```
 
-`L` is the laptop bridge link and `N` is the network result. Each task consumes
-two lines: project plus duration, then title plus state. Three tasks fit on a
-page. Four to six tasks rotate between pages every five seconds.
+The values above are fictional. `N` is the network result, `L` is remaining
+percentage, and `R` is time until reset. Task records are still parsed and
+retained by the firmware for the unchanged LED rules, but are not drawn.
 
-Long project names and titles are converted to ASCII and clipped. The OLED is
-one-bit from the controller's perspective, but this particular panel has fixed
+Long project names and titles in the retained task protocol are converted to
+ASCII and clipped. The OLED is one-bit from the controller's perspective, but
+this particular panel has fixed
 color zones: its top 16 pixel rows are yellow and its remaining 48 rows are
 blue. Firmware can switch pixels only on or off; it cannot choose their color.
 LED colors provide the aggregate visual status.
@@ -153,6 +168,9 @@ The host sends complete snapshots rather than incremental updates:
 ```text
 BEGIN
 NET|1
+USAGE|1|12345678|12
+LIMIT|7D|75|345600
+LIMIT|5H|80|7200
 TASK|nix-config|repair flake setup|W|12120|15
 TASK|palimpsest|update parser|D|842|93
 END
@@ -161,8 +179,10 @@ END
 Protocol fields:
 
 - `NET|1`, `NET|0`, or `NET|U`: online, offline, or not yet known
+- `USAGE|available|today_tokens|sync_age_seconds`
+- `LIMIT|label|remaining_percent|reset_seconds` (up to two)
 - `TASK|project|title|state|elapsed_seconds|state_age_seconds`
-- state is `W`, `D`, `I`, or `E`
+- state is `W`, `D`, `I`, `E`, or acknowledged `A`
 
 The firmware stages all rows after `BEGIN` and replaces the visible snapshot
 only after `END`. A partial USB write therefore does not produce a half-updated
@@ -194,7 +214,7 @@ Runtime state is stored in:
 
 ```text
 /tmp/codex-board-$UID/state.sqlite3
-$XDG_RUNTIME_DIR/codex-titles-$UID/*.json
+/tmp/codex-titles-$UID/*.json
 ```
 
 This makes the state writable from sandboxed local commands and disposable at
@@ -277,8 +297,9 @@ Completed in software:
 - Eight dashboard unit tests cover root task states, input detection, tool failure
   recovery, subagent rows, session-close removal, serial sanitization, hook
   rendering, and safe hook installation/removal.
-- Five registry unit tests cover private storage, canonical title cleanup,
-  lookup/list/clear behavior, generic hook output, and sink fan-out.
+- Eight registry unit tests cover private storage, canonical title cleanup,
+  lookup/list/clear behavior, generic hook output, sink fan-out, and publisher
+  replay.
 - The isolated Nix `codex-board` package builds and runs successfully.
 - Managed requirements preserve agent-deck metadata and handlers while adding
   independent dashboard lifecycle handlers and a generic title hook.
@@ -292,7 +313,8 @@ Completed physically before the dashboard work:
 - OLED, I2C, every LED, forward/backward chase, all-on test, and continuous
   chase were reported working.
 
-Completed physically with the dashboard firmware on 2026-08-28:
+Completed physically with the original session-oriented dashboard firmware on
+2026-08-28:
 
 - The OLED rendered a complete three-row demo snapshot with `L:OK N:+` and
   distinct `INPUT`, `RUN`, and `DONE` states.
@@ -305,10 +327,10 @@ Completed physically with the dashboard firmware on 2026-08-28:
 - A real Codex session generated its short title, transitioned to `DONE`, and
   illuminated green after its task completed.
 
-Not yet physically verified:
+Not yet physically verified with the usage-focused OLED firmware:
 
-- removal from the OLED and green-LED update after closing a session with the
-  new `SessionEnd` behavior
+- green-LED update after closing a session with the `SessionEnd` behavior
+- usage-window rendering and countdown updates
 - network loss/recovery behavior
 
 Only a physical observation after flashing can mark those items as passed.

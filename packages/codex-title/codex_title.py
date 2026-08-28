@@ -11,6 +11,7 @@ import os
 from pathlib import Path
 import re
 import shlex
+import stat
 import subprocess
 import sys
 import tempfile
@@ -32,8 +33,10 @@ def state_directory() -> Path:
         runtime = Path(os.environ.get("XDG_RUNTIME_DIR", tempfile.gettempdir()))
         root = runtime / f"codex-titles-{os.getuid()}"
     root.mkdir(mode=0o700, parents=True, exist_ok=True)
-    with contextlib.suppress(OSError):
-        root.chmod(0o700)
+    metadata = root.lstat()
+    if not stat.S_ISDIR(metadata.st_mode) or metadata.st_uid != os.getuid():
+        raise RuntimeError("unsafe Codex title state directory")
+    root.chmod(0o700)
     return root
 
 
@@ -148,6 +151,13 @@ def notify_sinks(session_id: str, title: str) -> None:
             )
 
 
+def publish_titles(root: Path | None = None) -> int:
+    records = list_titles(root)
+    for record in records:
+        notify_sinks(record["session"], record["title"])
+    return len(records)
+
+
 def command_prefix() -> str:
     installed = os.environ.get("CODEX_TITLE_COMMAND")
     if installed:
@@ -202,6 +212,7 @@ def parser() -> argparse.ArgumentParser:
     getter.add_argument("--json", action="store_true")
 
     subparsers.add_parser("list", help="List session titles as JSON")
+    subparsers.add_parser("publish", help="Republish all titles to configured sinks")
 
     clearer = subparsers.add_parser("clear", help="Remove one or all stored titles")
     clearer.add_argument("--session")
@@ -233,6 +244,10 @@ def main() -> int:
 
     if args.command == "list":
         print(json.dumps(list_titles(), ensure_ascii=False, separators=(",", ":")))
+        return 0
+
+    if args.command == "publish":
+        publish_titles()
         return 0
 
     if args.command == "clear":

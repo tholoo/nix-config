@@ -5,6 +5,7 @@
 }:
 let
   agentDeck = inputs.zellij-agent-deck.packages.${pkgs.stdenv.hostPlatform.system}.default;
+  codexCli = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.codex;
 
   codexNotify = pkgs.writeShellApplication {
     name = "codex-notify";
@@ -25,6 +26,7 @@ let
   );
   codexBoard = pkgs.writeShellApplication {
     name = "codex-board";
+    runtimeInputs = [ codexCli ];
     text = ''
       export CODEX_BOARD_COMMAND="$0"
       exec ${codexBoardPython}/bin/python3 ${codexBoardSource} "$@"
@@ -64,10 +66,27 @@ let
     sinkDirectory = titleSinks;
   };
 
+  managedAgentDeck = pkgs.writeShellApplication {
+    name = "agent-deck";
+    text = ''
+      if [ "$#" -eq 2 ] && [ "$1" = "mark-read" ]; then
+        ${lib.getExe agentDeck} "$@"
+        case "$2" in
+          codex:*) task_id="''${2#codex:}" ;;
+          subagent:*) task_id="''${2#subagent:}" ;;
+          *) exit 0 ;;
+        esac
+        ${lib.getExe codexBoard} acknowledge --task "$task_id" || true
+        exit 0
+      fi
+      exec ${lib.getExe agentDeck} "$@"
+    '';
+  };
+
   managedDir = pkgs.linkFarm "codex-managed-hooks" [
     {
       name = "agent-deck";
-      path = lib.getExe agentDeck;
+      path = lib.getExe managedAgentDeck;
     }
     {
       name = "agent-deck-codex";
@@ -154,6 +173,7 @@ in
   boardPackage = codexBoard;
   titlePackage = codexTitle;
   notifyCommand = lib.getExe codexNotify;
+  agentDeckCommand = "${managedDir}/agent-deck";
 
   requirements = deckRequirements // {
     hooks = mergedHooks;

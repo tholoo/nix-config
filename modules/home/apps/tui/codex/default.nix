@@ -230,7 +230,10 @@ in
         RestartSec = "3s";
         UMask = "0077";
         Environment =
-          [ "PYTHONUNBUFFERED=1" ]
+          [
+            "PYTHONUNBUFFERED=1"
+            "CODEX_HOME=${config.xdg.configHome}/codex"
+          ]
           ++ lib.optionals (cfg.proxyUrl != null) [
             "HTTP_PROXY=${cfg.proxyUrl}"
             "HTTPS_PROXY=${cfg.proxyUrl}"
@@ -239,6 +242,26 @@ in
             "https_proxy=${cfg.proxyUrl}"
             "all_proxy=${cfg.proxyUrl}"
           ];
+      };
+      Install.WantedBy = [ "default.target" ];
+    };
+
+    systemd.user.services."codex-title-publisher" = {
+      Unit.Description = "Publish canonical Codex titles to local adapters";
+      Service = {
+        Type = "oneshot";
+        ExecStart = "${lib.getExe codexHooks.titlePackage} publish";
+        UMask = "0077";
+        Environment = [ "XDG_RUNTIME_DIR=%t" ];
+      };
+      Install.WantedBy = [ "default.target" ];
+    };
+
+    systemd.user.paths."codex-title-publisher" = {
+      Unit.Description = "Watch for canonical Codex title changes";
+      Path = {
+        PathChanged = "/tmp/codex-titles-%U";
+        Unit = "codex-title-publisher.service";
       };
       Install.WantedBy = [ "default.target" ];
     };
