@@ -15,6 +15,16 @@ Runtime state lives in `/tmp/codex-board-$UID/state.sqlite3` with a private
 state directory. `codex-board clear` deletes the tracked rows. State is
 normally removed by the operating system at reboot.
 
+Generated titles also live in private JSON records under
+`$XDG_RUNTIME_DIR/codex-titles-$UID` (or `$CODEX_TITLE_STATE_DIR`). Filenames
+contain a hash rather than the session ID. `codex-title clear` deletes these
+records. The immutable Nix sink directory contains only the configured local
+Breadboard and Agent Deck adapters; sinks receive the session ID and short
+title, never the original prompt.
+
+The managed `SessionEnd` hook deletes the matching shared title record. A
+reboot removes any record left behind if session cleanup was interrupted.
+
 The `SessionEnd` hook deletes the closed root session and all of its subagent
 rows. Completed task metadata therefore remains only while that Codex session
 is open, unless the hook is unavailable or interrupted.
@@ -31,10 +41,10 @@ Standard proxy environment variables may be honored by Python's URL opener.
 
 ## Codex hooks
 
-The Nix integration installs an immutable `codex-board` command and merges its
-handlers with existing managed hooks. The fallback `install-hooks` command
-edits only `$CODEX_HOME/hooks.json`, creates a timestamped backup, and preserves
-unrelated hook groups.
+The Nix integration installs immutable `codex-board` and `codex-title` commands
+and merges their handlers with existing managed hooks. The fallback dashboard
+`install-hooks` command edits only `$CODEX_HOME/hooks.json`, creates a
+timestamped backup, and preserves unrelated hook groups.
 
 On Glacier, a Home Manager user service runs the bridge after login. Its udev
 rule assigns only tty devices with Espressif vendor ID `303a` and product ID

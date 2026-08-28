@@ -94,7 +94,9 @@ Override the URL only when diagnosing a network/proxy setup:
 
 In this `nix-config` repository, `modules/shared/codex-hooks.nix` packages the
 bridge as `codex-board` and merges the dashboard events with the existing
-managed agent-deck hooks. No token or mutable user hook file is required.
+managed agent-deck hooks. A separate `codex-title` registry owns generated
+session titles and publishes them to independent service adapters. No token or
+mutable user hook file is required.
 
 The `breadboard` directory is currently untracked, so a Git-backed flake omits
 it. When you are ready to activate the changes, stage only this new directory;
@@ -119,8 +121,9 @@ background service starts automatically at login.
 These events are recorded:
 
 - `UserPromptSubmit`: starts a task and places `_` on the display.
-- A short hook instruction asks Codex to set a 2-4 word title through the local
-  status command. This command only updates the dashboard database.
+- A separate metadata hook asks Codex to store a 2-4 word title with
+  `codex-title`. The registry publishes it to the independent Breadboard and
+  Zellij Agent Deck adapters.
 - `PreToolUse` and `PostToolUse`: mark work in progress and detect structured
   tool failures.
 - `PermissionRequest`: marks the root task as `INPUT`.
@@ -182,6 +185,8 @@ Other useful local controls are:
 codex-board list
 codex-board clear
 codex-board packet --network online
+codex-title list
+codex-title get --session SESSION_ID
 ```
 
 The ESP32 turns red and shows `HOST LINK LOST` after 15 seconds without a

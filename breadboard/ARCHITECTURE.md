@@ -39,25 +39,22 @@ The hardware bring-up firmware and reported observations are preserved in
 ## System layout
 
 ```text
-Codex lifecycle hooks
+Codex lifecycle hooks ----------------> host/codex_board.py hook
+        |                                         |
+        |                                         v
+        |                              codex-board state.sqlite3
         |
-        v
-host/codex_board.py hook
-        |
-        v
-/tmp/codex-board-$UID/state.sqlite3
-        ^
-        |
-systemd --user: codex-board
-        |
-        v
-host/codex_board.py daemon --port auto
-        |
-        v  USB serial, 115200 baud
-ESP32 dashboard firmware
-        |
-        +--> SSD1306 OLED
-        +--> six status LEDs
+        +--> codex-title hook --> Codex-generated title
+                                      |
+                                      v
+                              neutral title registry
+                                      |
+                         generic executable sink contract
+                               /                \
+                              v                  v
+                    Breadboard adapter    Agent Deck adapter
+
+codex-board state.sqlite3 --> systemd user daemon --> USB serial --> ESP32
 ```
 
 The hook commands are deliberately short-lived. They update SQLite and exit.
@@ -79,10 +76,13 @@ failure. The daemon itself polls for the ESP32 and reconnects after unplugging.
 | `SubagentStart` | Add a separate running subagent row |
 | `SubagentStop` | Mark the subagent row complete |
 
-On `UserPromptSubmit`, the hook also gives Codex a short developer-context
-instruction to choose a 2-4 word title and run the local `title` command. The
-command only updates the dashboard database. If that command has not run, the
-OLED intentionally displays `_`.
+On `UserPromptSubmit`, a separate `codex-title` hook gives Codex a short
+developer-context instruction to choose a 2-4 word title. The generic registry
+stores that title once, exposes it through text and JSON CLI queries, and
+publishes it through a stable executable-sink contract. Breadboard and Agent
+Deck are sibling sinks and have no knowledge of each other. Sink failures are
+isolated so metadata housekeeping cannot interrupt a Codex task. If the title
+has not been published, the OLED intentionally displays `_`.
 
 Normal questions are inferred from a question mark or a small set of explicit
 input-request phrases in the final assistant message. This favors visible
@@ -194,21 +194,29 @@ Runtime state is stored in:
 
 ```text
 /tmp/codex-board-$UID/state.sqlite3
+$XDG_RUNTIME_DIR/codex-titles-$UID/*.json
 ```
 
 This makes the state writable from sandboxed local commands and disposable at
-reboot. Stored fields are session/subagent identifiers, project directory
-basename, short title, state, and timestamps. Full prompts, assistant replies,
-transcripts, source code, credentials, and tool output are not stored.
+reboot. The generic title files use hashed filenames and contain only schema,
+session ID, title, and update time. Dashboard rows contain session/subagent
+identifiers, project directory basename, short title, state, and timestamps.
+Full prompts, assistant replies, transcripts, source code, credentials, and
+tool output are not stored.
+
+The shared title record is removed on `SessionEnd`. Runtime-directory cleanup
+at reboot is the fallback if that hook is interrupted.
 
 The `clear` command removes all rows. The daemon and hooks use SQLite locking
 so concurrent agents can update the same database safely.
 
 ## Hook installation and trust
 
-In the Nix configuration, the bridge is packaged as `codex-board` and its
-handlers are merged into the managed Codex hook requirements. This preserves
-the existing agent-deck handlers and avoids a mutable user hook file.
+In the Nix configuration, the bridge is packaged as `codex-board`, the neutral
+registry as `codex-title`, and their handlers are merged into the managed Codex
+hook requirements. The composition layer provides small Breadboard and Agent
+Deck sink adapters. This preserves existing agent-deck handlers and avoids a
+mutable user hook file while keeping the services independent.
 
 For a non-Nix installation, `python3 host/codex_board.py install-hooks` merges
 the handlers into `$CODEX_HOME/hooks.json` (falling back to
@@ -266,12 +274,14 @@ Completed in software:
 - `dashboard` PlatformIO environment builds successfully.
 - preserved `bringup` PlatformIO environment builds successfully.
 - Python syntax compilation succeeds.
-- Eight unit tests cover root task states, input detection, tool failure
+- Eight dashboard unit tests cover root task states, input detection, tool failure
   recovery, subagent rows, session-close removal, serial sanitization, hook
   rendering, and safe hook installation/removal.
+- Five registry unit tests cover private storage, canonical title cleanup,
+  lookup/list/clear behavior, generic hook output, and sink fan-out.
 - The isolated Nix `codex-board` package builds and runs successfully.
 - Managed requirements preserve agent-deck metadata and handlers while adding
-  a second dashboard handler group to each lifecycle event.
+  independent dashboard lifecycle handlers and a generic title hook.
 - The Glacier Home Manager activation package, including
   `codex-board.service`, builds successfully.
 - The Glacier NixOS module renders group-access rules only for Espressif tty

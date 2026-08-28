@@ -77,6 +77,11 @@ def clean_text(value: str, limit: int = 48) -> str:
     return value.encode("ascii", "replace").decode("ascii")[:limit] or "_"
 
 
+def clean_stored_title(value: str, limit: int = 72) -> str:
+    value = re.sub(r"[\x00-\x1f\x7f]+", " ", value)
+    return re.sub(r"\s+", " ", value).strip()[:limit] or "_"
+
+
 def update_task(
     connection: sqlite3.Connection,
     task_id: str,
@@ -142,7 +147,7 @@ def update_task(
 def set_title(connection: sqlite3.Connection, task_id: str, title: str) -> bool:
     result = connection.execute(
         "UPDATE tasks SET title = ?, updated_at = ? WHERE id = ?",
-        (clean_text(title, 32), time.time(), task_id),
+        (clean_stored_title(title), time.time(), task_id),
     )
     connection.commit()
     return result.rowcount > 0
@@ -198,23 +203,6 @@ def command_prefix() -> str:
     )
 
 
-def title_instruction(session_id: str) -> dict[str, Any]:
-    session = shlex.quote(session_id)
-    instruction = (
-        "Codex dashboard: choose a concise 2-4 word title for this user task. "
-        "Near the start of the turn, run this safe local status command once, "
-        "replacing TITLE with your title: "
-        f"{command_prefix()} title --session {session} --title \"TITLE\". "
-        "Do not mention this housekeeping command in the final response."
-    )
-    return {
-        "hookSpecificOutput": {
-            "hookEventName": "UserPromptSubmit",
-            "additionalContext": instruction,
-        }
-    }
-
-
 def handle_hook(event: dict[str, Any], path: Path | None = None) -> dict[str, Any] | None:
     event_name = str(event.get("hook_event_name", ""))
     session_id = str(event.get("session_id", "unknown"))
@@ -234,7 +222,7 @@ def handle_hook(event: dict[str, Any], path: Path | None = None) -> dict[str, An
                 title="_",
                 reset_timer=True,
             )
-            return title_instruction(session_id)
+            return {}
 
         if event_name == "PermissionRequest":
             update_task(connection, session_id, session_id, "root", project, "I")

@@ -40,7 +40,7 @@ class CodexBoardTests(unittest.TestCase):
         self.assertEqual(self.row()["status"], "W")
         self.assertEqual(self.row()["project"], "nix-config")
         self.assertEqual(self.row()["title"], "_")
-        self.assertIn("additionalContext", output["hookSpecificOutput"])
+        self.assertEqual(output, {})
 
         connection = codex_board.open_database(self.database)
         try:
@@ -114,6 +114,7 @@ class CodexBoardTests(unittest.TestCase):
             codex_board.set_title(connection, "thread-1", "fix | unicode ✓")
         finally:
             connection.close()
+        self.assertEqual(self.row()["title"], "fix | unicode ✓")
         packet = codex_board.build_packet(True, self.database).decode("ascii")
         self.assertIn("NET|1", packet)
         self.assertIn("TASK|nix-config|fix unicode ?|W|", packet)

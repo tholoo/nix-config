@@ -174,7 +174,10 @@ in
   config = mkIf cfg.enable {
     home = {
       packages =
-        [ codexHooks.boardPackage ]
+        [
+          codexHooks.boardPackage
+          codexHooks.titlePackage
+        ]
         ++ lib.optionals cfg.enableUsageTools [
           # llmAgents.agentsview
           # llmAgents.oh-my-codex
