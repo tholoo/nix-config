@@ -163,14 +163,22 @@ in
       default = true;
       description = "Whether to install Codex usage and session analysis tools from llm-agents.nix.";
     };
+
+    enableBoardService = mkOption {
+      type = types.bool;
+      default = false;
+      description = "Whether to run the ESP32 Codex dashboard bridge as a user service.";
+    };
   };
 
   config = mkIf cfg.enable {
     home = {
-      packages = lib.optionals cfg.enableUsageTools [
-        # llmAgents.agentsview
-        # llmAgents.oh-my-codex
-      ];
+      packages =
+        [ codexHooks.boardPackage ]
+        ++ lib.optionals cfg.enableUsageTools [
+          # llmAgents.agentsview
+          # llmAgents.oh-my-codex
+        ];
 
       sessionVariables.CODEX_HOME = "${config.xdg.configHome}/codex";
     };
@@ -205,6 +213,32 @@ in
     '';
 
     programs.nushell.environmentVariables.CODEX_HOME = "${config.xdg.configHome}/codex";
+
+    systemd.user.services."codex-board" = mkIf cfg.enableBoardService {
+      Unit = {
+        Description = "ESP32 Codex dashboard bridge";
+        After = [ "network-online.target" ];
+        Wants = [ "network-online.target" ];
+      };
+      Service = {
+        Type = "simple";
+        ExecStart = "${lib.getExe codexHooks.boardPackage} daemon --port auto";
+        Restart = "on-failure";
+        RestartSec = "3s";
+        UMask = "0077";
+        Environment =
+          [ "PYTHONUNBUFFERED=1" ]
+          ++ lib.optionals (cfg.proxyUrl != null) [
+            "HTTP_PROXY=${cfg.proxyUrl}"
+            "HTTPS_PROXY=${cfg.proxyUrl}"
+            "ALL_PROXY=${cfg.proxyUrl}"
+            "http_proxy=${cfg.proxyUrl}"
+            "https_proxy=${cfg.proxyUrl}"
+            "all_proxy=${cfg.proxyUrl}"
+          ];
+      };
+      Install.WantedBy = [ "default.target" ];
+    };
 
     programs.mcp = mkIf cfg.enableSharedMcp {
       enable = true;

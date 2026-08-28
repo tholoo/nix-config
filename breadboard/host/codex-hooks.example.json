@@ -1,0 +1,14 @@
+{
+  "description": "Send Codex lifecycle status to the ESP32 dashboard bridge.",
+  "hooks": {
+    "SessionStart": [{"hooks": [{"type": "command", "command": "python3 /ABSOLUTE/PATH/TO/breadboard/host/codex_board.py hook", "timeout": 3}]}],
+    "SessionEnd": [{"hooks": [{"type": "command", "command": "python3 /ABSOLUTE/PATH/TO/breadboard/host/codex_board.py hook", "timeout": 3}]}],
+    "UserPromptSubmit": [{"hooks": [{"type": "command", "command": "python3 /ABSOLUTE/PATH/TO/breadboard/host/codex_board.py hook", "timeout": 3, "additionalContextLimit": 160}]}],
+    "PreToolUse": [{"hooks": [{"type": "command", "command": "python3 /ABSOLUTE/PATH/TO/breadboard/host/codex_board.py hook", "timeout": 3}]}],
+    "PostToolUse": [{"hooks": [{"type": "command", "command": "python3 /ABSOLUTE/PATH/TO/breadboard/host/codex_board.py hook", "timeout": 3}]}],
+    "PermissionRequest": [{"hooks": [{"type": "command", "command": "python3 /ABSOLUTE/PATH/TO/breadboard/host/codex_board.py hook", "timeout": 3}]}],
+    "SubagentStart": [{"hooks": [{"type": "command", "command": "python3 /ABSOLUTE/PATH/TO/breadboard/host/codex_board.py hook", "timeout": 3}]}],
+    "SubagentStop": [{"hooks": [{"type": "command", "command": "python3 /ABSOLUTE/PATH/TO/breadboard/host/codex_board.py hook", "timeout": 3}]}],
+    "Stop": [{"hooks": [{"type": "command", "command": "python3 /ABSOLUTE/PATH/TO/breadboard/host/codex_board.py hook", "timeout": 3}]}]
+  }
+}

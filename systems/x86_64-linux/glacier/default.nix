@@ -17,6 +17,8 @@
     gui.enable = true;
     tui.enable = true;
 
+    codex.enableBoardUdev = true;
+
     grub.enable = true;
     systemd-boot.enable = false;
   };
