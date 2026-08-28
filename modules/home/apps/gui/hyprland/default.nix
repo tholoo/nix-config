@@ -138,6 +138,7 @@ in
           "[workspace 4 silent] ${lib.getExe pkgs.throne}"
 
           "${lib.getExe' pkgs.awww "awww-daemon"}"
+          "${lib.getExe pkgs.wl-clip-persist} --clipboard both"
           "QT_QPA_PLATFORM=xcb ${lib.getExe' pkgs.kdePackages.kdeconnect-kde "kdeconnectd"}"
 
           ''hyprctl setcursor "Bibata-Modern-Ice" 22''
