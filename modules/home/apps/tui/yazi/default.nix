@@ -58,10 +58,10 @@ in
         {
           on = [ "y" ];
           run = [
+            ''
+              shell -- for path in %s; do echo "file://$path"; done | ${lib.getExe' pkgs.wl-clipboard "wl-copy"} -t text/uri-list
+            ''
             "yank"
-            ''
-              shell --confirm 'for path in "$@"; do echo "file://$path"; done | wl-copy -t text/uri-list'
-            ''
           ];
         }
         {
