@@ -322,6 +322,7 @@ in
 
         dokploy = {
           command = lib.getExe dokployMcp;
+          env_vars = [ "XDG_RUNTIME_DIR" ];
           startup_timeout_sec = 60;
           tool_timeout_sec = 300;
           default_tools_approval_mode = "writes";
