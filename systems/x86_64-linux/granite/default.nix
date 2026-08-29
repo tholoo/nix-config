@@ -44,6 +44,10 @@
 
   security.sudo.wheelNeedsPassword = false;
 
+  # The qemu-guest profile cannot grow an LVM mapper device directly. Disko
+  # already allocates the root partition and logical volume to all free space.
+  boot.growPartition = lib.mkForce false;
+
   # Hetzner cloud VM has no /dev/kvm; libvirtd from the docker module can't start here.
   virtualisation.libvirtd.enable = lib.mkForce false;
   # services.minecraft-server.serverProperties.jvmOpts = "-Xmx512M -Xms512M";
