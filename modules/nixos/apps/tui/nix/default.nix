@@ -27,15 +27,6 @@ in
           "flakes"
           "configurable-impure-env"
         ];
-        # Pass proxy into fixed-output derivation builds (crate downloads, etc.)
-        impure-env = [
-          "http_proxy=http://127.0.0.1:10808"
-          "https_proxy=http://127.0.0.1:10808"
-          "HTTP_PROXY=http://127.0.0.1:10808"
-          "HTTPS_PROXY=http://127.0.0.1:10808"
-          "ALL_PROXY=http://127.0.0.1:10808"
-          "all_proxy=http://127.0.0.1:10808"
-        ];
         # Deduplicate and optimize nix store
         auto-optimise-store = true;
         trusted-users = [

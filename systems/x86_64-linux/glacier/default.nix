@@ -52,6 +52,16 @@
     all_proxy = "http://127.0.0.1:10808";
   };
 
+  # Pass Glacier's local proxy into fixed-output derivation builds.
+  nix.settings.impure-env = [
+    "http_proxy=http://127.0.0.1:10808"
+    "https_proxy=http://127.0.0.1:10808"
+    "HTTP_PROXY=http://127.0.0.1:10808"
+    "HTTPS_PROXY=http://127.0.0.1:10808"
+    "ALL_PROXY=http://127.0.0.1:10808"
+    "all_proxy=http://127.0.0.1:10808"
+  ];
+
   security.sudo.extraConfig = ''
     Defaults env_keep += "http_proxy https_proxy HTTP_PROXY HTTPS_PROXY all_proxy ALL_PROXY no_proxy NO_PROXY"
   '';
