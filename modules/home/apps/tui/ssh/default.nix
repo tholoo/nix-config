@@ -51,6 +51,7 @@ in
           granite = {
             User = "tholo";
             CheckHostIP = false;
+            SendEnv = [ "ZELLIJ" ];
             # get the ip from secrets
             ProxyCommand = "bash -c '${nc} $(${cat} ${ip-granite.path}) %p'";
           };

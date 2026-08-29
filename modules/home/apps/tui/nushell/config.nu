@@ -96,7 +96,14 @@ def la [
 # zellij
 
 def start_zellij [] {
-  if 'ZELLIJ' not-in ($env | columns) {
+  let env_names = ($env | columns)
+  let forwarded_outer_zellij = (
+      ('SSH_CONNECTION' in $env_names)
+      and ('ZELLIJ' in $env_names)
+      and ('ZELLIJ_PANE_ID' not-in $env_names)
+  )
+
+  if ('ZELLIJ' not-in $env_names) or $forwarded_outer_zellij {
       zellij attach default --create options --default-cwd $env.PWD
   }
 }

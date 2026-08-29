@@ -44,6 +44,10 @@
 
   security.sudo.wheelNeedsPassword = false;
 
+  # Let a local outer Zellij session identify itself to the remote client so
+  # Zellij 0.45's nested-session protocol is enabled across SSH.
+  services.openssh.settings.AcceptEnv = [ "ZELLIJ" ];
+
   # The qemu-guest profile cannot grow an LVM mapper device directly. Disko
   # already allocates the root partition and logical volume to all free space.
   boot.growPartition = lib.mkForce false;
