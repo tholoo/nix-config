@@ -69,7 +69,7 @@ in
       serialization_interval 1
       show_startup_tips false
 
-      nested_session_handling "ask"
+      nested_session_handling "descend"
 
       plugins {
           compact-bar location="zellij:compact-bar"
