@@ -1,0 +1,13 @@
+{
+  "id": "vigiland",
+  "name": "Vigiland",
+  "description": "Toggle Vigiland's idle inhibitor",
+  "version": "1.0.0",
+  "author": "tholo",
+  "type": "widget",
+  "capabilities": ["dankbar-widget", "idle-inhibitor"],
+  "component": "./Vigiland.qml",
+  "icon": "coffee",
+  "requires_dms": ">=1.5.0",
+  "permissions": ["settings_read"]
+}

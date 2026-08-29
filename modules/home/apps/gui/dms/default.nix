@@ -5,10 +5,11 @@
   ...
 }:
 let
-  inherit (lib) mkIf;
+  inherit (lib) getExe mkIf optional;
   inherit (lib.mine) mkEnable;
   cfg = config.mine.${name};
   name = "dms";
+  vigiland = config.mine.vigiland;
 in
 {
   options.mine.${name} = mkEnable config {
@@ -41,6 +42,12 @@ in
       enableDynamicTheming = false;
       enableCalendarEvents = false;
 
+      plugins.vigiland = mkIf vigiland.enable {
+        enable = true;
+        src = ./vigiland;
+        settings.controlCommand = getExe vigiland.controlPackage;
+      };
+
       settings = {
         clockFormat = "24h";
         showSeconds = true;
@@ -71,6 +78,9 @@ in
               "keyboard_layout_name"
               "cpuUsage"
               "memUsage"
+            ]
+            ++ optional vigiland.enable "vigiland"
+            ++ [
               "clock"
               "notificationButton"
               "battery"
