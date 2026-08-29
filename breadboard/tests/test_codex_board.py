@@ -40,14 +40,8 @@ class CodexBoardTests(unittest.TestCase):
         )
         self.assertEqual(self.row()["status"], "W")
         self.assertEqual(self.row()["project"], "nix-config")
-        self.assertEqual(self.row()["title"], "_")
+        self.assertEqual(self.row()["title"], "Fix the flake setup")
         self.assertEqual(output, {})
-
-        connection = codex_board.open_database(self.database)
-        try:
-            self.assertTrue(codex_board.set_title(connection, "thread-1", "repair flake setup"))
-        finally:
-            connection.close()
 
         codex_board.handle_hook(self.event("PermissionRequest"), self.database)
         self.assertEqual(self.row()["status"], "I")
@@ -58,7 +52,7 @@ class CodexBoardTests(unittest.TestCase):
         )
         self.assertEqual(output, {})
         self.assertEqual(self.row()["status"], "D")
-        self.assertEqual(self.row()["title"], "repair flake setup")
+        self.assertEqual(self.row()["title"], "Fix the flake setup")
 
     def test_question_at_stop_requires_input(self):
         codex_board.handle_hook(self.event("UserPromptSubmit"), self.database)

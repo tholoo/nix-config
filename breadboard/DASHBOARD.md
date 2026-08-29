@@ -97,10 +97,9 @@ to stop it.
 
 In this `nix-config` repository, `modules/shared/codex-hooks.nix` packages the
 bridge as `codex-board` and merges the dashboard events with the existing
-managed agent-deck hooks. A separate `codex-title` registry owns generated
-session titles. A user-level publisher fans changed canonical records out to
-independent adapters outside the Codex sandbox. No token or mutable user hook
-file is required.
+managed Agent Deck hooks. Each hook derives its own bounded title directly
+from the beginning of the submitted prompt. No model-generated title hook,
+token, publisher service, or mutable user hook file is required.
 
 When you are ready to activate the host-side changes, first build the complete
 Glacier configuration; no commit is required:
@@ -127,10 +126,8 @@ layout and LED timing changes.
 
 These events are recorded:
 
-- `UserPromptSubmit`: starts a task with `_` as its pending title.
-- A separate metadata hook asks Codex to store a 2-4 word title with
-  `codex-title`. The registry publishes it to the independent Breadboard and
-  Zellij Agent Deck adapters.
+- `UserPromptSubmit`: starts a task and derives its title from the beginning of
+  the prompt. Zellij Agent Deck independently does the same for its task record.
 - `PreToolUse` and `PostToolUse`: mark work in progress and detect structured
   tool failures.
 - `PermissionRequest`: marks the root task as `INPUT`.
@@ -195,8 +192,6 @@ Other useful local controls are:
 codex-board list
 codex-board clear
 codex-board packet
-codex-title list
-codex-title get --session SESSION_ID
 ```
 
 The ESP32 turns red and shows `HOST LINK LOST` after 15 seconds without a

@@ -334,7 +334,7 @@ def handle_hook(event: dict[str, Any], path: Path | None = None) -> dict[str, An
                 "root",
                 project,
                 "W",
-                title="_",
+                title=str(event.get("prompt") or ""),
                 reset_timer=True,
             )
             return {}
@@ -815,7 +815,7 @@ def parse_args() -> argparse.Namespace:
     daemon_parser = subparsers.add_parser("daemon", help="Run the USB/dashboard bridge")
     daemon_parser.add_argument("--port", default="auto", help="Serial port or 'auto'")
 
-    title_parser = subparsers.add_parser("title", help="Set a Codex-generated task title")
+    title_parser = subparsers.add_parser("title", help="Set a task title")
     title_parser.add_argument("--session", required=True)
     title_parser.add_argument("--title", required=True)
 

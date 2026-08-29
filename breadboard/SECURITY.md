@@ -8,25 +8,17 @@ the local USB cable.
 
 The hook reads Codex lifecycle event JSON from standard input, but persists
 only session/subagent identifiers, the project directory basename, a short
-generated title, state, and timestamps. It does not persist prompts, assistant
-responses, transcripts, source code, tool arguments, tool output, environment
-variables, or credentials.
+prefix derived from the submitted prompt, state, and timestamps. It does not
+persist complete prompts, assistant responses, transcripts, source code, tool
+arguments, tool output, environment variables, or credentials.
 
 Runtime state lives in `/tmp/codex-board-$UID/state.sqlite3` with a private
 state directory. `codex-board clear` deletes the tracked rows. State is
 normally removed by the operating system at reboot.
 
-Generated titles also live in private JSON records under
-`/tmp/codex-titles-$UID` (or `$CODEX_TITLE_STATE_DIR`). The directory is mode
-`0700`, records are mode `0600`, and filenames contain a hash rather than the
-session ID. `codex-title clear` deletes these records. The immutable Nix sink
-directory contains only the configured local Breadboard and Agent Deck
-adapters; sinks receive the session ID and short title, never the original
-prompt. A user-level path unit republishes changed records outside the Codex
-sandbox; it does not add fields or copy them into the source repository.
-
-The managed `SessionEnd` hook deletes the matching shared title record. A
-reboot removes any record left behind if session cleanup was interrupted.
+Zellij Agent Deck receives the same lifecycle event and independently stores a
+bounded, normalized prefix of the prompt in its private runtime state. There
+is no shared title registry or publisher service.
 
 The Nix composition wraps Agent Deck's existing `mark-read` command only to
 forward the sanitized task key to `codex-board acknowledge`. It does not pass
@@ -51,8 +43,8 @@ still be honored by Codex while retrieving account usage.
 
 ## Codex hooks
 
-The Nix integration installs immutable `codex-board` and `codex-title` commands
-and merges their handlers with existing managed hooks. The fallback dashboard
+The Nix integration installs the immutable `codex-board` command and merges
+its handlers with existing managed hooks. The fallback dashboard
 `install-hooks` command edits only `$CODEX_HOME/hooks.json`, creates a
 timestamped backup, and preserves unrelated hook groups.
 
