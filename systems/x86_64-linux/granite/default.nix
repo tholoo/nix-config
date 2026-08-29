@@ -21,6 +21,7 @@
       "game"
       "gui"
       "develop"
+      "ai"
       "mount"
       "proxy"
       "vpn"
@@ -29,6 +30,7 @@
     ];
 
     tui-misc.enable = false;
+    codex.enable = false;
 
     systemd-boot.enable = false;
     syncthing.enable = false;
