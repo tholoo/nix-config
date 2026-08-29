@@ -18,7 +18,6 @@
       "download"
       "productivity"
       "nix-index"
-      "mcfly"
       "cli-cool"
       "calendar"
       "personal"
