@@ -9,9 +9,9 @@ constexpr uint8_t I2C_SCL_PIN = 9;
 
 constexpr uint8_t LED_GREEN_PIN = 4;       // A completed root Codex task exists.
 constexpr uint8_t LED_YELLOW_PIN = 5;      // A root Codex task is working.
-constexpr uint8_t LED_RED_PIN = 6;         // Root-task error, network loss, or host loss.
+constexpr uint8_t LED_RED_PIN = 6;         // Root-task error or host loss.
 constexpr uint8_t LED_BLUE_PIN = 7;        // A root Codex task needs user input/approval.
-constexpr uint8_t LED_LINK_PIN = 10;       // Laptop bridge and network are online.
+constexpr uint8_t LED_LINK_PIN = 10;       // Laptop bridge heartbeat is present.
 constexpr uint8_t LED_STROBE_PIN = 11;     // An alert has waited too long.
 
 // Verified wiring: GPIO -> 220 ohm -> LED anode; LED cathode -> GND.
@@ -73,8 +73,6 @@ uint32_t pendingUsageAgeSeconds = 0;
 bool oledReady = false;
 bool receivingSnapshot = false;
 bool linkSeen = false;
-int8_t networkState = -1;        // -1 unknown, 0 offline, 1 online
-int8_t pendingNetworkState = -1;
 uint32_t lastHeartbeatMs = 0;
 bool redAlertActive = false;
 uint32_t redAlertSinceMs = 0;
@@ -185,15 +183,12 @@ void commitSnapshot() {
   usageAvailable = pendingUsageAvailable;
   todayTokens = pendingTodayTokens;
   usageAgeSeconds = pendingUsageAgeSeconds;
-  networkState = pendingNetworkState;
   receivingSnapshot = false;
   linkSeen = true;
   lastHeartbeatMs = millis();
 
-  Serial.printf("Dashboard snapshot: %u task(s), network=%s\n",
-                static_cast<unsigned>(taskCount),
-                networkState == 1 ? "online" :
-                networkState == 0 ? "offline" : "unknown");
+  Serial.printf("Dashboard snapshot: %u task(s)\n",
+                static_cast<unsigned>(taskCount));
 }
 
 void processSerialLine(char *line) {
@@ -203,7 +198,6 @@ void processSerialLine(char *line) {
     pendingUsageAvailable = false;
     pendingTodayTokens = -1;
     pendingUsageAgeSeconds = 0;
-    pendingNetworkState = -1;
     receivingSnapshot = true;
     return;
   }
@@ -216,9 +210,7 @@ void processSerialLine(char *line) {
 
   if (!receivingSnapshot) return;
 
-  if (!strncmp(line, "NET|", 4)) {
-    pendingNetworkState = line[4] == '1' ? 1 : line[4] == '0' ? 0 : -1;
-  } else if (!strncmp(line, "USAGE|", 6)) {
+  if (!strncmp(line, "USAGE|", 6)) {
     char *cursor = line + 6;
     parsePendingUsage(cursor);
   } else if (!strncmp(line, "LIMIT|", 6)) {
@@ -393,9 +385,8 @@ void updateLeds() {
   }
 
   const bool lostHost = hostTimedOut();
-  const bool offline = linkSeen && !lostHost && networkState == 0;
-  const bool online = linkSeen && !lostHost && networkState == 1;
-  const bool redAlert = hasError || lostHost || offline;
+  const bool online = linkSeen && !lostHost;
+  const bool redAlert = hasError || lostHost;
   if (redAlert && !redAlertActive) {
     redAlertActive = true;
     redAlertSinceMs = millis();
@@ -433,10 +424,7 @@ void drawDashboard() {
     return;
   }
 
-  char network[5];
-  snprintf(network, sizeof(network), "N:%c",
-           networkState == 1 ? '+' : networkState == 0 ? 'X' : '?');
-  printAligned("CODEX USAGE", network);
+  display.println("CODEX USAGE");
 
   if (!usageAvailable || usageLimitCount == 0) {
     display.setCursor(0, 16);
@@ -485,7 +473,7 @@ void setup() {
 
   Serial.println();
   Serial.println("=== Codex status dashboard ===");
-  Serial.println("Protocol: BEGIN / NET / USAGE / LIMIT / TASK / END at 115200 baud");
+  Serial.println("Protocol: BEGIN / USAGE / LIMIT / TASK / END at 115200 baud");
   Serial.printf("I2C: SDA GPIO %u, SCL GPIO %u\n", I2C_SDA_PIN, I2C_SCL_PIN);
   initializeOled();
   lastHeartbeatMs = millis();

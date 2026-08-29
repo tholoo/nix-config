@@ -19,19 +19,14 @@ import sys
 import tempfile
 import threading
 import time
-from typing import Any, Callable
-from urllib.error import HTTPError, URLError
-from urllib.request import Request, urlopen
+from typing import Any
 
 
 MAX_TASKS = 6
-PROBE_URL = "https://chatgpt.com"
 SERIAL_BAUD = 115200
 USAGE_REFRESH_SECONDS = 60.0
 TOKEN_REFRESH_SECONDS = 15 * 60.0
 RPC_TIMEOUT_SECONDS = 15.0
-NETWORK_OFFLINE_AFTER_SECONDS = 60.0
-NETWORK_ONLINE_SUCCESSES = 2
 
 
 @dataclass(frozen=True)
@@ -420,7 +415,6 @@ def task_rows(
 
 
 def build_packet(
-    network_online: bool | None,
     path: Path | None = None,
     usage: UsageSnapshot | None = None,
     now: float | None = None,
@@ -432,8 +426,7 @@ def build_packet(
     finally:
         connection.close()
 
-    network_value = "1" if network_online is True else "0" if network_online is False else "U"
-    lines = ["BEGIN", f"NET|{network_value}"]
+    lines = ["BEGIN"]
     usage_age = max(0, int(now - usage.fetched_at)) if usage else 0
     today_tokens = usage.today_tokens if usage and usage.today_tokens is not None else -1
     lines.append(f"USAGE|{int(usage is not None)}|{today_tokens}|{usage_age}")
@@ -461,64 +454,6 @@ def build_packet(
         )
     lines.append("END")
     return ("\n".join(lines) + "\n").encode("ascii")
-
-
-class NetworkMonitor:
-    def __init__(
-        self,
-        url: str,
-        interval: float = 5.0,
-        offline_after: float = NETWORK_OFFLINE_AFTER_SECONDS,
-        clock: Callable[[], float] = time.monotonic,
-    ) -> None:
-        self.url = url
-        self.interval = interval
-        self.offline_after = offline_after
-        self.online: bool | None = None
-        self._successes = 0
-        self._failure_started_at: float | None = None
-        self._clock = clock
-        self._stop = threading.Event()
-        self._thread = threading.Thread(target=self._run, daemon=True)
-
-    def start(self) -> None:
-        self._thread.start()
-
-    def stop(self) -> None:
-        self._stop.set()
-        self._thread.join(timeout=1)
-
-    def _probe(self) -> bool:
-        request = Request(self.url, method="HEAD", headers={"User-Agent": "codex-board/1"})
-        try:
-            with urlopen(request, timeout=3):
-                return True
-        except HTTPError as error:
-            # Any server response proves DNS, TLS, and the service route work.
-            # A proxy-auth response means the route is unusable by Codex.
-            return error.code != 407
-        except (URLError, TimeoutError, OSError):
-            return False
-
-    def _record_probe_result(self, succeeded: bool) -> None:
-        if succeeded:
-            self._successes += 1
-            self._failure_started_at = None
-            if self._successes >= NETWORK_ONLINE_SUCCESSES:
-                self.online = True
-            return
-
-        self._successes = 0
-        now = self._clock()
-        if self._failure_started_at is None:
-            self._failure_started_at = now
-        elif now - self._failure_started_at >= self.offline_after:
-            self.online = False
-
-    def _run(self) -> None:
-        while not self._stop.is_set():
-            self._record_probe_result(self._probe())
-            self._stop.wait(self.interval)
 
 
 class AppServerClient:
@@ -683,16 +618,13 @@ def find_serial_port(requested: str) -> str:
     return sorted(candidates)[0]
 
 
-def run_daemon(port_name: str, probe_url: str) -> None:
+def run_daemon(port_name: str) -> None:
     import serial
 
-    monitor = NetworkMonitor(probe_url)
     usage_monitor = UsageMonitor()
-    monitor.start()
     usage_monitor.start()
     serial_port = None
     connected_name = None
-    last_network = object()
     last_wait_error = None
     last_wait_log = 0.0
     last_usage_error = None
@@ -735,12 +667,8 @@ def run_daemon(port_name: str, probe_url: str) -> None:
                     else:
                         print("Codex usage synchronized.", flush=True)
                     last_usage_error = usage_error
-                serial_port.write(build_packet(monitor.online, usage=usage))
+                serial_port.write(build_packet(usage=usage))
                 serial_port.flush()
-                if monitor.online is not last_network:
-                    label = "online" if monitor.online is True else "offline" if monitor.online is False else "checking"
-                    print(f"Network: {label}", flush=True)
-                    last_network = monitor.online
                 time.sleep(2)
             except (OSError, serial.SerialException) as error:
                 print(f"Serial link lost: {error}", file=sys.stderr, flush=True)
@@ -752,7 +680,6 @@ def run_daemon(port_name: str, probe_url: str) -> None:
         print("\nCodex board bridge stopped.")
     finally:
         usage_monitor.stop()
-        monitor.stop()
         if serial_port is not None:
             serial_port.close()
 
@@ -887,7 +814,6 @@ def parse_args() -> argparse.Namespace:
 
     daemon_parser = subparsers.add_parser("daemon", help="Run the USB/dashboard bridge")
     daemon_parser.add_argument("--port", default="auto", help="Serial port or 'auto'")
-    daemon_parser.add_argument("--probe-url", default=PROBE_URL)
 
     title_parser = subparsers.add_parser("title", help="Set a Codex-generated task title")
     title_parser.add_argument("--session", required=True)
@@ -902,7 +828,6 @@ def parse_args() -> argparse.Namespace:
     clear_parser.add_argument("--session")
 
     packet_parser = subparsers.add_parser("packet", help="Print one serial protocol packet")
-    packet_parser.add_argument("--network", choices=("online", "offline", "unknown"), default="unknown")
 
     subparsers.add_parser("list", help="List tracked tasks")
     subparsers.add_parser("demo", help="Load three demonstration tasks")
@@ -929,7 +854,7 @@ def main() -> int:
             return 0
 
     elif args.command == "daemon":
-        run_daemon(args.port, args.probe_url)
+        run_daemon(args.port)
 
     elif args.command == "title":
         connection = open_database()
@@ -962,8 +887,7 @@ def main() -> int:
             connection.close()
 
     elif args.command == "packet":
-        state = True if args.network == "online" else False if args.network == "offline" else None
-        sys.stdout.buffer.write(build_packet(state))
+        sys.stdout.buffer.write(build_packet())
 
     elif args.command == "list":
         print_tasks()

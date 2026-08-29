@@ -135,10 +135,11 @@ The minimal hardware bring-up passed based on the user's reported physical
 observations. The verified wiring and firmware are a suitable baseline before
 adding application-specific hardware or behavior.
 
-The later dashboard demo was also physically observed: the OLED displayed
+The original dashboard demo was also physically observed: the OLED displayed
 three simultaneous `INPUT`, `RUN`, and `DONE` rows with `L:OK N:+`; green,
 yellow, blue, and harder-blue link LEDs were on; red and the delayed strobe
-were off. Real Codex hook transitions and deliberate network-loss recovery
-remain separate application tests. A later real session successfully generated
-a title, displayed `DONE`, and illuminated green; session-close removal was
-then added and remains to be physically confirmed after activation.
+were off. Real Codex hook transitions remained a separate application test. A
+later real session successfully generated a title, displayed `DONE`, and
+illuminated green; session-close removal was then added and remains to be
+physically confirmed after activation. The later usage-focused firmware
+removed the independent network indicator and reachability probe.

@@ -11,7 +11,7 @@ original task-state behavior:
 1. How much usage remains and when does it reset?
 2. How many tokens have been used today?
 3. Is an agent finished, working, waiting for input, or reporting an error?
-4. Is the laptop bridge and its network path still reachable?
+4. Is the laptop bridge still sending heartbeats?
 
 The ESP32 does not run an AI model and does not receive source code or complete
 prompts. It is a small display client for status metadata produced on the
@@ -61,8 +61,8 @@ codex-board state.sqlite3 --------------------------^ (LED state only)
 ```
 
 The hook commands are deliberately short-lived. They update SQLite and exit.
-The long-running daemon owns the serial device, performs the network probe,
-and sends the latest snapshot to the ESP32 every two seconds. On Glacier,
+The long-running daemon owns the serial device and sends the latest snapshot
+to the ESP32 every two seconds. On Glacier,
 Home Manager starts it at login and systemd restarts it after unexpected
 failure. The daemon itself polls for the ESP32 and reconnects after unplugging.
 
@@ -123,16 +123,16 @@ The LEDs are independent; several may be illuminated simultaneously.
 |---|---|
 | Green | At least one root task is unacknowledged `DONE` |
 | Yellow | At least one root task is `RUN` |
-| Red | A root task is `ERROR`, the network is offline, or the host heartbeat is lost |
+| Red | A root task is `ERROR` or the host heartbeat is lost |
 | Blue | At least one root task is `INPUT` |
-| Harder blue | Host heartbeat is present and the network probe is online |
+| Harder blue | Host heartbeat is present |
 | Self-cycling | Input or any continuous red alert has remained for at least 180 seconds |
 
 Useful combinations include:
 
 - green + yellow: one task finished while another remains active
-- red + harder blue: task/tool error while the host network remains reachable
-- red without harder blue: network or bridge failure
+- red + harder blue: task/tool error while the host bridge remains reachable
+- red without harder blue: host bridge or USB failure
 - blue + self-cycling: user input has been waiting for at least three minutes
 
 ## OLED behavior
@@ -142,7 +142,7 @@ lines. The fixed display shows two remaining-usage windows with reset
 countdowns and bars, followed by today's tokens and sync age:
 
 ```text
-CODEX USAGE       N:+
+CODEX USAGE
 7D         L75% R4d00h
 [==============     ]
 5H         L80% R2h00m
@@ -151,8 +151,8 @@ TODAY 12M TOKENS
 SYNC 12s
 ```
 
-The values above are fictional. `N` is the network result, `L` is remaining
-percentage, and `R` is time until reset. Task records are still parsed and
+The values above are fictional. `L` is remaining percentage and `R` is time
+until reset. Task records are still parsed and
 retained by the firmware for the unchanged LED rules, but are not drawn.
 
 Long project names and titles in the retained task protocol are converted to
@@ -168,7 +168,6 @@ The host sends complete snapshots rather than incremental updates:
 
 ```text
 BEGIN
-NET|1
 USAGE|1|12345678|12
 LIMIT|7D|75|345600
 LIMIT|5H|80|7200
@@ -179,7 +178,6 @@ END
 
 Protocol fields:
 
-- `NET|1`, `NET|0`, or `NET|U`: online, offline, or not yet known
 - `USAGE|available|today_tokens|sync_age_seconds`
 - `LIMIT|label|remaining_percent|reset_seconds` (up to two)
 - `TASK|project|title|state|elapsed_seconds|state_age_seconds`
@@ -193,19 +191,11 @@ Any complete snapshot refreshes the host heartbeat. After 15 seconds without
 one, the firmware turns off the harder-blue LED, turns on red, and displays
 `HOST LINK LOST`.
 
-## Network detection
+## Host heartbeat
 
-There is no documented dedicated Codex network-disconnect lifecycle hook. The
-laptop daemon therefore probes `https://chatgpt.com` independently using the
-laptop's Python networking environment and configured proxy variables.
-
-- Two consecutive successes declare the path online.
-- Failures must continue for 60 seconds before the path is declared offline.
-  Short proxy or endpoint glitches retain the last known state.
-- The probe runs every five seconds with a three-second timeout.
-- Any HTTP response from the server proves DNS, TLS, and the service route are
-  reachable. A proxy-authentication failure is treated as offline because the
-  route is unusable by Codex.
+Every complete serial snapshot refreshes the host heartbeat. The link LED
+therefore reports only whether the laptop bridge and USB serial path are alive;
+it is independent of ChatGPT reachability and proxy state.
 
 Silence from a working agent is never used as a disconnect signal because a
 legitimate reasoning phase may run for several minutes without tool events.
@@ -319,14 +309,14 @@ Completed physically before the dashboard work:
 Completed physically with the original session-oriented dashboard firmware on
 2026-08-28:
 
-- The OLED rendered a complete three-row demo snapshot with `L:OK N:+` and
+- The original OLED rendered a complete three-row demo snapshot with `L:OK N:+` and
   distinct `INPUT`, `RUN`, and `DONE` states.
 - The green, yellow, blue, and harder-blue link LEDs illuminated together for
   the mixed demo state.
 - The red error LED and self-cycling delayed-alert LED remained off, as
   expected.
-- The managed host service connected through USB and reported the network
-  online; the displayed link/network header and harder-blue LED agreed.
+- The managed host service connected through USB and the harder-blue link LED
+  illuminated.
 - A real Codex session generated its short title, transitioned to `DONE`, and
   illuminated green after its task completed.
 
@@ -334,7 +324,7 @@ Not yet physically verified with the usage-focused OLED firmware:
 
 - green-LED update after closing a session with the `SessionEnd` behavior
 - usage-window rendering and countdown updates
-- network loss/recovery behavior
+- heartbeat loss/recovery behavior after removing the independent network probe
 
 Only a physical observation after flashing can mark those items as passed.
 

@@ -15,15 +15,15 @@ modify files in the projects being displayed.
 |---|---|
 | Green / GPIO4 | At least one completed root task has not been acknowledged |
 | Yellow / GPIO5 | At least one root task is working |
-| Red / GPIO6 | Root-task error, network offline, or laptop bridge lost |
+| Red / GPIO6 | Root-task error or laptop bridge lost |
 | Blue / GPIO7 | A root task needs user input or approval |
-| Harder blue / GPIO10 | Laptop bridge is alive and the network probe succeeds |
+| Harder blue / GPIO10 | Laptop bridge heartbeat is present |
 | Self-cycling / GPIO11 | Blue input or any continuous red alert has lasted at least three minutes |
 
 Several LEDs may be on simultaneously. For example, green plus yellow means
-one unread task completed while another is still running. The OLED distinguishes
-network offline (`N:X`) and `HOST LINK LOST`; use `codex-board list` when red
-and the harder-blue link LED are both on to identify a tracked task error.
+one unread task completed while another is still running. The OLED displays
+`HOST LINK LOST` when snapshots stop; use `codex-board list` when red and the
+harder-blue link LED are both on to identify a tracked task error.
 
 ## OLED format
 
@@ -32,7 +32,7 @@ countdown, and a remaining-capacity bar. The bottom lines show today's token
 usage and the age of the last successful usage sync:
 
 ```text
-CODEX USAGE       N:+
+CODEX USAGE
 7D         L75% R4d00h
 [==============     ]
 SPARK5H    L80% R2h00m
@@ -92,16 +92,6 @@ OLED itself reads live usage through the local Codex sign-in:
 The bridge automatically recognizes Espressif USB devices when `--port auto`
 is used, but an explicit port is clearer during initial setup. Press `Ctrl-C`
 to stop it.
-
-The network monitor probes `https://chatgpt.com` from the laptop. It declares
-the connection online after two successes and offline only after failures have
-continued for 60 seconds. Short proxy or endpoint glitches retain the last
-known state. Override the URL only when diagnosing a network/proxy setup:
-
-```bash
-.venv/bin/python host/codex_board.py daemon \
-  --port /dev/ttyACM0 --probe-url https://chatgpt.com
-```
 
 ## 3. Activate the declarative Codex integration
 
@@ -176,8 +166,7 @@ journalctl --user -u codex-board -f
 ```
 
 The daemon keeps running when the board is absent and reconnects automatically
-after USB is restored. It also inherits the configured Glacier proxy for its
-network probe.
+after USB is restored.
 
 The background service, serial monitor, and firmware uploader cannot share the
 port. Use this sequence around flashing or monitoring:
@@ -205,7 +194,7 @@ Other useful local controls are:
 ```bash
 codex-board list
 codex-board clear
-codex-board packet --network online
+codex-board packet
 codex-title list
 codex-title get --session SESSION_ID
 ```
@@ -215,8 +204,8 @@ bridge snapshot. This does not use silence from an active Codex task as a
 disconnect signal: an agent may legitimately reason for several minutes
 without running a tool.
 
-Any continuously red condition (task error, network loss, or lost host) turns
-on the self-cycling LED after three minutes. Blue input retains its independent
+Any continuously red condition (task error or lost host) turns on the
+self-cycling LED after three minutes. Blue input retains its independent
 three-minute escalation.
 
 ## Troubleshooting
@@ -241,14 +230,14 @@ normal local `users` group; it does not make every serial device user-writable.
 
 ### Red LED is on while harder blue is off
 
-The laptop probe has failed repeatedly or the USB bridge heartbeat expired.
-Read the OLED and bridge terminal for link state. If the harder-blue link LED
-is still on, use `codex-board list` to check for a task error.
+The USB bridge heartbeat expired. Read the OLED and bridge terminal for link
+state. If the harder-blue link LED is still on, use `codex-board list` to check
+for a task error.
 
 ### Red and harder-blue LEDs are both on
 
-The laptop and network are reachable, but a tracked task's latest structured
-tool result reported an error. A later successful tool call returns the task to
+The laptop bridge is reachable, but a tracked task's latest structured tool
+result reported an error. A later successful tool call returns the task to
 `RUN`; finishing the turn changes it to `DONE` or `INPUT`.
 
 ### Re-run the electrical self-test
@@ -264,8 +253,6 @@ Restore the dashboard afterward by flashing `-e dashboard` again.
 
 ## Limits
 
-- Codex does not currently document a dedicated network-disconnected hook.
-  Connectivity is therefore measured independently by the laptop bridge.
 - A question mark in the final assistant message is treated as `INPUT`; this
   deliberately favors notifying you over silently marking a question done.
 - The OLED font is ASCII and limited to about 21 characters per line. Usage

@@ -37,17 +37,17 @@ rows. Completed task metadata therefore remains only while that Codex session
 is open, unless the hook is unavailable or interrupted.
 
 The serial protocol carries project basename, short title, state, elapsed
-time, state age, aggregate remaining percentages/reset times, today's token
-count, and the network result. It carries no account or installation
+time, state age, aggregate remaining percentages/reset times, and today's
+token count. It carries no account or installation
 identifier, plan name, device serial number, USB identifier, source content,
 or authentication material.
 
 ## Network behavior
 
-The bridge makes a small HTTPS reachability probe to `https://chatgpt.com` and
-reads aggregate usage through the locally authenticated Codex app server. It
-does not embed or log authentication data, and sends no dashboard task data in
-the reachability request. Standard proxy environment variables may be honored.
+The bridge makes no independent network-reachability request. It reads
+aggregate usage through the locally authenticated Codex app server and does
+not embed or log authentication data. Standard proxy environment variables may
+still be honored by Codex while retrieving account usage.
 
 ## Codex hooks
 
