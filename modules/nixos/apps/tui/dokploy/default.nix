@@ -20,7 +20,11 @@ in
   };
 
   config = mkIf cfg.enable {
-    age.secrets.dokploy-db-password.file = inputs.self + /secrets/dokploy/dokploy-db-password.age;
+    age.secrets = {
+      dokploy-db-password.file = inputs.self + /secrets/dokploy/dokploy-db-password.age;
+      dokploy-auth-secret.file = inputs.self + /secrets/dokploy/dokploy-auth-secret.age;
+      dokploy-encryption-key.file = inputs.self + /secrets/dokploy/dokploy-encryption-key.age;
+    };
 
     virtualisation.docker = {
       enable = true;
@@ -31,6 +35,8 @@ in
       enable = true;
       port = null; # disable port 3000
       database.passwordFile = config.age.secrets.dokploy-db-password.path;
+      auth.secretFile = config.age.secrets.dokploy-auth-secret.path;
+      encryption.keyFile = config.age.secrets.dokploy-encryption-key.path;
     };
   };
 }

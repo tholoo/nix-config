@@ -36,6 +36,8 @@ in
   "mail/mail-user1-password.age".publicKeys = users.all ++ mailHosts;
 
   "dokploy/dokploy-db-password.age".publicKeys = users.all ++ dokployHosts;
+  "dokploy/dokploy-auth-secret.age".publicKeys = users.all ++ dokployHosts;
+  "dokploy/dokploy-encryption-key.age".publicKeys = users.all ++ dokployHosts;
 
   "ssh/windows-authorized-key.age".publicKeys = users.all ++ [
     systems.glacier
