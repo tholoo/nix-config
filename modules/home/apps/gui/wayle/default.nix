@@ -36,6 +36,10 @@ in
         "wireplumber.service"
       ];
     };
+    # Wayle reads raw evdev events, so it shows a Caps Lock OSD even though
+    # Caps is remapped to Escape. Hide input devices to disable lock-key OSDs
+    # without rebuilding Wayle or disabling its volume and brightness OSDs.
+    systemd.user.services.wayle.Service.InaccessiblePaths = [ "/dev/input" ];
 
     home.packages = with pkgs; [
       libnotify
