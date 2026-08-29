@@ -371,7 +371,8 @@ in
             "$mainMod, Y, exec, vicinae cmd launch clipboard:history"
             "$mainMod SHIFT, Z, exec, ${getExe wlogout}"
             "$mainMod SHIFT, n, exec, ${getExe pkgs.dms-shell} ipc call notifications toggle"
-            "$mainMod, period, exec, ${getExe pkgs.dms-shell} ipc call control-center toggle"
+            "$mainMod, period, exec, ${getExe pkgs.dms-shell} ipc call notifications dismissAllPopups"
+            "$mainMod SHIFT, period, exec, ${getExe pkgs.dms-shell} ipc call notifications clearAll"
 
             # Special audio keys (piped into wob, using pipewire)
 

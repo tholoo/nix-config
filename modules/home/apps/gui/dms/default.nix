@@ -68,6 +68,7 @@ in
             centerWidgets = [ "music" ];
             rightWidgets = [
               "systemTray"
+              "keyboard_layout_name"
               "cpuUsage"
               "memUsage"
               "clock"
