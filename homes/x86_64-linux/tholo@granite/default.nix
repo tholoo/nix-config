@@ -11,6 +11,7 @@
       "game"
       "gui"
       "develop"
+      "ai"
       "mount"
       "tui-misc"
       "vpn"
@@ -24,6 +25,10 @@
     ];
 
     irc.enable = false;
+    codex.enable = false;
+    claude-code.enable = false;
+    pi.enable = false;
+    git.enableCopilot = false;
     tox.enable = false;
     cli-cool.enable = false;
     kube.enable = false;
@@ -34,28 +39,6 @@
     helix = {
       enable = true;
       enableLSP = false;
-    };
-
-    claude-code = {
-      enable = true;
-      enableLSPs = false;
-      hostContext = ''
-        # Host: granite
-        You are on **granite**, a Hetzner Cloud server (x86_64, systemd-boot).
-        This is a remote production server running media stack (nixflix), dokploy, and other services.
-        Be extra cautious — changes here affect live services. Prefer `deploy-rs` over direct `nixos-rebuild`.
-      '';
-    };
-
-    pi = {
-      enable = true;
-      enableLSPs = false;
-      hostContext = ''
-        # Host: granite
-        You are on **granite**, a Hetzner Cloud server (x86_64, systemd-boot).
-        This is a remote production server running media stack (nixflix), dokploy, and other services.
-        Be extra cautious — changes here affect live services. Prefer `deploy-rs` over direct `nixos-rebuild`.
-      '';
     };
 
   };

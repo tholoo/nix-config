@@ -172,14 +172,6 @@ in
           echo cd (string repeat -n (math (string length -- $argv[1]) - 1) ../)
         '';
 
-        ask = ''
-          gh copilot suggest "$(read -l)"
-        '';
-
-        exp = ''
-          gh copilot explain "$(read -l)"
-        '';
-
         dot = ''
           set -l query (${pkgs.fd}/bin/fd . ~/dotfiles/ -t f -H -E .git | ${pkgs.fzf}/bin/fzf --layout reverse --preview "head {}")
           $EDITOR "$query"
@@ -374,6 +366,15 @@ in
             echo (git rev-parse FETCH_HEAD)
           '';
         };
+      }
+      // lib.optionalAttrs config.mine.git.enableCopilot {
+        ask = ''
+          gh copilot suggest "$(read -l)"
+        '';
+
+        exp = ''
+          gh copilot explain "$(read -l)"
+        '';
       };
 
       shellAbbrs = {

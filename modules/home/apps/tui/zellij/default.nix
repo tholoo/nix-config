@@ -6,7 +6,7 @@
   ...
 }:
 let
-  inherit (lib) mkIf;
+  inherit (lib) mkIf optionalString;
   inherit (lib.mine) mkEnable;
   inherit (config.lib.stylix) colors;
   cfg = config.mine.${name};
@@ -31,7 +31,6 @@ let
 
   zellij-switch-script = ./zellij-switch.nu;
   zellij-switch = inputs.zellij-switch.packages.${pkgs.stdenv.hostPlatform.system}.default;
-  agentDeck = inputs.zellij-agent-deck.packages.${pkgs.stdenv.hostPlatform.system}.default;
   codexHooks = import ../../../../shared/codex-hooks.nix {
     inherit inputs lib pkgs;
   };
@@ -52,7 +51,7 @@ in
       zellij-switch
     ];
 
-    programs.zellij-agent-deck.enable = true;
+    programs.zellij-agent-deck.enable = config.mine.codex.enable;
     programs.zellij.enable = true;
     # xdg.configFile."zellij/config.kdl".source = ./config.kdl;
     xdg.configFile."zellij/plugins/monocle.wasm".source =
@@ -74,16 +73,20 @@ in
 
       plugins {
           compact-bar location="zellij:compact-bar"
+          ${optionalString config.mine.codex.enable ''
           agent-deck location="file:~/.config/zellij/plugins/agent-deck.wasm" {
               helper "${codexHooks.agentDeckCommand}"
               show_subagents "false"
           }
+          ''}
       }
 
+      ${optionalString config.mine.codex.enable ''
       // One invisible instance per session receives Codex lifecycle events.
       load_plugins {
           agent-deck
       }
+      ''}
 
       // simplified_ui true
       pane_frame_style "titles"
@@ -267,6 +270,7 @@ in
                 }
               }
 
+              ${optionalString config.mine.codex.enable ''
               // Toggle the floating, cross-session Codex agent deck.
               bind "Alt a" {
                   LaunchOrFocusPlugin "agent-deck" {
@@ -275,6 +279,7 @@ in
                   }
                   SwitchToMode "Normal"
               }
+              ''}
 
               // open monocle in a new floating pane and open any results in a new tiled/floating pane
               bind "Alt '" {

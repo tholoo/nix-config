@@ -5,7 +5,7 @@
   ...
 }:
 let
-  inherit (lib) mkIf;
+  inherit (lib) mkIf mkOption types;
   inherit (lib.mine) mkEnable;
   cfg = config.mine.${name};
   name = "git";
@@ -17,6 +17,12 @@ in
       "cli-tools"
       "dev"
     ];
+
+    enableCopilot = mkOption {
+      type = types.bool;
+      default = true;
+      description = "Whether to install the GitHub Copilot CLI extension.";
+    };
   };
 
   config = mkIf cfg.enable {
@@ -43,7 +49,7 @@ in
       };
       gh = {
         enable = true;
-        extensions = with pkgs; [ github-copilot-cli ];
+        extensions = lib.optional cfg.enableCopilot pkgs.github-copilot-cli;
         # git_protocol = "ssh";
       };
       gh-dash.enable = true;
