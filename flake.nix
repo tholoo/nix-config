@@ -4,8 +4,6 @@
     substituters = [
       "https://cache.nixos.org?priority=1"
       # "https://mirrors.tuna.tsinghua.edu.cn/nix-channels/store?priority=2"
-    ];
-    extra-substituters = [
       # "https://aseipp-nix-cache.global.ssl.fastly.net"
       "https://nix-community.cachix.org?priority=3"
       "https://anyrun.cachix.org?priority=4"
@@ -130,6 +128,11 @@
 
     llm-agents.url = "github:numtide/llm-agents.nix";
 
+    dms = {
+      url = "github:AvengeMedia/DankMaterialShell/v1.5.3";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     kb = {
       url = "github:tholoo/kb";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -233,6 +236,7 @@
         nix-index-database.homeModules.nix-index
         zen-browser.homeModules.beta
         stylix.homeModules.stylix
+        dms.homeModules.dank-material-shell
       ];
 
       # homes.users."my-user@my-host".specialArgs = {

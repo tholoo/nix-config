@@ -52,7 +52,8 @@ in
       };
 
       targets = {
-        wayle.enable = true;
+        dank-material-shell.enable = true;
+        hyprland.hyprpaper.enable = false;
         zen-browser.profileNames = [ "default" ];
         floorp.profileNames = [ "Default" ];
       };

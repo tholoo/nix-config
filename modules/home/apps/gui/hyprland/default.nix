@@ -137,16 +137,11 @@ in
           "[workspace 3 silent] ${lib.getExe pkgs.ayugram-desktop}"
           "[workspace 4 silent] ${lib.getExe pkgs.throne}"
 
-          "${lib.getExe' pkgs.awww "awww-daemon"}"
           "${lib.getExe pkgs.wl-clip-persist} --clipboard both"
           "QT_QPA_PLATFORM=xcb ${lib.getExe' pkgs.kdePackages.kdeconnect-kde "kdeconnectd"}"
 
           ''hyprctl setcursor "Bibata-Modern-Ice" 22''
           "${lib.getExe' pkgs.systemd "systemctl"} --user reload-or-restart kanshi.service"
-        ];
-
-        exec = [
-          "${lib.getExe pkgs.awww} img ${inputs.self}/resources/wallpapers/wallhaven-fields-858z32.png -t none"
         ];
 
         #############################
@@ -375,8 +370,8 @@ in
             ", Insert, exec, ${getExe wayshot} --stdout | ${getExe satty} --filename - --fullscreen --initial-tool brush"
             "$mainMod, Y, exec, vicinae cmd launch clipboard:history"
             "$mainMod SHIFT, Z, exec, ${getExe wlogout}"
-            "$mainMod SHIFT, n, exec, ${getExe wayle} notify dnd"
-            "$mainMod, period, exec, ${getExe wayle} notify dismiss-all"
+            "$mainMod SHIFT, n, exec, ${getExe pkgs.dms-shell} ipc call notifications toggle"
+            "$mainMod, period, exec, ${getExe pkgs.dms-shell} ipc call control-center toggle"
 
             # Special audio keys (piped into wob, using pipewire)
 
