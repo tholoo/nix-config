@@ -200,11 +200,12 @@ laptop daemon therefore probes `https://chatgpt.com` independently using the
 laptop's Python networking environment and configured proxy variables.
 
 - Two consecutive successes declare the path online.
-- Three consecutive failures declare it offline.
+- Failures must continue for 60 seconds before the path is declared offline.
+  Short proxy or endpoint glitches retain the last known state.
 - The probe runs every five seconds with a three-second timeout.
-- HTTP authentication/authorization responses still prove DNS, TLS, and the
-  service route are reachable; proxy-auth and server failures are treated as
-  offline.
+- Any HTTP response from the server proves DNS, TLS, and the service route are
+  reachable. A proxy-authentication failure is treated as offline because the
+  route is unusable by Codex.
 
 Silence from a working agent is never used as a disconnect signal because a
 legitimate reasoning phase may run for several minutes without tool events.

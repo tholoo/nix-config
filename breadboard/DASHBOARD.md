@@ -94,8 +94,9 @@ is used, but an explicit port is clearer during initial setup. Press `Ctrl-C`
 to stop it.
 
 The network monitor probes `https://chatgpt.com` from the laptop. It declares
-the connection online after two successes and offline after three failures.
-Override the URL only when diagnosing a network/proxy setup:
+the connection online after two successes and offline only after failures have
+continued for 60 seconds. Short proxy or endpoint glitches retain the last
+known state. Override the URL only when diagnosing a network/proxy setup:
 
 ```bash
 .venv/bin/python host/codex_board.py daemon \

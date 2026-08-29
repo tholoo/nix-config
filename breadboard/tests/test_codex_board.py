@@ -4,6 +4,7 @@ from pathlib import Path
 import tempfile
 import time
 import unittest
+from unittest import mock
 
 from host import codex_board
 
@@ -212,6 +213,51 @@ class CodexBoardTests(unittest.TestCase):
             ),
             543_210,
         )
+
+    def test_network_monitor_ignores_short_failure_bursts(self):
+        now = [0.0]
+        monitor = codex_board.NetworkMonitor(
+            "https://chatgpt.com",
+            offline_after=60.0,
+            clock=lambda: now[0],
+        )
+        monitor.online = True
+
+        for timestamp in (0.0, 15.0, 44.0):
+            now[0] = timestamp
+            monitor._record_probe_result(False)
+            self.assertTrue(monitor.online)
+
+        now[0] = 45.0
+        monitor._record_probe_result(True)
+        now[0] = 50.0
+        monitor._record_probe_result(True)
+        self.assertTrue(monitor.online)
+
+    def test_network_monitor_reports_only_sustained_outages(self):
+        now = [0.0]
+        monitor = codex_board.NetworkMonitor(
+            "https://chatgpt.com",
+            offline_after=60.0,
+            clock=lambda: now[0],
+        )
+        monitor.online = True
+
+        monitor._record_probe_result(False)
+        now[0] = 59.0
+        monitor._record_probe_result(False)
+        self.assertTrue(monitor.online)
+        now[0] = 60.0
+        monitor._record_probe_result(False)
+        self.assertFalse(monitor.online)
+
+    def test_http_server_error_still_proves_the_route_is_reachable(self):
+        error = codex_board.HTTPError(
+            "https://chatgpt.com", 503, "Service Unavailable", None, None
+        )
+        monitor = codex_board.NetworkMonitor("https://chatgpt.com")
+        with mock.patch.object(codex_board, "urlopen", side_effect=error):
+            self.assertTrue(monitor._probe())
 
     def test_hooks_json_is_valid(self):
         rendered = json.dumps(codex_board.hooks_configuration())

@@ -19,7 +19,7 @@ import sys
 import tempfile
 import threading
 import time
-from typing import Any
+from typing import Any, Callable
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
@@ -30,6 +30,8 @@ SERIAL_BAUD = 115200
 USAGE_REFRESH_SECONDS = 60.0
 TOKEN_REFRESH_SECONDS = 15 * 60.0
 RPC_TIMEOUT_SECONDS = 15.0
+NETWORK_OFFLINE_AFTER_SECONDS = 60.0
+NETWORK_ONLINE_SUCCESSES = 2
 
 
 @dataclass(frozen=True)
@@ -462,12 +464,20 @@ def build_packet(
 
 
 class NetworkMonitor:
-    def __init__(self, url: str, interval: float = 5.0) -> None:
+    def __init__(
+        self,
+        url: str,
+        interval: float = 5.0,
+        offline_after: float = NETWORK_OFFLINE_AFTER_SECONDS,
+        clock: Callable[[], float] = time.monotonic,
+    ) -> None:
         self.url = url
         self.interval = interval
+        self.offline_after = offline_after
         self.online: bool | None = None
         self._successes = 0
-        self._failures = 0
+        self._failure_started_at: float | None = None
+        self._clock = clock
         self._stop = threading.Event()
         self._thread = threading.Thread(target=self._run, daemon=True)
 
@@ -484,23 +494,30 @@ class NetworkMonitor:
             with urlopen(request, timeout=3):
                 return True
         except HTTPError as error:
-            # 401/403 still prove DNS, TLS, and the service path are reachable.
-            return error.code < 500 and error.code != 407
+            # Any server response proves DNS, TLS, and the service route work.
+            # A proxy-auth response means the route is unusable by Codex.
+            return error.code != 407
         except (URLError, TimeoutError, OSError):
             return False
 
+    def _record_probe_result(self, succeeded: bool) -> None:
+        if succeeded:
+            self._successes += 1
+            self._failure_started_at = None
+            if self._successes >= NETWORK_ONLINE_SUCCESSES:
+                self.online = True
+            return
+
+        self._successes = 0
+        now = self._clock()
+        if self._failure_started_at is None:
+            self._failure_started_at = now
+        elif now - self._failure_started_at >= self.offline_after:
+            self.online = False
+
     def _run(self) -> None:
         while not self._stop.is_set():
-            if self._probe():
-                self._successes += 1
-                self._failures = 0
-                if self._successes >= 2:
-                    self.online = True
-            else:
-                self._failures += 1
-                self._successes = 0
-                if self._failures >= 3:
-                    self.online = False
+            self._record_probe_result(self._probe())
             self._stop.wait(self.interval)
 
 
