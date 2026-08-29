@@ -38,6 +38,7 @@ in
   "dokploy/dokploy-db-password.age".publicKeys = users.all ++ dokployHosts;
   "dokploy/dokploy-auth-secret.age".publicKeys = users.all ++ dokployHosts;
   "dokploy/dokploy-encryption-key.age".publicKeys = users.all ++ dokployHosts;
+  "dokploy/dokploy-api-key.age".publicKeys = users.all;
 
   "ssh/windows-authorized-key.age".publicKeys = users.all ++ [
     systems.glacier

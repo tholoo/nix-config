@@ -45,6 +45,27 @@ let
     pkgs.coreutils
   ];
 
+  dokployMcp = pkgs.writeShellApplication {
+    name = "dokploy-mcp";
+    runtimeInputs = [ pkgs.nodejs ];
+    text = ''
+      token_file="${config.age.secrets.dokploy-api-key.path}"
+
+      if [[ ! -s "$token_file" ]]; then
+        echo "Dokploy API token is missing: $token_file" >&2
+        exit 1
+      fi
+
+      DOKPLOY_API_KEY="$(<"$token_file")"
+      export DOKPLOY_API_KEY
+      export DOKPLOY_URL="https://dokploy.ditollo.com"
+      export DOKPLOY_TOOL_PRESET="deploy"
+      export DOKPLOY_REDACT_ENV="true"
+
+      exec ${npx} -y @dokploy/mcp@0.30.2
+    '';
+  };
+
   codexHooks = import ../../../../shared/codex-hooks.nix {
     inherit inputs lib pkgs;
   };
@@ -172,16 +193,17 @@ in
   };
 
   config = mkIf cfg.enable {
+    age.secrets.dokploy-api-key.file = inputs.self + /secrets/dokploy/dokploy-api-key.age;
+
     home = {
-      packages =
-        [
-          codexHooks.boardPackage
-          codexHooks.titlePackage
-        ]
-        ++ lib.optionals cfg.enableUsageTools [
-          # llmAgents.agentsview
-          # llmAgents.oh-my-codex
-        ];
+      packages = [
+        codexHooks.boardPackage
+        codexHooks.titlePackage
+      ]
+      ++ lib.optionals cfg.enableUsageTools [
+        # llmAgents.agentsview
+        # llmAgents.oh-my-codex
+      ];
 
       sessionVariables.CODEX_HOME = "${config.xdg.configHome}/codex";
     };
@@ -229,19 +251,18 @@ in
         Restart = "on-failure";
         RestartSec = "3s";
         UMask = "0077";
-        Environment =
-          [
-            "PYTHONUNBUFFERED=1"
-            "CODEX_HOME=${config.xdg.configHome}/codex"
-          ]
-          ++ lib.optionals (cfg.proxyUrl != null) [
-            "HTTP_PROXY=${cfg.proxyUrl}"
-            "HTTPS_PROXY=${cfg.proxyUrl}"
-            "ALL_PROXY=${cfg.proxyUrl}"
-            "http_proxy=${cfg.proxyUrl}"
-            "https_proxy=${cfg.proxyUrl}"
-            "all_proxy=${cfg.proxyUrl}"
-          ];
+        Environment = [
+          "PYTHONUNBUFFERED=1"
+          "CODEX_HOME=${config.xdg.configHome}/codex"
+        ]
+        ++ lib.optionals (cfg.proxyUrl != null) [
+          "HTTP_PROXY=${cfg.proxyUrl}"
+          "HTTPS_PROXY=${cfg.proxyUrl}"
+          "ALL_PROXY=${cfg.proxyUrl}"
+          "http_proxy=${cfg.proxyUrl}"
+          "https_proxy=${cfg.proxyUrl}"
+          "all_proxy=${cfg.proxyUrl}"
+        ];
       };
       Install.WantedBy = [ "default.target" ];
     };
@@ -297,6 +318,13 @@ in
             PLAYWRIGHT_BROWSERS_PATH = "${pkgs.playwright-driver.browsers}";
             PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS = "true";
           };
+        };
+
+        dokploy = {
+          command = lib.getExe dokployMcp;
+          startup_timeout_sec = 60;
+          tool_timeout_sec = 300;
+          default_tools_approval_mode = "writes";
         };
       };
     };
