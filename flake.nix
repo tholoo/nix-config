@@ -252,7 +252,7 @@
         "granite" = {
           hostname = "granite";
           sshUser = "root";
-          remoteBuild = true;
+          remoteBuild = false;
           confirmTimeout = 120;
           profiles.system = {
             user = "root";
