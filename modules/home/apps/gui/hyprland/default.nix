@@ -60,6 +60,21 @@ in
       wl-clipboard
     ];
 
+    systemd.user.services.wl-clip-persist = {
+      Unit = {
+        Description = "Persist Wayland clipboard contents";
+        After = [ "graphical-session.target" ];
+        PartOf = [ "graphical-session.target" ];
+        ConditionEnvironment = "WAYLAND_DISPLAY";
+      };
+      Service = {
+        ExecStart = "${lib.getExe pkgs.wl-clip-persist} --clipboard both --reconnect-tries inf";
+        Restart = "always";
+        RestartSec = "1s";
+      };
+      Install.WantedBy = [ "graphical-session.target" ];
+    };
+
     programs.hyprlock = {
       enable = true;
       settings = {
@@ -137,7 +152,6 @@ in
           "[workspace 3 silent] ${lib.getExe pkgs.ayugram-desktop}"
           "[workspace 4 silent] ${lib.getExe pkgs.throne}"
 
-          "${lib.getExe pkgs.wl-clip-persist} --clipboard both"
           "QT_QPA_PLATFORM=xcb ${lib.getExe' pkgs.kdePackages.kdeconnect-kde "kdeconnectd"}"
 
           ''hyprctl setcursor "Bibata-Modern-Ice" 22''
