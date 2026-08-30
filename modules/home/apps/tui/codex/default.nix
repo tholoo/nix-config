@@ -121,6 +121,7 @@ let
         "current-dir"
         "git-branch"
         "context-remaining"
+        "thread-title"
       ];
 
       model_availability_nux."gpt-5.5" = 3;
