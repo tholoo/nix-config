@@ -60,7 +60,7 @@ failure. The daemon itself polls for the ESP32 and reconnects after unplugging.
 
 | Hook event | Dashboard action |
 |---|---|
-| `UserPromptSubmit` | Start/reset the root task, derive its title from the prompt start, state `RUN` |
+| `UserPromptSubmit` | Start/reset the root task, derive its title from the prompt start, state `RUN`; classify Codex's automatic title-generation helper as internal |
 | `PreToolUse` | Mark the root task `RUN` |
 | `PostToolUse` | Mark `ERROR` for a structured failure, otherwise `RUN` |
 | `PermissionRequest` | Mark the root task `INPUT` |
@@ -69,12 +69,14 @@ failure. The daemon itself polls for the ESP32 and reconnects after unplugging.
 | `SubagentStart` | Retain a separate running subagent row for lifecycle bookkeeping; do not send it to the board |
 | `SubagentStop` | Mark the retained subagent row complete; do not change the board LEDs |
 
-On `UserPromptSubmit`, Breadboard stores a sanitized 32-character prefix of the
-prompt as its task title. Zellij Agent Deck independently derives its own
-normalized title from the beginning of the same hook payload. No model call,
-additional developer context, title registry, or publisher service is involved.
-The Breadboard title is sent in the existing serial record, although the
-usage-focused OLED no longer renders it.
+On a regular `UserPromptSubmit`, Breadboard stores a sanitized 32-character
+prefix of the prompt as its task title. Zellij Agent Deck independently derives
+its own normalized title from the same hook payload. Codex's automatic Luna
+title-generation session uses a recognizable internal prompt; Breadboard keeps
+that classification across its later hooks and never serializes the helper as
+a root task. Retained helper rows from before this behavior are reclassified
+when the database opens. The Breadboard title is sent in the existing serial
+record, although the usage-focused OLED no longer renders it.
 
 Normal questions are inferred from a question mark or a small set of explicit
 input-request phrases in the final assistant message. This favors visible

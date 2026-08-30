@@ -27,6 +27,9 @@ SERIAL_BAUD = 115200
 USAGE_REFRESH_SECONDS = 60.0
 TOKEN_REFRESH_SECONDS = 15 * 60.0
 RPC_TIMEOUT_SECONDS = 15.0
+TITLE_GENERATION_PROMPT = (
+    "Generate a concise, single-line task title of at most 36 characters"
+)
 
 
 @dataclass(frozen=True)
@@ -156,6 +159,17 @@ def open_database(path: Path | None = None) -> sqlite3.Connection:
         )
         """
     )
+    # Codex title-generation helpers were previously stored as normal roots.
+    # Reclassify retained rows so an old completed helper cannot keep green on.
+    legacy_title_prefix = TITLE_GENERATION_PROMPT[:32]
+    connection.execute(
+        """
+        UPDATE tasks
+        SET kind = 'internal'
+        WHERE kind = 'root' AND substr(title, 1, ?) = ?
+        """,
+        (len(legacy_title_prefix), legacy_title_prefix),
+    )
     connection.commit()
     return connection
 
@@ -176,6 +190,12 @@ def clean_text(value: str, limit: int = 48) -> str:
 def clean_stored_title(value: str, limit: int = 72) -> str:
     value = re.sub(r"[\x00-\x1f\x7f]+", " ", value)
     return re.sub(r"\s+", " ", value).strip()[:limit] or "_"
+
+
+def is_title_generation_prompt(value: Any) -> bool:
+    return clean_stored_title(str(value or ""), 256).startswith(
+        TITLE_GENERATION_PROMPT
+    )
 
 
 def update_task(
@@ -216,6 +236,7 @@ def update_task(
     else:
         status_since = now if reset_timer or row["status"] != status else row["status_since"]
         started_at = now if reset_timer else row["started_at"]
+        next_kind = "internal" if row["kind"] == "internal" else kind
         next_title = clean_text(title, 32) if title is not None else row["title"]
         connection.execute(
             """
@@ -226,7 +247,7 @@ def update_task(
             """,
             (
                 parent_session,
-                kind,
+                next_kind,
                 clean_text(project, 32),
                 next_title,
                 status,
@@ -322,6 +343,30 @@ def handle_hook(event: dict[str, Any], path: Path | None = None) -> dict[str, An
     connection = open_database(path)
 
     try:
+        existing = connection.execute(
+            "SELECT kind FROM tasks WHERE id = ?", (session_id,)
+        ).fetchone()
+        title_helper_prompt = (
+            event_name == "UserPromptSubmit"
+            and is_title_generation_prompt(event.get("prompt"))
+        )
+        record_is_title_helper = title_helper_prompt or (
+            existing is not None and existing["kind"] == "internal"
+        )
+
+        if record_is_title_helper and event_name != "SessionEnd":
+            update_task(
+                connection,
+                session_id,
+                session_id,
+                "internal",
+                project,
+                "D" if event_name == "Stop" else "W",
+                title=str(event.get("prompt") or "") if title_helper_prompt else None,
+                reset_timer=title_helper_prompt,
+            )
+            return {}
+
         if event_name == "SessionStart":
             acknowledge_task(connection, session_id)
             return {}
