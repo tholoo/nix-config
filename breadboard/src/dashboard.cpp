@@ -26,6 +26,7 @@ constexpr size_t MAX_TASKS = 6;
 constexpr size_t MAX_USAGE_LIMITS = 2;
 constexpr size_t MAX_FIELD_LENGTH = 21;
 constexpr size_t MAX_SERIAL_LINE = 160;
+constexpr size_t SERIAL_RX_BUFFER_SIZE = 1024;
 constexpr uint32_t HOST_TIMEOUT_MS = 15000;
 constexpr uint32_t PAGE_INTERVAL_MS = 5000;
 constexpr uint32_t ALERT_AFTER_SECONDS = 180;
@@ -467,6 +468,9 @@ void setup() {
   }
   allLedsOff();
 
+  // Complete snapshots can exceed HWCDC's 256-byte default RX queue. Allocate
+  // enough room before begin() so a burst cannot drop the terminating END.
+  Serial.setRxBufferSize(SERIAL_RX_BUFFER_SIZE);
   Serial.begin(115200);
   const uint32_t waitStart = millis();
   while (!Serial && millis() - waitStart < 2000) delay(10);
