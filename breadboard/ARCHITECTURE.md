@@ -113,16 +113,16 @@ The LEDs are independent; several may be illuminated simultaneously.
 | Green | At least one root task is unacknowledged `DONE` |
 | Yellow | At least one root task is `RUN` |
 | Red | A root task is `ERROR` or the host heartbeat is lost |
-| Blue | At least one root task is `INPUT` |
-| Harder blue | Host heartbeat is present |
+| Blue | Host heartbeat is present |
+| Harder blue | At least one root task is `INPUT` |
 | Self-cycling | Input or any continuous red alert has remained for at least 180 seconds |
 
 Useful combinations include:
 
 - green + yellow: one task finished while another remains active
-- red + harder blue: task/tool error while the host bridge remains reachable
-- red without harder blue: host bridge or USB failure
-- blue + self-cycling: user input has been waiting for at least three minutes
+- red + blue: task/tool error while the host bridge remains reachable
+- red without blue: host bridge or USB failure
+- harder blue + self-cycling: user input has been waiting for at least three minutes
 
 ## OLED behavior
 
@@ -177,7 +177,7 @@ only after `END`. A partial USB write therefore does not produce a half-updated
 screen.
 
 Any complete snapshot refreshes the host heartbeat. After 15 seconds without
-one, the firmware turns off the harder-blue LED, turns on red, and displays
+one, the firmware turns off the blue LED, turns on red, and displays
 `HOST LINK LOST`.
 
 ## Host heartbeat

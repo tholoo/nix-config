@@ -16,14 +16,14 @@ modify files in the projects being displayed.
 | Green / GPIO4 | At least one completed root task has not been acknowledged |
 | Yellow / GPIO5 | At least one root task is working |
 | Red / GPIO6 | Root-task error or laptop bridge lost |
-| Blue / GPIO7 | A root task needs user input or approval |
-| Harder blue / GPIO10 | Laptop bridge heartbeat is present |
-| Self-cycling / GPIO11 | Blue input or any continuous red alert has lasted at least three minutes |
+| Blue / GPIO7 | Laptop bridge heartbeat is present |
+| Harder blue / GPIO10 | A root task needs user input or approval |
+| Self-cycling / GPIO11 | Harder-blue input or any continuous red alert has lasted at least three minutes |
 
 Several LEDs may be on simultaneously. For example, green plus yellow means
 one unread task completed while another is still running. The OLED displays
 `HOST LINK LOST` when snapshots stop; use `codex-board list` when red and the
-harder-blue link LED are both on to identify a tracked task error.
+blue link LED are both on to identify a tracked task error.
 
 ## OLED format
 
@@ -200,7 +200,7 @@ disconnect signal: an agent may legitimately reason for several minutes
 without running a tool.
 
 Any continuously red condition (task error or lost host) turns on the
-self-cycling LED after three minutes. Blue input retains its independent
+self-cycling LED after three minutes. Harder-blue input retains its independent
 three-minute escalation.
 
 ## Troubleshooting
@@ -223,13 +223,13 @@ normal local `users` group; it does not make every serial device user-writable.
 - Run `.venv/bin/pio device list` and check whether the USB port changed.
 - Ensure no serial monitor or second bridge owns the port.
 
-### Red LED is on while harder blue is off
+### Red LED is on while blue is off
 
 The USB bridge heartbeat expired. Read the OLED and bridge terminal for link
-state. If the harder-blue link LED is still on, use `codex-board list` to check
+state. If the blue link LED is still on, use `codex-board list` to check
 for a task error.
 
-### Red and harder-blue LEDs are both on
+### Red and blue LEDs are both on
 
 The laptop bridge is reachable, but a tracked task's latest structured tool
 result reported an error. A later successful tool call returns the task to

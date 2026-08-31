@@ -10,8 +10,8 @@ constexpr uint8_t I2C_SCL_PIN = 9;
 constexpr uint8_t LED_GREEN_PIN = 4;       // A completed root Codex task exists.
 constexpr uint8_t LED_YELLOW_PIN = 5;      // A root Codex task is working.
 constexpr uint8_t LED_RED_PIN = 6;         // Root-task error or host loss.
-constexpr uint8_t LED_BLUE_PIN = 7;        // A root Codex task needs user input/approval.
-constexpr uint8_t LED_LINK_PIN = 10;       // Laptop bridge heartbeat is present.
+constexpr uint8_t LED_INPUT_PIN = 10;      // Harder blue: a root task needs user input/approval.
+constexpr uint8_t LED_LINK_PIN = 7;        // Normal blue: laptop bridge heartbeat is present.
 constexpr uint8_t LED_STROBE_PIN = 11;     // An alert has waited too long.
 
 // Verified wiring: GPIO -> 220 ohm -> LED anode; LED cathode -> GND.
@@ -89,7 +89,7 @@ void allLedsOff() {
   setOutput(LED_GREEN_PIN, false);
   setOutput(LED_YELLOW_PIN, false);
   setOutput(LED_RED_PIN, false);
-  setOutput(LED_BLUE_PIN, false);
+  setOutput(LED_INPUT_PIN, false);
   setOutput(LED_LINK_PIN, false);
   setOutput(LED_STROBE_PIN, false);
 }
@@ -401,7 +401,7 @@ void updateLeds() {
   setOutput(LED_GREEN_PIN, hasComplete);
   setOutput(LED_YELLOW_PIN, hasWorking);
   setOutput(LED_RED_PIN, redAlert);
-  setOutput(LED_BLUE_PIN, hasInput);
+  setOutput(LED_INPUT_PIN, hasInput);
   setOutput(LED_LINK_PIN, online);
   setOutput(LED_STROBE_PIN, overdueInput || overdueRed);
 }
@@ -461,7 +461,7 @@ void drawDashboard() {
 
 void setup() {
   const uint8_t outputPins[] = {LED_GREEN_PIN, LED_YELLOW_PIN, LED_RED_PIN,
-                                LED_BLUE_PIN, LED_LINK_PIN, LED_STROBE_PIN};
+                                LED_INPUT_PIN, LED_LINK_PIN, LED_STROBE_PIN};
   for (uint8_t pin : outputPins) {
     digitalWrite(pin, LED_OFF);
     pinMode(pin, OUTPUT);
