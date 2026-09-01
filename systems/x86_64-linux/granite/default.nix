@@ -30,6 +30,7 @@
     ];
 
     tui-misc.enable = false;
+    theme.enable = false;
     codex.enable = false;
 
     systemd-boot.enable = false;

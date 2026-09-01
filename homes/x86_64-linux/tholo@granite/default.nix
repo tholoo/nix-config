@@ -24,6 +24,8 @@
     ];
 
     irc.enable = false;
+    tui-misc.enable = false;
+    stylix.enable = false;
     codex.enable = false;
     claude-code.enable = false;
     pi.enable = false;
