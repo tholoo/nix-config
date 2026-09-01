@@ -63,6 +63,33 @@
     ];
   };
 
+  systemd.services.docker-retention = {
+    description = "Prune stale Docker images and build cache";
+    after = [ "docker.service" ];
+    requires = [ "docker.service" ];
+    serviceConfig = {
+      Type = "oneshot";
+      Nice = 19;
+      IOSchedulingClass = "idle";
+      IOSchedulingPriority = 7;
+    };
+    script = ''
+      set -euo pipefail
+      ${pkgs.docker}/bin/docker image prune --all --force --filter until=168h
+      ${pkgs.docker}/bin/docker builder prune --all --force --filter until=168h --keep-storage 2GB
+    '';
+  };
+
+  systemd.timers.docker-retention = {
+    description = "Run Docker retention daily";
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnCalendar = "daily";
+      Persistent = true;
+      RandomizedDelaySec = "2h";
+    };
+  };
+
   networking.firewall.allowedTCPPorts = [
     80
     443
