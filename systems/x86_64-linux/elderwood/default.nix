@@ -60,6 +60,11 @@
 
     network-monitor.enable = true;
 
+    taskview = {
+      enable = true;
+      publicHost = "192.168.88.31";
+    };
+
     dokploy.enable = false;
 
     # TODO: re-enable for CPU-only inference once the rest of the host is settled.
@@ -81,10 +86,41 @@
   # stop its generated nginx vhosts from binding port 80.
   nixflix.nginx.enable = lib.mkForce false;
 
+  # Temporarily keep the *arr automation (and its dependent request service)
+  # out of the activation path while Jellyfin finishes its database migration.
+  nixflix.sonarr.enable = lib.mkForce false;
+  nixflix.radarr.enable = lib.mkForce false;
+  nixflix.lidarr.enable = lib.mkForce false;
+  nixflix.prowlarr.enable = lib.mkForce false;
+  nixflix.seerr.enable = lib.mkForce false;
+
   # Firefly still uses nginx internally on 8080; move nginx's generated default
   # listeners away from the HTTP/HTTPS frontend ports reserved for Caddy.
   services.nginx.defaultHTTPListenPort = lib.mkForce 8088;
   services.nginx.defaultSSLListenPort = lib.mkForce 8443;
+
+  # Keep the currently running implementation so this generation can be
+  # activated live. Migrating to dbus-broker requires a boot activation.
+  services.dbus.implementation = "dbus";
+
+  # Jellyfin 10.11 is stuck in its FixedCollation database migration. Keep the
+  # server running, but do not let nixflix's configuration one-shots block boot
+  # or deployment until that migration has been repaired.
+  systemd.services =
+    lib.genAttrs
+      [
+        "jellyfin-api-key"
+        "jellyfin-setup-wizard"
+        "jellyfin-system-config"
+        "jellyfin-branding-config"
+        "jellyfin-plugins"
+        "jellyfin-libraries"
+        "jellyfin-metadata-config"
+        "jellyfin-users-config"
+      ]
+      (_: {
+        wantedBy = lib.mkForce [ ];
+      });
 
   environment.sessionVariables = {
     LIBVA_DRIVER_NAME = "iHD";

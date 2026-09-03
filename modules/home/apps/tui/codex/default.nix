@@ -15,6 +15,7 @@ let
   inherit (lib.mine) mkEnable;
   cfg = config.mine.${name};
   name = "codex";
+  noProxy = lib.concatStringsSep "," cfg.noProxy;
 
   llmAgents = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system};
 
@@ -24,16 +25,22 @@ let
     nativeBuildInputs = [ pkgs.makeWrapper ];
     postBuild = ''
       rm "$out/bin/codex"
-      makeWrapper "${llmAgents.codex}/bin/.codex-wrapped" "$out/bin/codex" \
-        --prefix PATH : "/run/wrappers/bin:${pkgs.bubblewrap}/bin" \
-        ${optionalString (cfg.proxyUrl != null) ''
-          --set-default HTTP_PROXY ${lib.escapeShellArg cfg.proxyUrl} \
-          --set-default HTTPS_PROXY ${lib.escapeShellArg cfg.proxyUrl} \
-          --set-default ALL_PROXY ${lib.escapeShellArg cfg.proxyUrl} \
-          --set-default http_proxy ${lib.escapeShellArg cfg.proxyUrl} \
-          --set-default https_proxy ${lib.escapeShellArg cfg.proxyUrl} \
+      wrapper_args=(
+        --prefix PATH : "/run/wrappers/bin:${pkgs.bubblewrap}/bin"
+        --set-default NO_PROXY ${lib.escapeShellArg noProxy}
+        --set-default no_proxy ${lib.escapeShellArg noProxy}
+      )
+      ${optionalString (cfg.proxyUrl != null) ''
+        wrapper_args+=(
+          --set-default HTTP_PROXY ${lib.escapeShellArg cfg.proxyUrl}
+          --set-default HTTPS_PROXY ${lib.escapeShellArg cfg.proxyUrl}
+          --set-default ALL_PROXY ${lib.escapeShellArg cfg.proxyUrl}
+          --set-default http_proxy ${lib.escapeShellArg cfg.proxyUrl}
+          --set-default https_proxy ${lib.escapeShellArg cfg.proxyUrl}
           --set-default all_proxy ${lib.escapeShellArg cfg.proxyUrl}
-        ''}
+        )
+      ''}
+      makeWrapper "${llmAgents.codex}/bin/.codex-wrapped" "$out/bin/codex" "''${wrapper_args[@]}"
     '';
     meta.mainProgram = "codex";
   };
@@ -173,6 +180,16 @@ in
       default = null;
       example = "http://127.0.0.1:10808";
       description = "Default proxy URL exported to Codex when no proxy environment override is set.";
+    };
+
+    noProxy = mkOption {
+      type = types.listOf types.str;
+      default = [
+        "localhost"
+        "127.0.0.1"
+        "::1"
+      ];
+      description = "Hosts that Codex connects to without using its configured proxy.";
     };
 
     enableSharedMcp = mkOption {

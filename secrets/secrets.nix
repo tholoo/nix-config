@@ -22,6 +22,8 @@ let
     systems.elderwood
   ];
   dokployHosts = [ systems.granite ];
+  taskviewHosts = [ systems.elderwood ];
+  taskviewClientHosts = [ systems.glacier ];
   mailHosts = [ ];
 in
 {
@@ -39,6 +41,10 @@ in
   "dokploy/dokploy-auth-secret.age".publicKeys = users.all ++ dokployHosts;
   "dokploy/dokploy-encryption-key.age".publicKeys = users.all ++ dokployHosts;
   "dokploy/dokploy-api-key.age".publicKeys = users.all;
+
+  "taskview/taskview-env.age".publicKeys = users.all ++ taskviewHosts;
+  "taskview/taskview-token.age".publicKeys = users.all ++ taskviewClientHosts;
+  "taskview/taskview-account.age".publicKeys = users.all ++ taskviewClientHosts;
 
   "ssh/windows-authorized-key.age".publicKeys = users.all ++ [
     systems.glacier

@@ -28,6 +28,7 @@ let
   firefly = config.mine.firefly-iii.enable;
   mealie = config.mine.mealie.enable;
   n8n = config.mine.n8n.enable;
+  taskview = config.mine.taskview.enable;
   homeAssistant = config.mine.home-assistant.enable;
   immich = config.mine.immich.enable;
   mihomo = config.mine.mihomo.enable;
@@ -289,6 +290,13 @@ in
                 href = "http://${host}:5678";
                 siteMonitor = "http://${host}:5678";
                 description = "Workflow automation";
+              };
+            }
+            ++ optional taskview {
+              "TaskView" = {
+                href = "http://${host}:8888";
+                siteMonitor = "http://${host}:8888";
+                description = "Project and task management";
               };
             };
         }

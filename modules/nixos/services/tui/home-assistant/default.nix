@@ -23,7 +23,9 @@ in
 
   config = mkIf cfg.enable {
     networking.firewall.allowedTCPPorts = [
-      config.services.home-assistant.config.http.server_port
+      # Home Assistant 2026.8 moved HTTP configuration out of YAML, so
+      # Nixpkgs can no longer infer this from services.home-assistant.config.
+      8123
     ];
 
     services.home-assistant = {
