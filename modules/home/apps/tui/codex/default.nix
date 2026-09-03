@@ -139,10 +139,20 @@ let
   codexMcpServers = lib.mapAttrs (
     _name: server:
     lib.filterAttrsRecursive (_name: value: value != null) (
-      (lib.removeAttrs server [
-        "disabled"
-        "headers"
-      ])
+      (lib.removeAttrs server (
+        [
+          "disabled"
+          "headers"
+        ]
+        ++ lib.optionals ((server.url or null) != null) [
+          "args"
+          "command"
+          "cwd"
+          "env"
+          "env_vars"
+          "experimental_environment"
+        ]
+      ))
       // (lib.optionalAttrs ((server.url or null) != null && (server.headers or { }) != { }) {
         http_headers = server.headers;
       })

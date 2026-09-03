@@ -16,6 +16,7 @@ let
   databaseUser = "taskview_db_user";
   webUrl = "http://${cfg.publicHost}:${toString cfg.webPort}";
   apiUrl = "http://${cfg.publicHost}:${toString cfg.apiPort}";
+  internalApiUrl = "http://taskview-api:1401";
   mcpUrl = "http://${cfg.publicHost}:${toString cfg.mcpPort}/mcp";
 
   # Multi-architecture manifest digests published for TaskView 1.53.0.
@@ -163,7 +164,7 @@ in
         taskview-mcp = {
           image = images.mcp;
           environment = {
-            TASKVIEW_URL = apiUrl;
+            TASKVIEW_URL = internalApiUrl;
             MCP_PUBLIC_URL = mcpUrl;
           };
           ports = [ "${toString cfg.mcpPort}:3100" ];

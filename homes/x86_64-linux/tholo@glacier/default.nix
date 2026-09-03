@@ -10,7 +10,8 @@ let
     name = "taskview-mcp-headers";
     runtimeInputs = [ pkgs.jq ];
     text = ''
-      token_file="${config.age.secrets.taskview-token.path}"
+      runtime_dir="''${XDG_RUNTIME_DIR:-/run/user/$UID}"
+      token_file="$runtime_dir/agenix/taskview-token"
 
       if [[ ! -s "$token_file" ]]; then
         echo "TaskView API token is missing: $token_file" >&2
