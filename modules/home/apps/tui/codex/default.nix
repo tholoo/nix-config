@@ -88,6 +88,7 @@ let
     default_mode_request_user_input = true;
     sandbox_mode = "workspace-write";
     web_search = "cached";
+    tools.update_plan.enabled = true;
 
     plugins = {
       "figma@openai-curated".enabled = true;
