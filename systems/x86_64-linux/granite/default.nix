@@ -4,6 +4,21 @@
   modulesPath,
   ...
 }:
+let
+  graniteLoginShell = (
+    pkgs.writeShellScriptBin "granite-login-shell" ''
+      if [[ "''${1-}" == "-c" ]]; then
+        exec ${lib.getExe pkgs.bash} "$@"
+      fi
+
+      exec ${lib.getExe pkgs.nushell} "$@"
+    ''
+  ).overrideAttrs (oldAttrs: {
+    passthru = (oldAttrs.passthru or { }) // {
+      shellPath = "/bin/granite-login-shell";
+    };
+  });
+in
 {
   imports = [
     (modulesPath + "/installer/scan/not-detected.nix")
@@ -44,6 +59,11 @@
   };
 
   security.sudo.wheelNeedsPassword = false;
+
+  # OpenSSH invokes the login shell with `-c` for remote commands, but without
+  # it for an interactive login. Use Bash for the former and Nushell for the
+  # latter so command-oriented SSH clients get conventional shell semantics.
+  users.users.tholo.shell = lib.mkForce graniteLoginShell;
 
   # Let a local outer Zellij session identify itself to the remote client so
   # Zellij 0.45's nested-session protocol is enabled across SSH.
