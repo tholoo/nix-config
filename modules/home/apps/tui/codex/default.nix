@@ -310,22 +310,7 @@ in
         };
 
         playwright = {
-          command = npx;
-          args = [
-            "-y"
-            "@playwright/mcp@latest"
-            "--browser"
-            "chromium"
-            "--executable-path"
-            "${pkgs.playwright-driver.browsers}/chromium-${pkgs.playwright-driver.passthru.browsersJSON.chromium.revision}/chrome-linux64/chrome"
-            "--user-data-dir"
-            "/tmp/playwright-mcp-userdata"
-          ];
-          env = {
-            PATH = npxPath;
-            PLAYWRIGHT_BROWSERS_PATH = "${pkgs.playwright-driver.browsers}";
-            PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS = "true";
-          };
+          command = lib.getExe pkgs.mine.agent-browser;
         };
 
         dokploy = {

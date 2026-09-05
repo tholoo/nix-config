@@ -16,6 +16,7 @@
 
     gui.enable = true;
     tui.enable = true;
+    agent-desktop.enable = true;
 
     codex.enableBoardUdev = true;
 

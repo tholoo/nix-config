@@ -43,6 +43,7 @@ in
     gui.enable = true;
     tui.enable = true;
     terminal.emulator = "cosmic-term";
+    agent-desktop.enable = true;
 
     # Disabled until `pass` is initialized and OAuth tokens are stored at
     # work/gmail/vdirsyncer/{clientid,clientsecret} + ~/secrets/access_tokens.
@@ -62,6 +63,14 @@ in
     '';
     claude-code.proxyUrl = "http://127.0.0.1:10808";
     codex = {
+      hostContext = ''
+        This is a NixOS desktop using Hyprland and Home Manager.
+        For native desktop tasks, run `agent-desktop --help`; inspect windows
+        and capture a screenshot before using window-targeted input commands.
+        Browser tasks use the configured Playwright MCP with persistent profiles.
+        Discover project paths, service endpoints and proxy settings locally
+        when needed.
+      '';
       proxyUrl = "http://127.0.0.1:10808";
       noProxy = [
         "localhost"
