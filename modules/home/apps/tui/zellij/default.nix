@@ -74,18 +74,18 @@ in
       plugins {
           compact-bar location="zellij:compact-bar"
           ${optionalString config.mine.codex.enable ''
-          agent-deck location="file:~/.config/zellij/plugins/agent-deck.wasm" {
-              helper "${codexHooks.agentDeckCommand}"
-              show_subagents "false"
-          }
+            agent-deck location="file:~/.config/zellij/plugins/agent-deck.wasm" {
+                helper "${codexHooks.agentDeckCommand}"
+                show_subagents "false"
+            }
           ''}
       }
 
       ${optionalString config.mine.codex.enable ''
-      // One invisible instance per session receives Codex lifecycle events.
-      load_plugins {
-          agent-deck
-      }
+        // One invisible instance per session receives Codex lifecycle events.
+        load_plugins {
+            agent-deck
+        }
       ''}
 
       // simplified_ui true
@@ -265,20 +265,22 @@ in
               }
 
               bind "Alt i" {
-                Run "zellij" "run" "--floating" "--close-on-exit" "--" "${zellij-switch-script}" {
+                Run "${pkgs.nushell}/bin/nu" "--no-config-file" "${zellij-switch-script}" {
+                  floating true
                   close_on_exit true
                 }
+                SwitchToMode "Normal"
               }
 
               ${optionalString config.mine.codex.enable ''
-              // Toggle the floating, cross-session Codex agent deck.
-              bind "Alt a" {
-                  LaunchOrFocusPlugin "agent-deck" {
-                      floating true
-                      move_to_focused_tab true
-                  }
-                  SwitchToMode "Normal"
-              }
+                // Toggle the floating, cross-session Codex agent deck.
+                bind "Alt a" {
+                    LaunchOrFocusPlugin "agent-deck" {
+                        floating true
+                        move_to_focused_tab true
+                    }
+                    SwitchToMode "Normal"
+                }
               ''}
 
               // open monocle in a new floating pane and open any results in a new tiled/floating pane
