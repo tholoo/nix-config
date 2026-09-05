@@ -88,7 +88,7 @@ let
 
   codexSettings = {
     personality = "pragmatic";
-    model = "gpt-5.6-sol";
+    model = "gpt-6-astra";
     model_reasoning_effort = "high";
     approval_policy = "on-request";
     approvals_reviewer = "auto_review";
