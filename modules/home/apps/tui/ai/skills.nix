@@ -18,7 +18,7 @@ let
     ) (builtins.readDir root);
 
   upstreamSkills = discoverSkills (inputs.matt-pocock-skills + "/skills");
-  localSkills = discoverSkills ./skills;
+  localSkills = if builtins.pathExists ./skills then discoverSkills ./skills else { };
   duplicateNames = lib.intersectLists (lib.attrNames upstreamSkills) (lib.attrNames localSkills);
 in
 assert lib.assertMsg (
