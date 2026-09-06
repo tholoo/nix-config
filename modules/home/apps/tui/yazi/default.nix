@@ -21,6 +21,8 @@ in
   config = mkIf cfg.enable {
     programs.yazi = {
       enable = true;
+      # The default 7-Zip package omits RAR decoding support.
+      package = pkgs.yazi.override { _7zz = pkgs._7zz-rar; };
       shellWrapperName = "f";
       extraPackages = with pkgs; [
         glow
@@ -82,6 +84,15 @@ in
           }
         ];
         open.prepend_rules = [
+          {
+            mime = "application/{zip,rar,7z*,tar,gzip,xz,zstd,bzip*,lzma,compress,archive,cpio,arj,xar,ms-cab*}";
+            use = [
+              "extract"
+              "edit"
+              "open"
+              "reveal"
+            ];
+          }
           {
             url = "*";
             use = [
