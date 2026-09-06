@@ -74,6 +74,23 @@ in
         }
       ];
       settings = lib.mkOptionDefault {
+        opener.open = [
+          {
+            run = ''for path in %s; do ${lib.getExe' pkgs.xdg-utils "xdg-open"} "$path"; done'';
+            desc = "Open with default app";
+            orphan = true;
+          }
+        ];
+        open.prepend_rules = [
+          {
+            url = "*";
+            use = [
+              "edit"
+              "open"
+              "reveal"
+            ];
+          }
+        ];
         mgr = {
           ratio = [
             1
