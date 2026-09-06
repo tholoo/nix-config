@@ -358,7 +358,7 @@ void drawUsageLimit(const UsageLimit &limit, uint8_t textY, uint8_t barY) {
   const uint32_t elapsed = (millis() - lastHeartbeatMs) / 1000;
   const uint32_t reset = limit.resetSeconds > elapsed ? limit.resetSeconds - elapsed : 0;
   char countdown[12];
-  char right[16];
+  char right[22];
   formatCountdown(reset, countdown, sizeof(countdown));
   snprintf(right, sizeof(right), "L%u%% R%s", limit.remainingPercent, countdown);
   display.setCursor(0, textY);
@@ -367,6 +367,31 @@ void drawUsageLimit(const UsageLimit &limit, uint8_t textY, uint8_t barY) {
   const uint8_t fill = static_cast<uint8_t>(
       (124UL * limit.remainingPercent) / 100UL);
   if (fill > 0) display.fillRect(2, barY + 2, fill, 2, SSD1306_WHITE);
+}
+
+void drawSingleUsageLimit(const UsageLimit &limit) {
+  char remaining[6];
+  snprintf(remaining, sizeof(remaining), "%u%%", limit.remainingPercent);
+  display.setTextSize(2);
+  display.setCursor(0, 18);
+  display.print(remaining);
+
+  display.setTextSize(1);
+  display.setCursor(54, 22);
+  display.print("LEFT");
+  display.setCursor(SCREEN_WIDTH - strlen(limit.label) * 6, 22);
+  display.print(limit.label);
+
+  const uint32_t elapsed = (millis() - lastHeartbeatMs) / 1000;
+  const uint32_t reset = limit.resetSeconds > elapsed ? limit.resetSeconds - elapsed : 0;
+  char countdown[12];
+  formatCountdown(reset, countdown, sizeof(countdown));
+  display.setCursor(0, 36);
+  display.print("RESET IN ");
+  display.print(countdown);
+  display.drawRect(0, 46, SCREEN_WIDTH, 6, SSD1306_WHITE);
+  const uint8_t fill = static_cast<uint8_t>((124UL * limit.remainingPercent) / 100UL);
+  if (fill > 0) display.fillRect(2, 48, fill, 2, SSD1306_WHITE);
 }
 
 void updateLeds() {
@@ -425,7 +450,10 @@ void drawDashboard() {
     return;
   }
 
-  display.println("CODEX USAGE");
+  char sync[22];
+  snprintf(sync, sizeof(sync), "SYNC %lus",
+           static_cast<unsigned long>(currentUsageAge()));
+  printAligned("CODEX USAGE", sync);
 
   if (!usageAvailable || usageLimitCount == 0) {
     display.setCursor(0, 16);
@@ -437,24 +465,17 @@ void drawDashboard() {
     return;
   }
 
-  drawUsageLimit(usageLimits[0], 10, 19);
   if (usageLimitCount > 1) {
-    drawUsageLimit(usageLimits[1], 27, 36);
+    drawUsageLimit(usageLimits[0], 18, 27);
+    drawUsageLimit(usageLimits[1], 36, 45);
   } else {
-    display.setCursor(0, 29);
-    display.print("NO SECOND QUOTA");
+    drawSingleUsageLimit(usageLimits[0]);
   }
 
   char tokens[22];
   formatTokenCount(todayTokens, tokens, sizeof(tokens));
-  display.setCursor(0, 44);
+  display.setCursor(0, 56);
   display.print(tokens);
-
-  char sync[22];
-  snprintf(sync, sizeof(sync), "SYNC %lus",
-           static_cast<unsigned long>(currentUsageAge()));
-  display.setCursor(0, 54);
-  display.print(sync);
 
   display.display();
 }

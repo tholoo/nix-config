@@ -260,6 +260,58 @@ class CodexBoardTests(unittest.TestCase):
             543_210,
         )
 
+    def test_spark_quota_does_not_fill_the_second_row(self):
+        window = {
+            "usedPercent": 25,
+            "windowDurationMins": 300,
+            "resetsAt": 10_900,
+        }
+        for limit_id, metadata in (
+            ("gpt-5.3-codex-spark", {}),
+            ("other", {"limitId": "gpt-5.3-codex-spark"}),
+            ("other", {"limitName": "GPT-5.3-Codex-SPARK"}),
+        ):
+            with self.subTest(limit_id=limit_id, metadata=metadata):
+                payload = {
+                    "rateLimits": {"limitId": "codex", "primary": window},
+                    "rateLimitsByLimitId": {
+                        limit_id: {**metadata, "primary": window},
+                    },
+                }
+                self.assertEqual(
+                    codex_board.parse_rate_limits(payload, now=10_000),
+                    (codex_board.UsageLimit("5H", 75, 900),),
+                )
+                payload["rateLimitsByLimitId"]["other-model"] = {
+                    "limitName": "Other Model",
+                    "primary": window,
+                }
+                self.assertEqual(
+                    codex_board.parse_rate_limits(payload, now=10_000),
+                    (
+                        codex_board.UsageLimit("5H", 75, 900),
+                        codex_board.UsageLimit("OTHER5H", 75, 900),
+                    ),
+                )
+
+    def test_spark_is_excluded_if_returned_as_the_main_quota(self):
+        self.assertEqual(
+            codex_board.parse_rate_limits(
+                {
+                    "rateLimits": {
+                        "limitId": "codex-spark",
+                        "primary": {
+                            "usedPercent": 25,
+                            "windowDurationMins": 300,
+                            "resetsAt": 10_900,
+                        },
+                    },
+                },
+                now=10_000,
+            ),
+            (),
+        )
+
     def test_hooks_json_is_valid(self):
         rendered = json.dumps(codex_board.hooks_configuration())
         parsed = json.loads(rendered)

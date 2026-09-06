@@ -127,17 +127,18 @@ Useful combinations include:
 ## OLED behavior
 
 The default Adafruit 6x8 font provides about 21 characters on each of eight
-lines. The fixed display shows two remaining-usage windows with reset
-countdowns and bars, followed by today's tokens and sync age:
+lines. The header contains the sync age. Quota content starts at pixel row 18,
+below the panel's fixed yellow/blue boundary. One quota uses a large remaining
+percentage; two quotas use compact rows. Both layouts include reset countdowns,
+bars, and today's tokens:
 
 ```text
-CODEX USAGE
-7D         L75% R4d00h
+CODEX USAGE  SYNC 12s
+
+75%      LEFT      7D
+RESET IN 4d00h
 [==============     ]
-5H         L80% R2h00m
-[===============    ]
 TODAY 12M TOKENS
-SYNC 12s
 ```
 
 The values above are fictional. `L` is remaining percentage and `R` is time

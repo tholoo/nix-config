@@ -27,24 +27,25 @@ blue link LED are both on to identify a tracked task error.
 
 ## OLED format
 
-The two most useful quota windows show their remaining percentage, reset
-countdown, and a remaining-capacity bar. The bottom lines show today's token
-usage and the age of the last successful usage sync:
+The main quota shows a large remaining percentage, reset countdown, and a
+remaining-capacity bar. The header shows the age of the last successful usage
+sync; today's token usage is at the bottom:
 
 ```text
-CODEX USAGE
-7D         L75% R4d00h
+CODEX USAGE  SYNC 12s
+
+75%      LEFT      7D
+RESET IN 4d00h
 [==============     ]
-SPARK5H    L80% R2h00m
-[===============    ]
 TODAY 12M TOKENS
-SYNC 12s
 ```
 
-The example values are fictional. `L` means remaining/left and `R` means time
-until reset. If Codex exposes only one main quota window, the second row uses
-the next model-specific limit; if no second window exists, it says
-`NO SECOND QUOTA`. Usage failure does not disable session-driven LEDs.
+The example values are fictional. Quota content starts below the OLED's
+16-pixel yellow header zone. If a second non-Spark quota exists, both quotas
+use compact rows with `L` for remaining percentage and `R` for time until
+reset. Spark quotas are excluded. A single quota uses the larger layout with
+no empty second-row placeholder. Usage failure does not disable session-driven
+LEDs.
 
 When Agent Deck jumps to a completed root task, its existing `mark-read` action
 also acknowledges the matching dashboard row. Green turns off if no other

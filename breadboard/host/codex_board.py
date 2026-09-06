@@ -64,6 +64,13 @@ def product_label(value: Any) -> str:
     return (useful[-1] if useful else "ALT")[:5]
 
 
+def is_spark_limit(limit: dict[str, Any], limit_id: str = "") -> bool:
+    return any(
+        "spark" in str(value or "").casefold()
+        for value in (limit_id, limit.get("limitId"), limit.get("limitName"))
+    )
+
+
 def parse_usage_window(value: Any, prefix: str, now: float) -> UsageLimit | None:
     if not isinstance(value, dict):
         return None
@@ -86,7 +93,7 @@ def parse_rate_limits(payload: Any, now: float | None = None) -> tuple[UsageLimi
 
     result: list[UsageLimit] = []
     main = payload.get("rateLimits")
-    if isinstance(main, dict):
+    if isinstance(main, dict) and not is_spark_limit(main):
         for key in ("primary", "secondary"):
             window = parse_usage_window(main.get(key), "", now)
             if window is not None:
@@ -99,6 +106,8 @@ def parse_rate_limits(payload: Any, now: float | None = None) -> tuple[UsageLimi
             if len(result) >= 2:
                 break
             if not isinstance(limit, dict) or limit_id == main_id:
+                continue
+            if is_spark_limit(limit, limit_id):
                 continue
             window = parse_usage_window(
                 limit.get("primary"), product_label(limit.get("limitName")), now
