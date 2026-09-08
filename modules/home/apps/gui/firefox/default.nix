@@ -9,6 +9,12 @@ let
   inherit (lib.mine) mkEnable;
   cfg = config.mine.${name};
   name = "firefox";
+  zenMcpLauncher = pkgs.writeShellApplication {
+    name = "zen-beta-mcp";
+    text = ''
+      exec ${lib.getExe config.programs.zen-browser.finalPackage} --remote-debugging-port 9222 "$@"
+    '';
+  };
 in
 {
   options.mine.${name} = mkEnable config {
@@ -16,17 +22,44 @@ in
       "gui"
       "browser"
     ];
+    enableMcp = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+      description = "Whether to add a Zen MCP application launcher and connect Codex to it.";
+    };
   };
 
   config = mkIf cfg.enable {
+    home.packages = lib.optionals cfg.enableMcp [ zenMcpLauncher ];
+    xdg.desktopEntries.zen-beta-mcp = mkIf cfg.enableMcp {
+      name = "Zen Browser (beta) (MCP)";
+      genericName = "Web Browser";
+      comment = "Open Zen with browser automation enabled";
+      exec = "${lib.getExe zenMcpLauncher} %U";
+      icon = "zen-browser";
+      terminal = false;
+      categories = [
+        "Network"
+        "WebBrowser"
+      ];
+      mimeType = [
+        "text/html"
+        "x-scheme-handler/http"
+        "x-scheme-handler/https"
+      ];
+      settings = {
+        StartupNotify = "true";
+        StartupWMClass = "zen-beta";
+      };
+    };
+
     # tridactyl looks inside .mozilla instead of .floorp
     home.file.".mozilla/native-messaging-hosts/tridactyl.json".source =
       "${pkgs.tridactyl-native}/lib/mozilla/native-messaging-hosts/tridactyl.json";
 
-    xdg.configFile."tridactyl/tridactylrc".text = builtins.replaceStrings
-      [ "@terminal@" ]
-      [ config.mine.terminal.command ]
-      (builtins.readFile ./tridactylrc);
+    xdg.configFile."tridactyl/tridactylrc".text =
+      builtins.replaceStrings [ "@terminal@" ] [ config.mine.terminal.command ]
+        (builtins.readFile ./tridactylrc);
     programs.zen-browser = {
       enable = true;
       nativeMessagingHosts = with pkgs; [ tridactyl-native ];

@@ -44,6 +44,7 @@ in
     tui.enable = true;
     terminal.emulator = "cosmic-term";
     agent-desktop.enable = true;
+    firefox.enableMcp = true;
 
     # Disabled until `pass` is initialized and OAuth tokens are stored at
     # work/gmail/vdirsyncer/{clientid,clientsecret} + ~/secrets/access_tokens.
@@ -67,7 +68,9 @@ in
         This is a NixOS desktop using Hyprland and Home Manager.
         For native desktop tasks, run `agent-desktop --help`; inspect windows
         and capture a screenshot before using window-targeted input commands.
-        Browser tasks use the configured Playwright MCP with persistent profiles.
+        Use the zen-browser MCP for the user's Zen tabs when requested; Zen must
+        be opened through the "Zen Browser (beta) (MCP)" launcher first.
+        Other browser tasks use the Playwright MCP with separate persistent profiles.
         Discover project paths, service endpoints and proxy settings locally
         when needed.
       '';

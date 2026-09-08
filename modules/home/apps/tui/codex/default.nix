@@ -162,11 +162,16 @@ let
     )
   ) config.programs.mcp.servers;
 
-  managedSettings =
-    codexSettings
-    // lib.optionalAttrs (cfg.enableSharedMcp && codexMcpServers != { }) {
-      mcp_servers = codexMcpServers;
-    };
+  managedSettings = codexSettings // {
+    mcp_servers =
+      (lib.optionalAttrs cfg.enableSharedMcp codexMcpServers)
+      // lib.optionalAttrs (config.mine.firefox.enable && config.mine.firefox.enableMcp) {
+        zen-browser = {
+          command = lib.getExe pkgs.mine.zen-mcp;
+          env.ZEN_DEBUG_PORT = "9222";
+        };
+      };
+  };
 
   managedConfig = (pkgs.formats.toml { }).generate "codex-managed-config.toml" managedSettings;
 in

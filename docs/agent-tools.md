@@ -62,6 +62,25 @@ Restart agent processes after applying Home Manager to load the new MCP command.
 Browser profiles and desktop images are runtime state; keep them out of Git,
 Nix derivations, instruction files and diagnostic reports.
 
+### Using the human's Zen session
+
+Enable `mine.firefox.enableMcp` alongside the browser and Codex modules. This adds
+**Zen Browser (beta) (MCP)** to application launchers such as Vicinae and exposes
+the pinned `zen-mcp` server to Codex as `zen-browser`. Its dependencies are built
+by Nix; launching Codex needs no npm download.
+
+Quit Zen normally, then select the MCP launcher. It starts the configured Zen
+package with remote debugging on loopback port 9222, using the normal profile
+and its logins. If Zen is already running without debugging, launching it again
+cannot turn debugging on in that process. Quit and reopen through the MCP entry.
+The ordinary Zen entry continues to launch without the debugging flag.
+
+Restart Codex after applying Home Manager. The MCP server can start while Zen is
+closed; it connects when a browser tool is used. Use one Codex session at a time
+with this shared browser. If the server reports a stale automation session,
+restart Zen through the MCP launcher. Browser access includes the profile's
+authenticated tabs; keep its debugging endpoint local.
+
 ## Verification
 
 Run these from the repository root:
@@ -69,10 +88,15 @@ Run these from the repository root:
 ```sh
 python3 -m unittest discover -s packages/agent-desktop/tests
 python3 -m unittest discover -s packages/agent-browser/tests
-nix build .#agent-desktop .#agent-browser
+nix build .#agent-desktop .#agent-browser .#zen-mcp
 ```
 
 For end-to-end input testing, use a disposable window with synthetic content.
 Exercise focus, click, scroll, shortcut and Unicode paste, then inspect the
 window's resulting state. For the browser, start concurrent sessions and verify
 separate profile directories, then reopen a slot to verify persistence.
+
+For `zen-mcp`, use a disposable Zen profile and a separate debugging port, with
+`ZEN_DEBUG_PORT` set to match. Check MCP tool discovery before starting Zen, then
+exercise tab creation, a synthetic form, screenshots, and disconnect/reconnect
+while the browser remains running. Remove the disposable profile afterward.
