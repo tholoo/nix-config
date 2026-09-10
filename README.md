@@ -66,3 +66,7 @@ Create a secret file:
 ```bash
 agenix -e secret.age
 ```
+
+## Local CI
+
+See [Ubuntu CI at home](docs/home-ci.md) for the optional declarative VM and private runner registration.
