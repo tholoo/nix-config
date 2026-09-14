@@ -18,7 +18,7 @@ modify files in the projects being displayed.
 | Red / GPIO6 | Root-task error or laptop bridge lost |
 | Blue / GPIO7 | Laptop bridge heartbeat is present |
 | Harder blue / GPIO10 | A root task needs user input or approval |
-| Self-cycling / GPIO11 | Harder-blue input or any continuous red alert has lasted at least three minutes |
+| Self-cycling / GPIO11 | Disabled; always off |
 
 Several LEDs may be on simultaneously. For example, green plus yellow means
 one unread task completed while another is still running. The OLED displays
@@ -200,9 +200,8 @@ bridge snapshot. This does not use silence from an active Codex task as a
 disconnect signal: an agent may legitimately reason for several minutes
 without running a tool.
 
-Any continuously red condition (task error or lost host) turns on the
-self-cycling LED after three minutes. Harder-blue input retains its independent
-three-minute escalation.
+The self-cycling LED stays off, including during prolonged input requests,
+task errors, and host-link loss.
 
 ## Troubleshooting
 

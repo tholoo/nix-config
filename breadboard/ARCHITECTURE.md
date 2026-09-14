@@ -87,7 +87,7 @@ notification over silently treating a question as complete.
 Root-task duration begins at `UserPromptSubmit` and freezes when the task
 becomes `DONE`. Subagent duration begins at `SubagentStart`, but subagent rows
 remain host-only and do not contribute to any board LED. Each root state also
-has a separate age used for the delayed strobing alert.
+has a separate age retained in the serial protocol for compatibility.
 
 A completed task remains retained so the user can notice it while its Codex
 session is still open. Agent Deck's existing `mark-read` action acknowledges
@@ -115,14 +115,13 @@ The LEDs are independent; several may be illuminated simultaneously.
 | Red | A root task is `ERROR` or the host heartbeat is lost |
 | Blue | Host heartbeat is present |
 | Harder blue | At least one root task is `INPUT` |
-| Self-cycling | Input or any continuous red alert has remained for at least 180 seconds |
+| Self-cycling | Disabled; always off |
 
 Useful combinations include:
 
 - green + yellow: one task finished while another remains active
 - red + blue: task/tool error while the host bridge remains reachable
 - red without blue: host bridge or USB failure
-- harder blue + self-cycling: user input has been waiting for at least three minutes
 
 ## OLED behavior
 
@@ -260,8 +259,8 @@ IDs `1001` and `4001` to the normal local `users` group with mode `0660`.
 - Firmware writes the inactive LOW level before setting LED pins as outputs.
 - It never intentionally changes an LED pin back to input.
 - GPIO output never exceeds normal ESP32 3.3 V logic.
-- The self-cycling LED receives only on/off control; its internal colors are
-  not treated as independently addressable channels.
+- The dashboard holds the self-cycling LED off; its internal colors are
+  not independently addressable.
 
 ## Validation record
 

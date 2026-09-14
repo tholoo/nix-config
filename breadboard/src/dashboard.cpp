@@ -12,7 +12,7 @@ constexpr uint8_t LED_YELLOW_PIN = 5;      // A root Codex task is working.
 constexpr uint8_t LED_RED_PIN = 6;         // Root-task error or host loss.
 constexpr uint8_t LED_INPUT_PIN = 10;      // Harder blue: a root task needs user input/approval.
 constexpr uint8_t LED_LINK_PIN = 7;        // Normal blue: laptop bridge heartbeat is present.
-constexpr uint8_t LED_STROBE_PIN = 11;     // An alert has waited too long.
+constexpr uint8_t LED_STROBE_PIN = 11;     // Self-cycling LED: keep disabled.
 
 // Verified wiring: GPIO -> 220 ohm -> LED anode; LED cathode -> GND.
 constexpr uint8_t LED_ON = HIGH;
@@ -29,7 +29,6 @@ constexpr size_t MAX_SERIAL_LINE = 160;
 constexpr size_t SERIAL_RX_BUFFER_SIZE = 1024;
 constexpr uint32_t HOST_TIMEOUT_MS = 15000;
 constexpr uint32_t PAGE_INTERVAL_MS = 5000;
-constexpr uint32_t ALERT_AFTER_SECONDS = 180;
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
@@ -75,8 +74,6 @@ bool oledReady = false;
 bool receivingSnapshot = false;
 bool linkSeen = false;
 uint32_t lastHeartbeatMs = 0;
-bool redAlertActive = false;
-uint32_t redAlertSinceMs = 0;
 
 char serialLine[MAX_SERIAL_LINE];
 size_t serialLineLength = 0;
@@ -399,36 +396,24 @@ void updateLeds() {
   bool hasComplete = false;
   bool hasInput = false;
   bool hasError = false;
-  bool overdueInput = false;
 
   for (size_t i = 0; i < taskCount; ++i) {
     hasWorking |= tasks[i].state == TaskState::Working;
     hasComplete |= tasks[i].state == TaskState::Complete;
     hasInput |= tasks[i].state == TaskState::Input;
     hasError |= tasks[i].state == TaskState::Error;
-    overdueInput |= tasks[i].state == TaskState::Input &&
-                    tasks[i].stateAgeSeconds >= ALERT_AFTER_SECONDS;
   }
 
   const bool lostHost = hostTimedOut();
   const bool online = linkSeen && !lostHost;
   const bool redAlert = hasError || lostHost;
-  if (redAlert && !redAlertActive) {
-    redAlertActive = true;
-    redAlertSinceMs = millis();
-  } else if (!redAlert) {
-    redAlertActive = false;
-    redAlertSinceMs = 0;
-  }
-  const bool overdueRed = redAlertActive &&
-      millis() - redAlertSinceMs >= ALERT_AFTER_SECONDS * 1000UL;
 
   setOutput(LED_GREEN_PIN, hasComplete);
   setOutput(LED_YELLOW_PIN, hasWorking);
   setOutput(LED_RED_PIN, redAlert);
   setOutput(LED_INPUT_PIN, hasInput);
   setOutput(LED_LINK_PIN, online);
-  setOutput(LED_STROBE_PIN, overdueInput || overdueRed);
+  setOutput(LED_STROBE_PIN, false);
 }
 
 void drawDashboard() {
