@@ -89,13 +89,33 @@ let
       };
       stt.enabled = false;
       voice.auto_tts = false;
+      streaming = {
+        enabled = true;
+        transport = "draft";
+      };
       telegram = {
+        reactions = true;
+        disable_link_previews = true;
         guest_mode = false;
         require_mention = true;
         observe_unmentioned_group_messages = false;
       };
-      platforms.telegram.enabled = true;
-      display.tool_progress = "new";
+      platforms.telegram = {
+        enabled = true;
+        extra = {
+          rich_messages = true;
+          rich_drafts = true;
+        };
+      };
+      display = {
+        tool_progress = "new";
+        runtime_footer.enabled = false;
+        platforms.telegram = {
+          streaming = true;
+          cleanup_progress = true;
+          notifications = "important";
+        };
+      };
       mcp_servers = { };
     }
   );

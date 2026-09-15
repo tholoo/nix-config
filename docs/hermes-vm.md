@@ -44,7 +44,11 @@ Mihomo configuration. No new flake input or source build of Hermes is needed.
 - Flagged interactive commands use smart approval through the configured main
   model and existing subscription login. Review failures escalate to the owner.
 - Telegram shows brief tool progress, suppressing consecutive repeats of the
-  same tool.
+  same tool, and removes progress bubbles after successful replies. Responses
+  use native draft streaming with rich previews and rich final messages, with
+  upstream fallback when Telegram cannot accept rich content or drafts.
+  Processing reactions are enabled, link previews and
+  response footers are disabled, and only important messages notify the owner.
 - Scheduled agents cannot schedule further agents. Dangerous-command approvals
   fail closed in unattended jobs. Ordinary requested reminders and monitoring
   jobs remain available; exact sources and schedules are created privately.
@@ -152,9 +156,10 @@ python3 -m unittest discover -s modules/nixos/services/tui/hermes-vm/tests -v
 Check the pinned package against its generated, non-secret base configuration
 by passing the package directory, base configuration and bundled locales as
 three Nix store paths to `tests/check-packaged-config.py`. This exercises the
-Telegram status handler, scheduled tool resolution and page extraction with
-mocked HTTP responses; it needs local socket access for Python's async event
-loop. The guest bundles catalogs from the same pinned Hermes source and sets
+Telegram configuration parser, draft sending and status handler, scheduled
+tool resolution and page extraction with mocked API responses; it needs local
+socket access for Python's async event loop. The guest bundles catalogs from
+the same pinned Hermes source and sets
 `HERMES_BUNDLED_LOCALES` for both console commands and the gateway.
 
 Inside the live guest, this check exercises QEMU command forwarding and confirms

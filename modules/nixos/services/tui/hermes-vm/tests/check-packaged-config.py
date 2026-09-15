@@ -6,6 +6,7 @@ All HTTP responses are mocked; account files and real services are not used.
 
 import ast
 import asyncio
+import inspect
 import json
 import os
 from pathlib import Path
@@ -42,8 +43,62 @@ def main():
             isolated_env["HERMES_BUNDLED_LOCALES"] = str(Path(sys.argv[3]).resolve())
         with patch.dict(os.environ, isolated_env, clear=True):
             Path(tmp, "config.yaml").write_text(json.dumps(cfg))
-            from gateway.config import Platform
+            from gateway.config import Platform, load_gateway_config
+            from gateway.display_config import resolve_display_setting
             from gateway.slash_commands import GatewaySlashCommandsMixin
+
+            # Exercise the installed gateway parser and Telegram adapter, so
+            # misspelled or misplaced options cannot silently pass validation.
+            from plugins.platforms.telegram.adapter import TelegramAdapter
+            from telegram import Bot
+
+            gateway = load_gateway_config()
+            assert gateway.streaming.enabled
+            assert gateway.streaming.transport == "draft"
+            for key, value in {
+                "streaming": True,
+                "cleanup_progress": True,
+                "tool_progress": "new",
+                "notifications": "important",
+            }.items():
+                assert resolve_display_setting(cfg, "telegram", key) == value
+            assert not cfg["display"]["runtime_footer"]["enabled"]
+            adapter = TelegramAdapter(gateway.platforms[Platform.TELEGRAM])
+            assert adapter._reactions_enabled()
+            assert adapter._link_preview_kwargs()["link_preview_options"].is_disabled
+            assert adapter._notification_kwargs({}) == {"disable_notification": True}
+            assert adapter._notification_kwargs({"notify": True}) == {}
+            assert callable(getattr(Bot, "send_message_draft", None))
+            draft = AsyncMock(return_value=True)
+            adapter._bot = SimpleNamespace(send_message_draft=draft)
+            assert adapter.supports_draft_streaming("dm")
+            assert not adapter.supports_draft_streaming("group")
+            result = asyncio.run(adapter.send_draft("123456", 1, "Synthetic preview"))
+            assert result.success and result.message_id is None
+            assert draft.await_count == 1
+            assert draft.call_args.kwargs["text"] == "Synthetic preview"
+            print("Telegram draft transport and display behavior: PASS")
+
+            # Rich previews and finals must reach the native API with the
+            # table intact, rather than silently falling back to plain text.
+            assert adapter._rich_messages_enabled and adapter._rich_drafts_enabled
+            assert inspect.iscoroutinefunction(Bot.do_api_request)
+            rich_api = AsyncMock(side_effect=[True, {"message_id": 42}])
+            adapter._bot.do_api_request = rich_api
+            table = "| Item | Value |\n| --- | --- |\n| Example | 42 |"
+            result = asyncio.run(adapter.send_draft("123456", 2, table))
+            assert result.success and result.message_id is None
+            assert rich_api.call_args.args[0] == "sendRichMessageDraft"
+            assert draft.await_count == 1
+            assert adapter._should_attempt_rich(table)
+            result = asyncio.run(adapter._try_send_rich("123456", table, None, {"notify": True}))
+            assert result.success and result.message_id == "42"
+            assert rich_api.call_args.args[0] == "sendRichMessage"
+            for call in rich_api.call_args_list:
+                payload = call.kwargs["api_kwargs"]
+                assert "| Example | 42 |" in json.dumps(payload["rich_message"])
+            assert rich_api.call_args.kwargs["api_kwargs"]["link_preview_options"]["is_disabled"]
+            print("Telegram native rich drafts and final messages: PASS")
 
             entry = SimpleNamespace(
                 session_key="synthetic-session", session_id="synthetic-id",
