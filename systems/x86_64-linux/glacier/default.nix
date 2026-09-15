@@ -37,6 +37,13 @@
     "/etc/ssh/authorized_keys.d/%u"
   ];
 
+  # Ignore keyboard sleep requests from shortcuts such as the Logitech K380's
+  # Fn+L, including long presses, to prevent accidental suspend or hibernation.
+  services.logind.settings.Login = {
+    HandleSuspendKey = "ignore";
+    HandleSuspendKeyLongPress = "ignore";
+  };
+
   services.resolved = {
     enable = true;
 
