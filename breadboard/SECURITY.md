@@ -16,6 +16,13 @@ Runtime state lives in `/tmp/codex-board-$UID/state.sqlite3` with a private
 state directory. `codex-board clear` deletes the tracked rows. State is
 normally removed by the operating system at reboot.
 
+The daily budget separately persists one aggregate record in
+`$XDG_STATE_HOME/codex-board/budget.sqlite3` (defaulting to
+`~/.local/state/codex-board/budget.sqlite3`), inside a private directory.
+It contains only the weekly reset timestamp, period index, last remaining
+percentage, and opening reserve. It survives reboots; `codex-board clear`
+only clears tasks. A new weekly reset replaces the budget record.
+
 Zellij Agent Deck receives the same lifecycle event and independently stores a
 bounded, normalized prefix of the prompt in its private runtime state. There
 is no shared title registry or publisher service.
@@ -29,8 +36,8 @@ rows. Completed task metadata therefore remains only while that Codex session
 is open, unless the hook is unavailable or interrupted.
 
 The serial protocol carries project basename, short title, state, elapsed
-time, state age, aggregate remaining percentages/reset times, and today's
-token count. It carries no account or installation
+time, state age, aggregate remaining percentages/reset times, and daily budget
+and reserve percentages. It carries no account or installation
 identifier, plan name, device serial number, USB identifier, source content,
 or authentication material.
 

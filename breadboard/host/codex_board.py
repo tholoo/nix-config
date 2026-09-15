@@ -5,7 +5,6 @@ from __future__ import annotations
 
 import argparse
 from dataclasses import dataclass
-from datetime import date
 import json
 import os
 from pathlib import Path
@@ -25,7 +24,7 @@ from typing import Any
 MAX_TASKS = 6
 SERIAL_BAUD = 115200
 USAGE_REFRESH_SECONDS = 60.0
-TOKEN_REFRESH_SECONDS = 15 * 60.0
+DAY_SECONDS = 86400
 RPC_TIMEOUT_SECONDS = 15.0
 TITLE_GENERATION_PROMPT = (
     "Generate a concise, single-line task title of at most 36 characters"
@@ -42,8 +41,15 @@ class UsageLimit:
 @dataclass(frozen=True)
 class UsageSnapshot:
     limits: tuple[UsageLimit, ...]
-    today_tokens: int | None
     fetched_at: float
+    budget: DailyBudget | None = None
+
+
+@dataclass(frozen=True)
+class DailyBudget:
+    today_percent: int
+    reserve_percent: int
+    expires_at: int
 
 
 def duration_label(minutes: Any) -> str:
@@ -117,20 +123,62 @@ def parse_rate_limits(payload: Any, now: float | None = None) -> tuple[UsageLimi
     return tuple(result[:2])
 
 
-def parse_today_tokens(payload: Any, today: date | None = None) -> int | None:
-    if not isinstance(payload, dict):
+def budget_database_path() -> Path:
+    root = Path(os.environ.get("XDG_STATE_HOME", Path.home() / ".local/state"))
+    directory = root / "codex-board"
+    directory.mkdir(mode=0o700, parents=True, exist_ok=True)
+    return directory / "budget.sqlite3"
+
+
+def update_daily_budget(
+    limits: tuple[UsageLimit, ...], now: float, path: Path | None = None
+) -> DailyBudget | None:
+    """Spend today's seventh first, then savings; show borrowing as a deficit.
+
+    Units are sevenths of one percentage point, so seven daily allowances
+    sum to exactly 100%. Displayed values are truncated toward zero.
+    """
+    weekly = next((limit for limit in limits if limit.label == "7D"), None)
+    if weekly is None or not 0 < weekly.reset_seconds <= 7 * DAY_SECONDS:
         return None
-    target = (today or date.today()).isoformat()
-    buckets = payload.get("dailyUsageBuckets")
-    if not isinstance(buckets, list):
-        return None
-    for bucket in reversed(buckets):
-        if isinstance(bucket, dict) and bucket.get("startDate") == target:
-            try:
-                return max(0, int(bucket["tokens"]))
-            except (KeyError, TypeError, ValueError):
-                return None
-    return 0
+    reset_at = int(now) + weekly.reset_seconds
+    day = 6 - (weekly.reset_seconds - 1) // DAY_SECONDS
+    available = weekly.remaining_percent * 7 - (6 - day) * 100
+    connection = sqlite3.connect(path or budget_database_path(), timeout=3)
+    try:
+        with connection:
+            connection.execute(
+                "CREATE TABLE IF NOT EXISTS budget ("
+                "id INTEGER PRIMARY KEY CHECK (id = 1), reset_at INTEGER, "
+                "day INTEGER, remaining INTEGER, reserve INTEGER)"
+            )
+            previous = connection.execute(
+                "SELECT reset_at, day, remaining, reserve FROM budget WHERE id = 1"
+            ).fetchone()
+            if previous and previous[0] == reset_at and previous[1] <= day:
+                if previous[1] == day:
+                    reserve = previous[3]
+                else:
+                    # Usage while offline is charged to the day we observe it.
+                    reserve = max(0, previous[2] * 7 - (7 - day) * 100)
+            else:
+                # No history: protect future days and fill today's allowance
+                # before estimating savings from the remaining balance.
+                reserve = max(0, available - 100)
+            today = min(100, max(0, available - reserve))
+            if available < 0:
+                today = available
+            connection.execute(
+                "INSERT OR REPLACE INTO budget VALUES (1, ?, ?, ?, ?)",
+                (reset_at, day, weekly.remaining_percent, reserve),
+            )
+        return DailyBudget(
+            today // 7 if today >= 0 else -((-today) // 7),
+            (available - today) // 7,
+            reset_at - (6 - day) * DAY_SECONDS,
+        )
+    finally:
+        connection.close()
 
 
 def state_directory() -> Path:
@@ -482,8 +530,11 @@ def build_packet(
 
     lines = ["BEGIN"]
     usage_age = max(0, int(now - usage.fetched_at)) if usage else 0
-    today_tokens = usage.today_tokens if usage and usage.today_tokens is not None else -1
-    lines.append(f"USAGE|{int(usage is not None)}|{today_tokens}|{usage_age}")
+    # Retain the legacy token slot for firmware upgrades in either order.
+    lines.append(f"USAGE|{int(usage is not None)}|-1|{usage_age}")
+    budget = usage.budget if usage else None
+    if budget is not None and now < budget.expires_at:
+        lines.append(f"BUDGET|{budget.today_percent}|{budget.reserve_percent}")
     if usage is not None:
         for limit in usage.limits:
             lines.append(
@@ -626,7 +677,6 @@ class UsageMonitor:
 
     def _run(self) -> None:
         client: AppServerClient | None = None
-        next_tokens = 0.0
         while not self._stop.is_set():
             try:
                 if client is None:
@@ -636,15 +686,16 @@ class UsageMonitor:
                 if not limits:
                     raise RuntimeError("Codex returned no usable rate-limit windows")
 
-                previous, _ = self.read()
-                today_tokens = previous.today_tokens if previous else None
-                if time.monotonic() >= next_tokens:
-                    today_tokens = parse_today_tokens(client.request("account/usage/read"))
-                    next_tokens = time.monotonic() + TOKEN_REFRESH_SECONDS
+                budget_error = None
+                try:
+                    budget = update_daily_budget(limits, now)
+                except (OSError, sqlite3.Error) as error:
+                    budget = None
+                    budget_error = f"Daily budget unavailable: {error}"
 
                 with self._lock:
-                    self.snapshot = UsageSnapshot(limits, today_tokens, now)
-                    self.last_error = None
+                    self.snapshot = UsageSnapshot(limits, now, budget)
+                    self.last_error = budget_error
             except (OSError, RuntimeError, TimeoutError) as error:
                 with self._lock:
                     self.last_error = str(error)
@@ -717,7 +768,7 @@ def run_daemon(port_name: str) -> None:
                 usage, usage_error = usage_monitor.read()
                 if usage_error != last_usage_error:
                     if usage_error:
-                        print(f"Usage unavailable: {usage_error}", file=sys.stderr, flush=True)
+                        print(f"Usage update: {usage_error}", file=sys.stderr, flush=True)
                     else:
                         print("Codex usage synchronized.", flush=True)
                     last_usage_error = usage_error

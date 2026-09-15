@@ -65,8 +65,10 @@ size_t usageLimitCount = 0;
 size_t pendingUsageLimitCount = 0;
 bool usageAvailable = false;
 bool pendingUsageAvailable = false;
-int64_t todayTokens = -1;
-int64_t pendingTodayTokens = -1;
+int todayBudget = -1;
+int reserveBudget = -1;
+int pendingTodayBudget = -1;
+int pendingReserveBudget = -1;
 uint32_t usageAgeSeconds = 0;
 uint32_t pendingUsageAgeSeconds = 0;
 
@@ -153,8 +155,23 @@ void parsePendingUsage(char *cursor) {
   char *age = nextField(cursor);
   if (!available || !tokens || !age) return;
   pendingUsageAvailable = available[0] == '1';
-  pendingTodayTokens = strtoll(tokens, nullptr, 10);
   pendingUsageAgeSeconds = strtoul(age, nullptr, 10);
+}
+
+void parsePendingBudget(char *cursor) {
+  char *today = nextField(cursor);
+  char *reserve = nextField(cursor);
+  if (!today || !reserve) return;
+  char *endToday;
+  char *endReserve;
+  long todayValue = strtol(today, &endToday, 10);
+  long reserveValue = strtol(reserve, &endReserve, 10);
+  if (endToday == today || *endToday || endReserve == reserve || *endReserve ||
+      todayValue < -85 || todayValue > 14 || reserveValue < 0 ||
+      reserveValue > 100 || todayValue + reserveValue > 100 ||
+      (todayValue < 0 && reserveValue != 0)) return;
+  pendingTodayBudget = static_cast<int>(todayValue);
+  pendingReserveBudget = static_cast<int>(reserveValue);
 }
 
 void addPendingUsageLimit(char *cursor) {
@@ -179,7 +196,8 @@ void commitSnapshot() {
     usageLimits[i] = pendingUsageLimits[i];
   }
   usageAvailable = pendingUsageAvailable;
-  todayTokens = pendingTodayTokens;
+  todayBudget = pendingTodayBudget;
+  reserveBudget = pendingReserveBudget;
   usageAgeSeconds = pendingUsageAgeSeconds;
   receivingSnapshot = false;
   linkSeen = true;
@@ -194,7 +212,8 @@ void processSerialLine(char *line) {
     pendingTaskCount = 0;
     pendingUsageLimitCount = 0;
     pendingUsageAvailable = false;
-    pendingTodayTokens = -1;
+    pendingTodayBudget = -1;
+    pendingReserveBudget = -1;
     pendingUsageAgeSeconds = 0;
     receivingSnapshot = true;
     return;
@@ -211,6 +230,8 @@ void processSerialLine(char *line) {
   if (!strncmp(line, "USAGE|", 6)) {
     char *cursor = line + 6;
     parsePendingUsage(cursor);
+  } else if (!strncmp(line, "BUDGET|", 7)) {
+    parsePendingBudget(line + 7);
   } else if (!strncmp(line, "LIMIT|", 6)) {
     char *cursor = line + 6;
     addPendingUsageLimit(cursor);
@@ -310,21 +331,11 @@ void formatCountdown(uint32_t seconds, char *output, size_t outputSize) {
   }
 }
 
-void formatTokenCount(int64_t tokens, char *output, size_t outputSize) {
-  if (tokens < 0) {
-    snprintf(output, outputSize, "TODAY -- TOKENS");
-  } else if (tokens >= 1000000000LL) {
-    snprintf(output, outputSize, "TODAY %lluB TOKENS",
-             static_cast<unsigned long long>(tokens / 1000000000LL));
-  } else if (tokens >= 1000000LL) {
-    snprintf(output, outputSize, "TODAY %lluM TOKENS",
-             static_cast<unsigned long long>(tokens / 1000000LL));
-  } else if (tokens >= 1000LL) {
-    snprintf(output, outputSize, "TODAY %lluK TOKENS",
-             static_cast<unsigned long long>(tokens / 1000LL));
+void formatBudget(char *output, size_t outputSize) {
+  if (reserveBudget < 0) {
+    snprintf(output, outputSize, "TODAY --%% +--%% RES");
   } else {
-    snprintf(output, outputSize, "TODAY %lld TOKENS",
-             static_cast<long long>(tokens));
+    snprintf(output, outputSize, "TODAY %d%% +%d%% RES", todayBudget, reserveBudget);
   }
 }
 
@@ -457,10 +468,10 @@ void drawDashboard() {
     drawSingleUsageLimit(usageLimits[0]);
   }
 
-  char tokens[22];
-  formatTokenCount(todayTokens, tokens, sizeof(tokens));
+  char budget[22];
+  formatBudget(budget, sizeof(budget));
   display.setCursor(0, 56);
-  display.print(tokens);
+  display.print(budget);
 
   display.display();
 }

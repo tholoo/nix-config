@@ -9,7 +9,7 @@ status display. The OLED answers usage questions while the LEDs retain the
 original task-state behavior:
 
 1. How much usage remains and when does it reset?
-2. How many tokens have been used today?
+2. How much of today's weekly-quota allowance and saved reserve remains?
 3. Is an agent finished, working, waiting for input, or reporting an error?
 4. Is the laptop bridge still sending heartbeats?
 
@@ -129,15 +129,15 @@ The default Adafruit 6x8 font provides about 21 characters on each of eight
 lines. The header contains the sync age. Quota content starts at pixel row 18,
 below the panel's fixed yellow/blue boundary. One quota uses a large remaining
 percentage; two quotas use compact rows. Both layouts include reset countdowns,
-bars, and today's tokens:
+bars, and today's remaining budget plus reserve:
 
 ```text
 CODEX USAGE  SYNC 12s
 
-75%      LEFT      7D
-RESET IN 4d00h
-[==============     ]
-TODAY 12M TOKENS
+84%      LEFT      7D
+RESET IN 5d23h
+[================   ]
+TODAY 5% +7% RES
 ```
 
 The values above are fictional. `L` is remaining percentage and `R` is time
@@ -157,8 +157,9 @@ The host sends complete snapshots rather than incremental updates:
 
 ```text
 BEGIN
-USAGE|1|12345678|12
-LIMIT|7D|75|345600
+USAGE|1|-1|12
+BUDGET|5|7
+LIMIT|7D|84|514800
 LIMIT|5H|80|7200
 TASK|nix-config|repair flake setup|W|12120|15
 TASK|palimpsest|update parser|D|842|93
@@ -167,7 +168,9 @@ END
 
 Protocol fields:
 
-- `USAGE|available|today_tokens|sync_age_seconds`
+- `USAGE|available|legacy_tokens|sync_age_seconds` (token slot is always `-1`)
+- `BUDGET|today_remaining_percent|reserve_remaining_percent` (omitted when unknown;
+  today may be negative when spending has borrowed from future days)
 - `LIMIT|label|remaining_percent|reset_seconds` (up to two)
 - `TASK|project|title|state|elapsed_seconds|state_age_seconds`
 - state is `W`, `D`, `I`, `E`, or acknowledged `A`

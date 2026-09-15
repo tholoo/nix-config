@@ -43,13 +43,39 @@ for name in ["Arduino.h", "Wire.h", "Adafruit_GFX.h", "Adafruit_SSD1306.h"]:
     (root / name).write_text('#include "hardware.h"\n')
 test = r'''
 #include "DASHBOARD_SOURCE"
+void packet(const char *value) {
+ std::string line(value);
+ processSerialLine(line.data());
+}
 int main() {
- oledReady=true;linkSeen=true;lastHeartbeatMs=1000;usageAvailable=true;todayTokens=12000000;
- for (int count : {1,2}) for(int percent : {0,75,100}) for(uint32_t reset : {0U,345600U,UINT32_MAX}) {
-  usageLimitCount=count;
+ packet("BEGIN");packet("USAGE|1|-1|0");packet("LIMIT|7D|84|90000");
+ packet("BUDGET|5|7");
+ if(todayBudget!=-1) {std::cerr<<"FAIL: budget committed before END\n";return 1;}
+ packet("END");
+ if(todayBudget!=5 || reserveBudget!=7) {std::cerr<<"FAIL: budget packet not parsed\n";return 1;}
+ for(int deficit : {-85,-7,-1}) {
+  packet("BEGIN");packet(("BUDGET|"+std::to_string(deficit)+"|0").c_str());packet("END");
+  char text[22];formatBudget(text,sizeof(text));
+  if(todayBudget!=deficit || reserveBudget!=0 || std::string(text)!="TODAY "+std::to_string(deficit)+"% +0% RES") {
+   std::cerr<<"FAIL: deficit must display as a signed budget, including -1%\n";return 1;
+  }
+ }
+ for(const char *invalid : {"BUDGET|bad|7", "BUDGET|-1|7", "BUDGET|-86|0", "BUDGET|0|101", "BUDGET|15|7", "BUDGET|5|99", "BUDGET|5", "BUDGET||7"}) {
+  packet("BEGIN");packet(invalid);packet("END");
+  if(todayBudget!=-1 || reserveBudget!=-1) {std::cerr<<"FAIL: invalid budget accepted\n";return 1;}
+ }
+ packet("BEGIN");packet("USAGE|1|12345678|0");packet("END");
+ if(todayBudget!=-1) {std::cerr<<"FAIL: legacy packet retained stale budget\n";return 1;}
+ oledReady=true;linkSeen=true;lastHeartbeatMs=1000;usageAvailable=true;todayBudget=5;reserveBudget=7;
+ for(int today : {-85,-7,-1,0,5,14}) for(int reserve : {-1,0,7,85}) for (int count : {1,2}) for(int percent : {0,75,100}) for(uint32_t reset : {0U,345600U,UINT32_MAX}) {
+  if(today<0 && reserve>0) continue;
+  todayBudget=today;reserveBudget=reserve;usageLimitCount=count;
   usageLimits[0]={"LIMIT123",static_cast<uint8_t>(percent),reset};
   usageLimits[1]={"OTHER5H",80,7200};
   drawDashboard();
+  const std::string expected = reserve<0 ? "TODAY --% +--% RES" :
+    "TODAY "+std::to_string(today)+"% +"+std::to_string(reserve)+"% RES";
+  if(display.text.find(expected)==std::string::npos) {std::cerr<<"FAIL: wrong daily budget text\n";return 1;}
   if (display.text.find("NO SECOND QUOTA")!=std::string::npos) {std::cerr<<"FAIL: placeholder wastes the single-quota area\n";return 1;}
   for(const auto &g:display.glyphs) {
    if(g.x<0||g.y<0||g.x+g.w>128||g.y+g.h>64) {std::cerr<<"FAIL: text outside 128x64 screen\n";return 1;}

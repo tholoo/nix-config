@@ -1,9 +1,9 @@
 import json
-from datetime import date
 from pathlib import Path
 import tempfile
 import time
 import unittest
+from unittest.mock import patch
 
 from host import codex_board
 
@@ -213,18 +213,17 @@ class CodexBoardTests(unittest.TestCase):
                 codex_board.UsageLimit("5H", 75, 900),
                 codex_board.UsageLimit("7D", 40, 10_000),
             ),
-            543_210,
             10_000,
         )
         packet = codex_board.build_packet(
             self.database, usage, now=10_030
         ).decode("ascii")
-        self.assertIn("USAGE|1|543210|30", packet)
+        self.assertIn("USAGE|1|-1|30", packet)
         self.assertIn("LIMIT|5H|75|870", packet)
         self.assertIn("LIMIT|7D|40|9970", packet)
         self.assertIn("TASK|nix-config|_|W|", packet)
 
-    def test_parses_remaining_usage_and_today_tokens(self):
+    def test_parses_remaining_usage(self):
         payload = {
             "rateLimits": {
                 "limitId": "codex",
@@ -248,18 +247,6 @@ class CodexBoardTests(unittest.TestCase):
                 codex_board.UsageLimit("7D", 40, 10_000),
             ),
         )
-        self.assertEqual(
-            codex_board.parse_today_tokens(
-                {
-                    "dailyUsageBuckets": [
-                        {"startDate": "2026-08-28", "tokens": 543_210}
-                    ]
-                },
-                date(2026, 8, 28),
-            ),
-            543_210,
-        )
-
     def test_spark_quota_does_not_fill_the_second_row(self):
         window = {
             "usedPercent": 25,
@@ -293,6 +280,117 @@ class CodexBoardTests(unittest.TestCase):
                         codex_board.UsageLimit("OTHER5H", 75, 900),
                     ),
                 )
+
+    def budget(self, remaining, elapsed=0, reset_at=7 * 86400):
+        return codex_board.update_daily_budget(
+            (codex_board.UsageLimit("7D", remaining, reset_at - elapsed),),
+            elapsed,
+            self.database,
+        )
+
+    def test_daily_allowance_carries_savings_and_spends_today_first(self):
+        self.assertEqual(self.budget(100), codex_board.DailyBudget(14, 0, 86400))
+        self.assertEqual(self.budget(93, 80000), codex_board.DailyBudget(7, 0, 86400))
+        self.assertEqual(self.budget(93, 86400), codex_board.DailyBudget(14, 7, 172800))
+        # Each call reopens the database, including across daemon restarts.
+        self.assertEqual(self.budget(84, 90000), codex_board.DailyBudget(5, 7, 172800))
+        self.assertEqual(self.budget(78, 91000), codex_board.DailyBudget(0, 6, 172800))
+        self.assertEqual(self.budget(70, 92000), codex_board.DailyBudget(-1, 0, 172800))
+
+    def test_deficit_is_visible_and_subtracted_from_tomorrows_allowance(self):
+        self.assertEqual(
+            self.budget(50, 2 * 86400),
+            codex_board.DailyBudget(-7, 0, 3 * 86400),
+        )
+        self.assertEqual(
+            self.budget(50, 3 * 86400),
+            codex_board.DailyBudget(7, 0, 4 * 86400),
+        )
+
+    def test_deficit_carries_across_multiple_days_and_clears_at_weekly_reset(self):
+        self.assertEqual(self.budget(0).today_percent, -85)
+        self.assertEqual(self.budget(0, 86400).today_percent, -71)
+        self.assertEqual(self.budget(0, 6 * 86400).today_percent, 0)
+        self.assertEqual(
+            self.budget(100, 7 * 86400, 14 * 86400),
+            codex_board.DailyBudget(14, 0, 8 * 86400),
+        )
+
+    def test_negative_budget_is_sent_in_the_serial_packet(self):
+        usage = codex_board.UsageSnapshot(
+            (codex_board.UsageLimit("7D", 50, 5 * 86400),),
+            2 * 86400,
+            self.budget(50, 2 * 86400),
+        )
+        packet = codex_board.build_packet(self.database, usage, now=2 * 86400)
+        self.assertIn(b"BUDGET|-7|0\n", packet)
+
+    def test_overspending_reduces_the_next_allowance(self):
+        self.budget(80, 80000)
+        self.assertEqual(self.budget(80, 86400), codex_board.DailyBudget(8, 0, 172800))
+
+    def test_initial_estimate_protects_future_days(self):
+        self.assertEqual(self.budget(90, 86400), codex_board.DailyBudget(14, 4, 172800))
+
+    def test_weekly_reset_discards_previous_savings(self):
+        self.budget(100, 6 * 86400)
+        reset_at = 14 * 86400
+        self.assertEqual(
+            self.budget(100, 7 * 86400, reset_at),
+            codex_board.DailyBudget(14, 0, 8 * 86400),
+        )
+
+    def test_all_seven_allowances_preserve_fractional_remainders(self):
+        for day in range(7):
+            with self.subTest(day=day):
+                result = self.budget(100, day * 86400)
+                self.assertEqual(result.today_percent, 14)
+                self.assertEqual(result.reserve_percent, (day * 100) // 7)
+        # On the last day all remaining quota is available, with no lost
+        # allowance from truncating 100/7 to 14 for display.
+        self.assertEqual(self.budget(1, 6 * 86400 + 1).reserve_percent, 1)
+
+    def test_offline_usage_is_charged_when_observed(self):
+        self.budget(93, 80000)
+        result = self.budget(70, 3 * 86400)
+        self.assertEqual(result, codex_board.DailyBudget(0, 27, 4 * 86400))
+
+    def test_missing_or_expired_weekly_quota_has_no_budget(self):
+        for limits in (
+            (),
+            (codex_board.UsageLimit("5H", 100, 300),),
+            (codex_board.UsageLimit("OTHER7D", 100, 300),),
+            (codex_board.UsageLimit("7D", 100, 0),),
+            (codex_board.UsageLimit("7D", 100, 7 * 86400 + 1),),
+        ):
+            with self.subTest(limits=limits):
+                self.assertIsNone(codex_board.update_daily_budget(limits, 0, self.database))
+
+    def test_budget_packet_expires_at_the_daily_boundary(self):
+        usage = codex_board.UsageSnapshot(
+            (codex_board.UsageLimit("7D", 84, 5 * 86400),),
+            90000,
+            codex_board.DailyBudget(5, 7, 172800),
+        )
+        packet = codex_board.build_packet(self.database, usage, now=90030)
+        self.assertIn(b"BUDGET|5|7\n", packet)
+        self.assertNotIn(b"BUDGET|", codex_board.build_packet(self.database, usage, now=172800))
+
+    def test_budget_storage_failure_keeps_live_quota_available(self):
+        monitor = codex_board.UsageMonitor()
+        limits = (codex_board.UsageLimit("7D", 84, 5 * 86400),)
+        with (
+            patch.object(codex_board, "AppServerClient") as client,
+            patch.object(codex_board, "parse_rate_limits", return_value=limits),
+            patch.object(codex_board, "update_daily_budget", side_effect=OSError("storage unavailable")),
+            patch.object(monitor._stop, "wait", side_effect=lambda _: monitor._stop.set()),
+        ):
+            monitor._run()
+        snapshot, error = monitor.read()
+        self.assertEqual(snapshot.limits, limits)
+        self.assertIsNone(snapshot.budget)
+        self.assertIn("Daily budget unavailable", error)
+        client.return_value.request.assert_called_once_with("account/rateLimits/read")
 
     def test_spark_is_excluded_if_returned_as_the_main_quota(self):
         self.assertEqual(

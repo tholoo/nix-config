@@ -29,15 +29,15 @@ blue link LED are both on to identify a tracked task error.
 
 The main quota shows a large remaining percentage, reset countdown, and a
 remaining-capacity bar. The header shows the age of the last successful usage
-sync; today's token usage is at the bottom:
+sync; today's remaining budget and saved reserve are at the bottom:
 
 ```text
 CODEX USAGE  SYNC 12s
 
-75%      LEFT      7D
-RESET IN 4d00h
-[==============     ]
-TODAY 12M TOKENS
+84%      LEFT      7D
+RESET IN 5d23h
+[================   ]
+TODAY 5% +7% RES
 ```
 
 The example values are fictional. Quota content starts below the OLED's
@@ -46,6 +46,31 @@ use compact rows with `L` for remaining percentage and `R` for time until
 reset. Spark quotas are excluded. A single quota uses the larger layout with
 no empty second-row placeholder. Usage failure does not disable session-driven
 LEDs.
+
+### Daily budget estimate
+
+`TODAY 5% +7% RES` means 5 percentage points of the weekly quota remain
+in today's allowance, plus 7 saved from earlier days. Each of seven equal
+24-hour periods gets one seventh of the weekly limit. Periods start at the
+weekly reset's time of day, rather than local midnight. Spending consumes
+today's allowance first, then reserve. Once both are exhausted, a negative
+today value shows how much has been borrowed from future days. For example,
+`TODAY -7% +0% RES` becomes about `TODAY 7% +0% RES` next period if no more
+quota is spent. A larger deficit can take several daily allowances to clear.
+Reserve expires at the weekly reset, and never includes future days' shares.
+The separate short-window quota can still limit usage.
+
+All displayed percentages are whole numbers with fractional parts omitted
+(negative values are truncated toward zero too). The calculation
+keeps fractional shares internally so rounding to 14% does not lose 2% each
+week. The estimate uses the reported weekly quota, not token counts.
+
+A small persistent budget record survives bridge restarts and reboots. On
+first use (or after deleting that record), past daily spending is unknown:
+the estimate protects future days, fills today's allowance, and counts any
+excess as reserve. Usage while the bridge is offline is charged to the day
+it is next observed. Usage refreshes once a minute; missing weekly data or an
+expired daily snapshot displays `TODAY --% +--% RES` until a fresh sample arrives.
 
 When Agent Deck jumps to a completed root task, its existing `mark-read` action
 also acknowledges the matching dashboard row. Green turns off if no other
