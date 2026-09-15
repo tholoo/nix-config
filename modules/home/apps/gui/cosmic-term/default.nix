@@ -109,6 +109,46 @@ in
         force = true;
         text = "100";
       };
+      "${configDir}/shortcuts_custom" = {
+        force = true;
+        # Let Zellij and the foreground application handle panes, tabs and scrollback.
+        # COSMIC merges this RON map with its defaults; Disable removes a binding.
+        text = ''
+          {
+            // Pane splitting, maximization and focus.
+            (modifiers: [Ctrl, Alt], key: "d"): Disable,
+            (modifiers: [Ctrl, Alt], key: "r"): Disable,
+            (modifiers: [Ctrl, Shift], key: "X"): Disable,
+            (modifiers: [Ctrl, Shift], key: "ArrowLeft"): Disable,
+            (modifiers: [Ctrl, Shift], key: "H"): Disable,
+            (modifiers: [Ctrl, Shift], key: "ArrowDown"): Disable,
+            (modifiers: [Ctrl, Shift], key: "J"): Disable,
+            (modifiers: [Ctrl, Shift], key: "ArrowUp"): Disable,
+            (modifiers: [Ctrl, Shift], key: "K"): Disable,
+            (modifiers: [Ctrl, Shift], key: "ArrowRight"): Disable,
+            (modifiers: [Ctrl, Shift], key: "L"): Disable,
+
+            // Tab creation, closing, cycling and selection.
+            (modifiers: [Ctrl, Shift], key: "T"): Disable,
+            (modifiers: [Ctrl, Shift], key: "W"): Disable,
+            (modifiers: [Ctrl], key: "Tab"): Disable,
+            (modifiers: [Ctrl, Shift], key: "Tab"): Disable,
+            (modifiers: [Ctrl, Shift], key: "1"): Disable,
+            (modifiers: [Ctrl, Shift], key: "2"): Disable,
+            (modifiers: [Ctrl, Shift], key: "3"): Disable,
+            (modifiers: [Ctrl, Shift], key: "4"): Disable,
+            (modifiers: [Ctrl, Shift], key: "5"): Disable,
+            (modifiers: [Ctrl, Shift], key: "6"): Disable,
+            (modifiers: [Ctrl, Shift], key: "7"): Disable,
+            (modifiers: [Ctrl, Shift], key: "8"): Disable,
+            (modifiers: [Ctrl, Shift], key: "9"): Disable,
+
+            // Scrollback search and clearing.
+            (modifiers: [Ctrl, Shift], key: "F"): Disable,
+            (modifiers: [Ctrl, Alt], key: "L"): Disable,
+          }
+        '';
+      };
       "${configDir}/show_headerbar" = {
         force = true;
         text = "false";
