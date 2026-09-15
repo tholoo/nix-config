@@ -67,6 +67,11 @@
 
     dokploy.enable = false;
 
+    hermes-vm = {
+      enable = true;
+      proxyPort = config.mine.mihomo.port;
+    };
+
     # TODO: re-enable for CPU-only inference once the rest of the host is settled.
     llama-cpp.enable = false;
 
