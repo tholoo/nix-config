@@ -237,11 +237,11 @@ in
               bind "Alt g"             { SwitchToMode "Locked" ; }
               // bind "Alt q"             { Quit ; }
 
-              bind "Alt h" "Alt Left"  { MoveFocusOrTab "Left" ; }
-              bind "Alt l" "Alt Right" { MoveFocusOrTab "Right" ; }
+              bind "Alt h" { MoveFocusOrTab "Left" ; }
+              bind "Alt l" { MoveFocusOrTab "Right" ; }
 
-              bind "Alt j" "Alt Down"  { MoveFocus "Down" ; }
-              bind "Alt k" "Alt Up"    { MoveFocus "Up" ; }
+              bind "Alt j" { MoveFocus "Down" ; }
+              bind "Alt k" { MoveFocus "Up" ; }
 
               bind "Alt ["             { PreviousSwapLayout ; }
               bind "Alt ]"             { NextSwapLayout ; }
