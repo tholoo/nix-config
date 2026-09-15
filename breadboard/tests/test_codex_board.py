@@ -325,6 +325,23 @@ class CodexBoardTests(unittest.TestCase):
         packet = codex_board.build_packet(self.database, usage, now=2 * 86400)
         self.assertIn(b"BUDGET|-7|0\n", packet)
 
+    def test_fractional_deficits_keep_their_sign_in_the_serial_packet(self):
+        for day, remaining in enumerate((85, 71, 57, 42, 28, 14)):
+            with self.subTest(day=day, remaining=remaining):
+                now = day * 86400
+                budget = self.budget(remaining, now)
+                self.assertEqual(budget.today_percent, -1)
+                usage = codex_board.UsageSnapshot(
+                    (codex_board.UsageLimit("7D", remaining, (7 - day) * 86400),),
+                    now,
+                    budget,
+                )
+                self.assertIn(
+                    b"BUDGET|-1|0\n",
+                    codex_board.build_packet(self.database, usage, now=now),
+                )
+        self.assertEqual(self.budget(0, 6 * 86400).today_percent, 0)
+
     def test_overspending_reduces_the_next_allowance(self):
         self.budget(80, 80000)
         self.assertEqual(self.budget(80, 86400), codex_board.DailyBudget(8, 0, 172800))

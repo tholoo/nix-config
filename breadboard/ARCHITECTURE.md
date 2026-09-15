@@ -170,7 +170,8 @@ Protocol fields:
 
 - `USAGE|available|legacy_tokens|sync_age_seconds` (token slot is always `-1`)
 - `BUDGET|today_remaining_percent|reserve_remaining_percent` (omitted when unknown;
-  today may be negative when spending has borrowed from future days)
+  today may be negative when spending has borrowed from future days; deficits
+  smaller than one percentage point display as `-1%` to preserve the minus sign)
 - `LIMIT|label|remaining_percent|reset_seconds` (up to two)
 - `TASK|project|title|state|elapsed_seconds|state_age_seconds`
 - state is `W`, `D`, `I`, `E`, or acknowledged `A`

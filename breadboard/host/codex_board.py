@@ -136,7 +136,8 @@ def update_daily_budget(
     """Spend today's seventh first, then savings; show borrowing as a deficit.
 
     Units are sevenths of one percentage point, so seven daily allowances
-    sum to exactly 100%. Displayed values are truncated toward zero.
+    sum to exactly 100%. Displayed values are truncated toward zero, with
+    deficits smaller than 1% shown as -1% so their sign stays visible.
     """
     weekly = next((limit for limit in limits if limit.label == "7D"), None)
     if weekly is None or not 0 < weekly.reset_seconds <= 7 * DAY_SECONDS:
@@ -173,7 +174,7 @@ def update_daily_budget(
                 (reset_at, day, weekly.remaining_percent, reserve),
             )
         return DailyBudget(
-            today // 7 if today >= 0 else -((-today) // 7),
+            today // 7 if today >= 0 else min(-1, -((-today) // 7)),
             (available - today) // 7,
             reset_at - (6 - day) * DAY_SECONDS,
         )
