@@ -42,6 +42,8 @@ in
   "dokploy/dokploy-encryption-key.age".publicKeys = users.all ++ dokployHosts;
   "dokploy/dokploy-api-key.age".publicKeys = users.all;
 
+  "experiential/api-key.age".publicKeys = users.all;
+
   "taskview/taskview-env.age".publicKeys = users.all ++ taskviewHosts;
   "taskview/taskview-token.age".publicKeys = users.all ++ taskviewClientHosts;
   "taskview/taskview-account.age".publicKeys = users.all ++ taskviewClientHosts;

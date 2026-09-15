@@ -11,6 +11,34 @@ let
   cfg = config.mine.opencode;
   opencode = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.opencode;
   noProxy = lib.concatStringsSep "," cfg.noProxy;
+  # Agenix's Home Manager path uses a shell variable; OpenCode expands {env:...}.
+  experientialKeyPath =
+    lib.replaceStrings [ "\${XDG_RUNTIME_DIR}" ] [ "{env:XDG_RUNTIME_DIR}" ]
+      config.age.secrets.experiential-api-key.path;
+
+  mkGatewayModel =
+    {
+      name,
+      context,
+      reasoning ? true,
+      images ? false,
+    }:
+    {
+      inherit name reasoning;
+      tool_call = true;
+      modalities = {
+        input = [ "text" ] ++ lib.optional images "image";
+        output = [ "text" ];
+      };
+      # Use conservative budgets across the gateway's fallback providers.
+      limit = {
+        inherit context;
+        output = 32768;
+      };
+    }
+    // lib.optionalAttrs reasoning {
+      interleaved.field = "reasoning_content";
+    };
 
   runtimePackage = pkgs.symlinkJoin {
     name = "${opencode.name}-runtime";
@@ -58,6 +86,8 @@ in
   };
 
   config = mkIf cfg.enable {
+    age.secrets.experiential-api-key.file = inputs.self + /secrets/experiential/api-key.age;
+
     programs.opencode = {
       enable = true;
       package = runtimePackage;
@@ -67,6 +97,52 @@ in
         share = "manual";
         # Use a known shell path on NixOS for agent commands.
         shell = lib.getExe pkgs.bash;
+        model = "experiential/deepseek-v4.1-flash";
+        agent.title.disable = true;
+        provider.experiential = {
+          name = "Experiential Labs";
+          npm = "@ai-sdk/openai-compatible";
+          options = {
+            baseURL = "https://api.experientiallabs.ai/v1";
+            apiKey = "{file:${experientialKeyPath}}";
+          };
+          models = {
+            "deepseek-v4.1-flash" = mkGatewayModel {
+              name = "DeepSeek V4.1 Flash";
+              context = 1000000;
+              images = true;
+            };
+            "glm-5.3" = mkGatewayModel {
+              name = "GLM 5.3";
+              context = 1000000;
+            };
+            "glm-5.3-flash" = mkGatewayModel {
+              name = "GLM 5.3 Flash";
+              context = 1000000;
+              images = true;
+            };
+            "gpt-5.6-luna" =
+              (mkGatewayModel {
+                name = "GPT-5.6 Luna";
+                context = 1000000;
+                images = true;
+              })
+              // {
+                interleaved = false;
+                temperature = false;
+              };
+            "kimi-k3" = mkGatewayModel {
+              name = "Kimi K3";
+              context = 1000000;
+              images = true;
+            };
+            "qwen3-coder-next" = mkGatewayModel {
+              name = "Qwen3 Coder Next";
+              context = 262144;
+              reasoning = false;
+            };
+          };
+        };
       };
     };
   };
