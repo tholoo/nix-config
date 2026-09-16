@@ -132,20 +132,13 @@ in
             apiKey = "{file:${experientialKeyPath}}";
           };
           models = {
-            "deepseek-v4.1-flash" =
-              (mkGatewayModel {
-                name = "DeepSeek V4.1 Flash";
-                context = 1000000;
-                images = true;
-              })
-              // {
-                # Bun negotiates lossless WebSocket compression with the gateway.
-                package = "@opencode/ai/providers/openai/responses";
-                transport = "websocket";
-                settings.store = false;
-                # This route cannot return OpenAI's encrypted reasoning carrier.
-                body.include = [ ];
-              };
+            # Keep Chat Completions until the Responses WebSocket queue and
+            # interrupted-message replay issues are fixed for this gateway.
+            "deepseek-v4.1-flash" = mkGatewayModel {
+              name = "DeepSeek V4.1 Flash";
+              context = 1000000;
+              images = true;
+            };
             "glm-5.3" = mkGatewayModel {
               name = "GLM 5.3";
               context = 1000000;
