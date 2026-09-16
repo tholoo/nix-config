@@ -51,7 +51,10 @@ in
       zellij-switch
     ];
 
-    programs.zellij-agent-deck.enable = config.mine.codex.enable;
+    programs.zellij-agent-deck = {
+      enable = config.mine.codex.enable || config.mine.opencode.enable;
+      opencode.enable = config.mine.opencode.enable;
+    };
     programs.zellij.enable = true;
     # Zellij misses live updates through Nix-store symlinks. Keep the generated
     # source managed by Home Manager, and publish a regular file after old links
@@ -97,7 +100,7 @@ in
 
       plugins {
           compact-bar location="zellij:compact-bar"
-          ${optionalString config.mine.codex.enable ''
+          ${optionalString config.programs.zellij-agent-deck.enable ''
             agent-deck location="file:~/.config/zellij/plugins/agent-deck.wasm" {
                 helper "${codexHooks.agentDeckCommand}"
                 show_subagents "false"
@@ -105,8 +108,8 @@ in
           ''}
       }
 
-      ${optionalString config.mine.codex.enable ''
-        // One invisible instance per session receives Codex lifecycle events.
+      ${optionalString config.programs.zellij-agent-deck.enable ''
+        // One invisible instance per session receives agent lifecycle events.
         load_plugins {
             agent-deck
         }
@@ -296,8 +299,8 @@ in
                 SwitchToMode "Normal"
               }
 
-              ${optionalString config.mine.codex.enable ''
-                // Open the cross-session Codex deck at its final size.
+              ${optionalString config.programs.zellij-agent-deck.enable ''
+                // Open the cross-session agent deck at its final size.
                 bind "Alt a" {
                     MessagePlugin "agent-deck" {
                         name "open"

@@ -1645,11 +1645,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1789539317,
-        "narHash": "sha256-+ucQ5ZSJTInQ4r7esFSqeWjVwXC/cu+x2QWjcbv1KaA=",
+        "lastModified": 1789583395,
+        "narHash": "sha256-cDvw+LfRWxeTagwciBRz90CnUzL2c7ChxuyzWF4x+Aw=",
         "owner": "tholoo",
         "repo": "zellij-agent-deck",
-        "rev": "e988865231f2682820f0287a993f253b13f4288c",
+        "rev": "f859c814224f6fded52cc6b2745b637ce68eae56",
         "type": "github"
       },
       "original": {
