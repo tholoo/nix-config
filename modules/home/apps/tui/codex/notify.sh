@@ -11,6 +11,16 @@ if [[ -z "$payload" && ! -t 0 ]]; then
 fi
 
 if command -v jq >/dev/null 2>&1 && [[ -n "$payload" ]]; then
+  # Internal title generation also emits turn completion. Match the same
+  # helper prompt as the dashboard integrations, preserving normal alerts.
+  if jq -e '
+    .type == "agent-turn-complete" and
+    any(."input-messages"[]?; strings |
+      startswith("Generate a concise, single-line task title of at most 36 characters"))
+  ' <<< "$payload" >/dev/null 2>&1; then
+    exit 0
+  fi
+
   event="$(jq -r '.type // .hook_event_name // empty' <<< "$payload" 2>/dev/null || true)"
   msg="$(jq -r '."last-assistant-message" // .last_assistant_message // empty' <<< "$payload" 2>/dev/null || true)"
 
