@@ -297,11 +297,10 @@ in
               }
 
               ${optionalString config.mine.codex.enable ''
-                // Toggle the floating, cross-session Codex agent deck.
+                // Open the cross-session Codex deck at its final size.
                 bind "Alt a" {
-                    LaunchOrFocusPlugin "agent-deck" {
-                        floating true
-                        move_to_focused_tab true
+                    MessagePlugin "agent-deck" {
+                        name "open"
                     }
                     SwitchToMode "Normal"
                 }
