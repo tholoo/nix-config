@@ -9,7 +9,7 @@ let
   inherit (lib) mkIf mkOption types;
   inherit (lib.mine) mkEnable;
   cfg = config.mine.opencode;
-  opencode = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.opencode;
+  opencode = pkgs.mine.opencode-v2;
   noProxy = lib.concatStringsSep "," cfg.noProxy;
   # Agenix's Home Manager path uses a shell variable; OpenCode expands {env:...}.
   experientialKeyPath =
@@ -20,13 +20,13 @@ let
     {
       name,
       context,
-      reasoning ? true,
+      reasoningField ? "reasoning_content",
       images ? false,
     }:
     {
-      inherit name reasoning;
-      tool_call = true;
-      modalities = {
+      inherit name;
+      capabilities = {
+        tools = true;
         input = [ "text" ] ++ lib.optional images "image";
         output = [ "text" ];
       };
@@ -36,8 +36,8 @@ let
         output = 32768;
       };
     }
-    // lib.optionalAttrs reasoning {
-      interleaved.field = "reasoning_content";
+    // lib.optionalAttrs (reasoningField != null) {
+      compatibility.reasoningField = reasoningField;
     };
 
   runtimePackage = pkgs.symlinkJoin {
@@ -88,21 +88,46 @@ in
   config = mkIf cfg.enable {
     age.secrets.experiential-api-key.file = inputs.self + /secrets/experiential/api-key.age;
 
+    # Home Manager and Stylix still target V1's tui.json. Retain the generated
+    # theme, but select it from V2's global CLI configuration instead.
+    xdg.configFile."opencode/tui.json".enable = false;
+    xdg.configFile."opencode/cli.json".source = (pkgs.formats.json { }).generate "opencode-cli.json" (
+      {
+        "$schema" = "https://opencode.ai/v2/cli.json";
+        diffs = {
+          source = "working";
+          wrap = "word";
+          tree = false;
+          single = true;
+          view = "unified";
+        };
+        terminal.copy = "select";
+        attention = {
+          enabled = true;
+          notifications = true;
+          sound = false;
+        };
+      }
+      // lib.optionalAttrs (config.programs.opencode.tui ? theme) {
+        theme.name = config.programs.opencode.tui.theme;
+      }
+    );
+
     programs.opencode = {
       enable = true;
       package = runtimePackage;
       settings = {
         # Updates are managed by the flake, not the application's installer.
-        autoupdate = false;
+        update = "disable";
         share = "manual";
         # Use a known shell path on NixOS for agent commands.
         shell = lib.getExe pkgs.bash;
         model = "experiential/deepseek-v4.1-flash";
-        agent.title.disable = true;
-        provider.experiential = {
+        agents.title.disabled = true;
+        providers.experiential = {
           name = "Experiential Labs";
-          npm = "@ai-sdk/openai-compatible";
-          options = {
+          package = "@opencode/ai/providers/openai-compatible";
+          settings = {
             baseURL = "https://api.experientiallabs.ai/v1";
             apiKey = "{file:${experientialKeyPath}}";
           };
@@ -121,16 +146,18 @@ in
               context = 1000000;
               images = true;
             };
-            "gpt-5.6-luna" =
-              (mkGatewayModel {
-                name = "GPT-5.6 Luna";
-                context = 1000000;
-                images = true;
-              })
-              // {
-                interleaved = false;
-                temperature = false;
-              };
+            "gpt-5.6-luna" = mkGatewayModel {
+              name = "GPT-5.6 Luna";
+              context = 1000000;
+              images = true;
+              reasoningField = null;
+            };
+            "grok-4.6" = mkGatewayModel {
+              name = "Grok 4.6";
+              context = 500000;
+              images = true;
+              reasoningField = null;
+            };
             "kimi-k3" = mkGatewayModel {
               name = "Kimi K3";
               context = 1000000;
@@ -139,7 +166,7 @@ in
             "qwen3-coder-next" = mkGatewayModel {
               name = "Qwen3 Coder Next";
               context = 262144;
-              reasoning = false;
+              reasoningField = null;
             };
           };
         };
