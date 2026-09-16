@@ -53,7 +53,31 @@ in
 
     programs.zellij-agent-deck.enable = config.mine.codex.enable;
     programs.zellij.enable = true;
-    # xdg.configFile."zellij/config.kdl".source = ./config.kdl;
+    # Zellij misses live updates through Nix-store symlinks. Keep the generated
+    # source managed by Home Manager, and publish a regular file after old links
+    # have been removed. Atomic replacement also avoids parsing partial writes.
+    xdg.configFile."zellij/config.kdl".target = "zellij/config.generated.kdl";
+    home.activation.zellijWritableConfig = config.lib.dag.entryAfter [ "linkGeneration" ] ''
+      run ${pkgs.writeShellScript "update-zellij-config" ''
+        set -eu
+        zellij_config_dir=${lib.escapeShellArg "${config.xdg.configHome}/zellij"}
+        zellij_config_file="$zellij_config_dir/config.kdl"
+        zellij_managed_config=${lib.escapeShellArg config.xdg.configFile."zellij/config.kdl".source}
+
+        # Skip unchanged regular files; an identical symlink still needs migrating.
+        if [ ! -L "$zellij_config_file" ] && [ -f "$zellij_config_file" ] && \
+          ${pkgs.diffutils}/bin/cmp -s -- "$zellij_managed_config" "$zellij_config_file"
+        then
+          exit 0
+        fi
+
+        ${pkgs.coreutils}/bin/mkdir -p -- "$zellij_config_dir"
+        zellij_new_config="$(${pkgs.coreutils}/bin/mktemp "$zellij_config_dir/.config.kdl.XXXXXX")"
+        trap '${pkgs.coreutils}/bin/rm -f -- "$zellij_new_config"' EXIT
+        ${pkgs.coreutils}/bin/install -m 600 -- "$zellij_managed_config" "$zellij_new_config"
+        ${pkgs.coreutils}/bin/mv -fT -- "$zellij_new_config" "$zellij_config_file"
+      ''}
+    '';
     xdg.configFile."zellij/plugins/monocle.wasm".source =
       "${pkgs.mine.zellij-monocle}/zellij-monocle.wasm";
     xdg.configFile."zellij/plugins/room.wasm".source = "${pkgs.mine.zellij-room}/zellij-room.wasm";
