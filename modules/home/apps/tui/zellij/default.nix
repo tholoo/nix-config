@@ -300,9 +300,11 @@ in
               }
 
               ${optionalString config.programs.zellij-agent-deck.enable ''
-                // Open the cross-session agent deck at its final size.
+                // Explicit configuration avoids stale aliases in long-running sessions.
                 bind "Alt a" {
-                    MessagePlugin "agent-deck" {
+                    MessagePlugin "file:~/.config/zellij/plugins/agent-deck.wasm" {
+                        helper "${codexHooks.agentDeckCommand}"
+                        show_subagents "false"
                         name "open"
                     }
                     SwitchToMode "Normal"
