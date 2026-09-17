@@ -47,6 +47,10 @@ in
 
         historyWidget = {
           options = [ "--reverse" ];
+          # Let Atuin own Ctrl-R when its Bash integration is active.
+          bash.command = lib.mkIf (
+            config.programs.atuin.enable && config.programs.atuin.enableBashIntegration
+          ) "";
           nushell.command = "";
         };
 
