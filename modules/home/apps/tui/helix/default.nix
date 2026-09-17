@@ -10,6 +10,10 @@ let
   inherit (lib.mine) mkEnable;
   cfg = config.mine.${name};
   name = "helix";
+  helixShell = pkgs.writeScriptBin "helix-shell" ''
+    #!${pkgs.python3}/bin/python3
+    ${builtins.readFile ./yazi.py}
+  '';
 in
 with lib;
 with lib.mine;
@@ -37,6 +41,7 @@ with lib.mine;
 
     programs.helix = {
       enable = true;
+      package = pkgs.steelix;
       extraPackages = mkIf cfg.enableLSP (
         with pkgs;
         [
@@ -93,9 +98,12 @@ with lib.mine;
           true-color = true;
           auto-save = true;
           line-number = "relative";
+          # Ordinary commands still use Nushell. The reserved helix-yazi command
+          # passes the current filename directly to the chooser, without quoting.
           shell = [
-            "nu"
-            "-c"
+            "${helixShell}/bin/helix-shell"
+            (lib.getExe pkgs.nushell)
+            (lib.getExe config.programs.yazi.package)
           ];
           cursor-shape = {
             normal = "block";
@@ -125,13 +133,15 @@ with lib.mine;
             "collapse_selection"
             "keep_primary_selection"
           ];
-          "C-e" = [
-            ":sh rm -f /tmp/unique-file"
-            ":insert-output yazi %{buffer_name} --chooser-file=/tmp/unique-file"
-            ":insert-output echo \"\x1b[?1049h\x1b[?2004h\" > /dev/tty"
-            ":open %sh{cat /tmp/unique-file}"
-            ":redraw"
-          ];
+          "C-e" =
+            "@"
+            + lib.concatMapStrings (command: "${command}<ret>") [
+              # Pass the current path as one argument, without shell interpolation.
+              # Register Y holds an escaped :open command, or :noop on cancellation.
+              ":set-register Y %sh{helix-yazi %{file_path_absolute}}"
+              ":<C-r>Y"
+              ":redraw"
+            ];
           space = {
             space = "file_picker";
             i = ":toggle lsp.display-inlay-hints";
