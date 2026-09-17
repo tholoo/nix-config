@@ -10,6 +10,18 @@ let
   inherit (lib.mine) mkEnable;
   cfg = config.mine.${name};
   name = "helix";
+  # Steelix's Rust queries require its own grammar revision, while the Nixpkgs
+  # package currently supplies the older Helix release grammar. Override only
+  # this parser so the editor itself can still come from the binary cache.
+  rustGrammar = pkgs.steelix.tree-sitter-grammars.tree-sitter-rust.overrideAttrs {
+    version = "261b202";
+    src = pkgs.fetchFromGitHub {
+      owner = "tree-sitter";
+      repo = "tree-sitter-rust";
+      rev = "261b20226c04ef601adbdf185a800512a5f66291";
+      hash = "sha256-i6OrbcHNkrsAW5cpYOI7r0F6xn94KZWB9ZJMUH+k2ds=";
+    };
+  };
   helixShell = pkgs.writeScriptBin "helix-shell" ''
     #!${pkgs.python3}/bin/python3
     ${builtins.readFile ./yazi.py}
@@ -33,6 +45,9 @@ with lib.mine;
   };
 
   config = mkIf cfg.enable {
+    xdg.configFile = {
+      "helix/runtime/grammars/rust.so".source = "${rustGrammar}/parser";
+    };
     home.sessionVariables = {
       EDITOR = lib.mkForce "hx";
       SUDO_EDITOR = lib.mkForce "hx";
@@ -98,12 +113,13 @@ with lib.mine;
           true-color = true;
           auto-save = true;
           line-number = "relative";
-          # Ordinary commands still use Nushell. The reserved helix-yazi command
-          # passes the current filename directly to the chooser, without quoting.
+          # Ordinary commands still use Nushell. Reserved handoff commands pass
+          # the current filename directly to the helper, without shell quoting.
           shell = [
             "${helixShell}/bin/helix-shell"
             (lib.getExe pkgs.nushell)
             (lib.getExe config.programs.yazi.package)
+            (lib.getExe config.programs.lazygit.package)
           ];
           cursor-shape = {
             normal = "block";
@@ -139,6 +155,13 @@ with lib.mine;
               # Pass the current path as one argument, without shell interpolation.
               # Register Y holds an escaped :open command, or :noop on cancellation.
               ":set-register Y %sh{helix-yazi %{file_path_absolute}}"
+              ":<C-r>Y"
+              ":redraw"
+            ];
+          "C-g" =
+            "@"
+            + lib.concatMapStrings (command: "${command}<ret>") [
+              ":set-register Y %sh{helix-lazygit %{file_path_absolute}}"
               ":<C-r>Y"
               ":redraw"
             ];

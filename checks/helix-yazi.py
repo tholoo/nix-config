@@ -1,4 +1,4 @@
-"""Regression checks for the Helix/Yazi handoff, using synthetic selections."""
+"""Regression checks for Helix's terminal handoffs, using synthetic paths."""
 
 import importlib.util
 import os
@@ -6,6 +6,7 @@ from pathlib import Path
 import pty
 import subprocess
 import termios
+import tempfile
 import unittest
 from unittest.mock import patch
 
@@ -81,14 +82,47 @@ class ChooserTests(unittest.TestCase):
     def test_dispatch_passes_filename_literally(self):
         path = "/test/it's $(literal) %sh{literal}.txt"
         with patch.object(chooser, "choose", return_value="noop") as choose:
-            self.assertEqual(chooser.dispatch("/test/nu", "/test/yazi", "helix-yazi " + path), "noop")
+            self.assertEqual(chooser.dispatch("/test/nu", "/test/yazi", "/test/lazygit", "helix-yazi " + path), "noop")
             choose.assert_called_once_with("/test/yazi", path)
+
+    def test_lazygit_dispatch_passes_filename_literally(self):
+        path = "/test/it's $(literal) %sh{literal}.rs"
+        with patch.object(chooser, "git_ui", return_value="noop") as launch:
+            self.assertEqual(chooser.dispatch("/test/nu", "/test/yazi", "/test/lazygit", "helix-lazygit " + path), "noop")
+            launch.assert_called_once_with("/test/lazygit", path)
+
+    def test_lazygit_uses_buffer_directory_and_restores_terminal(self):
+        with tempfile.TemporaryDirectory(prefix="helix-git-test-") as directory:
+            path = Path(directory) / "it's a file.rs"
+            for status in [0, 2]:
+                with self.subTest(status=status):
+                    def launch(argv, **kwargs):
+                        self.assertEqual(argv, ["/test/lazygit"])
+                        self.assertEqual(kwargs["cwd"], path.parent)
+                        self.assertIs(kwargs["stdin"], kwargs["stdout"])
+                        self.assertIs(kwargs["stdout"], kwargs["stderr"])
+                        changed = termios.tcgetattr(self.slave)
+                        changed[3] ^= termios.ECHO
+                        termios.tcsetattr(self.slave, termios.TCSANOW, changed)
+                        return subprocess.CompletedProcess(argv, status)
+
+                    with patch.object(chooser.subprocess, "run", side_effect=launch):
+                        result = chooser.git_ui("/test/lazygit", str(path), self.tty)
+                    self.assertEqual(result, "noop" if status == 0 else "echo 'Lazygit exited with status 2'")
+                    self.assertEqual(termios.tcgetattr(self.slave), self.state)
+                    self.assertIn(b"\x1b[?1049h", os.read(self.master, 128))
+
+    def test_lazygit_without_a_buffer_uses_current_directory(self):
+        with patch.object(chooser.subprocess, "run", return_value=subprocess.CompletedProcess([], 0)) as launch:
+            self.assertEqual(chooser.git_ui("/test/lazygit", "", self.tty), "noop")
+            self.assertEqual(launch.call_args.kwargs["cwd"], Path.cwd())
+        os.read(self.master, 128)
 
     def test_other_shell_commands_keep_nushell_semantics(self):
         command = "[1 2 3] | math sum"
         with patch.object(chooser.os, "execv", side_effect=SystemExit) as execute:
             with self.assertRaises(SystemExit):
-                chooser.dispatch("/test/nu", "/test/yazi", command)
+                chooser.dispatch("/test/nu", "/test/yazi", "/test/lazygit", command)
             execute.assert_called_once_with("/test/nu", ["/test/nu", "-c", command])
 
 
