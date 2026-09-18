@@ -6,6 +6,7 @@
     "pi-mcp-adapter": "2.34.0",
     "pi-subagents": "0.68.0",
     "pi-web-access": "0.29.0",
-    "@aliou/pi-processes": "0.12.0"
+    "@aliou/pi-processes": "0.12.0",
+    "@narumitw/pi-goal": "0.54.5"
   }
 }

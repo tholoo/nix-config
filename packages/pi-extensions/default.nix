@@ -8,7 +8,7 @@ buildNpmPackage {
   pname = "pi-extensions";
   version = "1.0.0";
   src = ./.;
-  npmDepsHash = "sha256-3W+NJoOXewOjhzkmUACyIR3J1EOmjfD6WlsIBePmG0Y=";
+  npmDepsHash = "sha256-kmakGZnJF7pdD1XiUs7qfgkzacKWAqKZrDDuwdh/Zog=";
   npmFlags = [ "--legacy-peer-deps" ];
   npmInstallFlags = [ "--ignore-scripts" ];
   nativeBuildInputs = [
@@ -29,7 +29,7 @@ buildNpmPackage {
     runHook postInstall
   '';
   meta = {
-    description = "Locked MCP, web, subagent and process extensions for Pi";
+    description = "Locked MCP, web, subagent, process and goal extensions for Pi";
     license = lib.licenses.mit;
     platforms = lib.platforms.linux;
   };

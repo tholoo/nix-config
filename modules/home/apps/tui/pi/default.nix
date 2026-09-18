@@ -149,6 +149,7 @@ let
       ++ [
         "${extensionRoot}/pi-web-access"
         "${extensionRoot}/pi-subagents"
+        "${extensionRoot}/@narumitw/pi-goal"
       ]
       ++ lib.optional cfg.enableProcesses "${extensionRoot}/@aliou/pi-processes";
     # Replace the old discovery lists as well as the old npm package list.

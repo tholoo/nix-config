@@ -6,7 +6,10 @@ import re
 import subprocess
 import sys
 
-PACKAGES = ["pi-mcp-adapter", "pi-web-access", "pi-subagents", "@aliou/pi-processes"]
+PACKAGES = [
+    "pi-mcp-adapter", "pi-web-access", "pi-subagents", "@aliou/pi-processes",
+    "@narumitw/pi-goal",
+]
 RELATIVE_TS = re.compile(r'''(["'])(\.{1,2}/[^"'\n]+)\.ts\1''')
 
 

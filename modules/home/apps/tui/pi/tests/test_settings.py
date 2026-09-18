@@ -1,6 +1,8 @@
 import importlib.util
 import json
 from pathlib import Path
+import subprocess
+import sys
 import tempfile
 import unittest
 
@@ -10,6 +12,70 @@ spec.loader.exec_module(settings)
 
 
 class SettingsTests(unittest.TestCase):
+    def test_migrates_empty_legacy_locks_without_changing_credentials(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            destination = root / "settings.json"
+            destination.write_text("{}")
+            auth = root / "auth.json"
+            auth.write_text('{"synthetic":"credential-fixture"}')
+            before = auth.read_bytes()
+            for name in ("settings.json.lock", "auth.json.lock"):
+                (root / name).touch()
+            managed = root / "managed.json"
+            managed.write_text("{}")
+            settings.merge_settings(managed, destination)
+            self.assertFalse((root / "settings.json.lock").exists())
+            self.assertFalse((root / "auth.json.lock").exists())
+            self.assertEqual(auth.read_bytes(), before)
+
+    def test_preserves_directory_nonempty_and_symlink_locks(self):
+        for kind in ("directory", "nonempty", "symlink"):
+            with self.subTest(kind=kind), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                lock = root / "auth.json.lock"
+                if kind == "directory":
+                    lock.mkdir()
+                elif kind == "nonempty":
+                    lock.write_text("unknown lock format")
+                else:
+                    target = root / "target"
+                    target.touch()
+                    lock.symlink_to(target)
+                managed = root / "managed.json"
+                managed.write_text("{}")
+                settings.merge_settings(managed, root / "settings.json")
+                self.assertTrue(lock.exists())
+
+    def test_refuses_to_remove_a_held_legacy_lock(self):
+        child = """
+import fcntl, sys
+with open(sys.argv[1], "w") as lock:
+    getattr(fcntl, sys.argv[2])(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    print("locked", flush=True)
+    sys.stdin.read()
+"""
+        for method in ("flock", "lockf"):
+            with self.subTest(method=method), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                destination = root / "settings.json"
+                destination.write_text('{"theme":"old"}')
+                managed = root / "managed.json"
+                managed.write_text('{"theme":"new"}')
+                lock = root / "settings.json.lock"
+                with subprocess.Popen(
+                    [sys.executable, "-c", child, str(lock), method],
+                    stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True,
+                ) as held:
+                    try:
+                        self.assertEqual(held.stdout.readline().strip(), "locked")
+                        with self.assertRaises(RuntimeError):
+                            settings.merge_settings(managed, destination)
+                        self.assertTrue(lock.exists())
+                        self.assertEqual(destination.read_text(), '{"theme":"old"}')
+                    finally:
+                        held.communicate(timeout=5)
+
     def test_replaces_old_packages_and_scopes_preserving_other_preferences(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
