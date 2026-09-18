@@ -35,12 +35,17 @@ def lease_profile(root, profile=None):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
+        "--agent", default="codex", help="Profile namespace (default: codex)"
+    )
+    parser.add_argument(
         "--profile", help="Reuse a named profile exclusively (default: first free slot)"
     )
     parser.add_argument(
         "--headless", action="store_true", help="Run without a visible browser window"
     )
     args = parser.parse_args()
+    if not re.fullmatch(r"[a-zA-Z0-9][a-zA-Z0-9_-]{0,63}", args.agent):
+        parser.error("agent must be 1–64 letters, digits, underscores or hyphens")
     if args.profile and not re.fullmatch(
         r"[a-zA-Z0-9][a-zA-Z0-9_-]{0,63}", args.profile
     ):
@@ -49,7 +54,7 @@ def main():
     state = Path(os.environ.get("XDG_STATE_HOME", Path.home() / ".local/state"))
     if not state.is_absolute():
         parser.error("XDG_STATE_HOME must be absolute")
-    directory, lock = lease_profile(state / "agent-browsers" / "codex", args.profile)
+    directory, lock = lease_profile(state / "agent-browsers" / args.agent, args.profile)
     env = os.environ.copy()
     # nixpkgs' wrapper defaults to isolated mode unless this variable is set.
     env["PLAYWRIGHT_MCP_USER_DATA_DIR"] = str(directory)

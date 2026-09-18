@@ -45,34 +45,6 @@ let
     meta.mainProgram = "codex";
   };
 
-  npx = "${pkgs.nodejs}/bin/npx";
-  npxPath = lib.makeBinPath [
-    pkgs.nodejs
-    pkgs.bash
-    pkgs.coreutils
-  ];
-
-  dokployMcp = pkgs.writeShellApplication {
-    name = "dokploy-mcp";
-    runtimeInputs = [ pkgs.nodejs ];
-    text = ''
-      token_file="${config.age.secrets.dokploy-api-key.path}"
-
-      if [[ ! -s "$token_file" ]]; then
-        echo "Dokploy API token is missing: $token_file" >&2
-        exit 1
-      fi
-
-      DOKPLOY_API_KEY="$(<"$token_file")"
-      export DOKPLOY_API_KEY
-      export DOKPLOY_URL="https://dokploy.ditollo.com"
-      export DOKPLOY_TOOL_PRESET="deploy"
-      export DOKPLOY_REDACT_ENV="true"
-
-      exec ${npx} -y @dokploy/mcp@0.30.2
-    '';
-  };
-
   codexHooks = import ../../../../shared/codex-hooks.nix {
     inherit inputs lib pkgs;
   };
@@ -164,14 +136,7 @@ let
   ) config.programs.mcp.servers;
 
   managedSettings = codexSettings // {
-    mcp_servers =
-      (lib.optionalAttrs cfg.enableSharedMcp codexMcpServers)
-      // lib.optionalAttrs (config.mine.firefox.enable && config.mine.firefox.enableMcp) {
-        zen-browser = {
-          command = lib.getExe pkgs.mine.zen-mcp;
-          env.ZEN_DEBUG_PORT = "9222";
-        };
-      };
+    mcp_servers = lib.optionalAttrs cfg.enableSharedMcp codexMcpServers;
   };
 
   managedConfig = (pkgs.formats.toml { }).generate "codex-managed-config.toml" managedSettings;
@@ -228,8 +193,6 @@ in
   };
 
   config = mkIf cfg.enable {
-    age.secrets.dokploy-api-key.file = inputs.self + /secrets/dokploy/dokploy-api-key.age;
-
     home = {
       packages = [
         codexHooks.boardPackage
@@ -299,34 +262,6 @@ in
         ];
       };
       Install.WantedBy = [ "default.target" ];
-    };
-
-    programs.mcp = mkIf cfg.enableSharedMcp {
-      enable = true;
-      servers = {
-        context7 = {
-          command = npx;
-          args = [
-            "-y"
-            "@upstash/context7-mcp"
-          ];
-          env = {
-            PATH = npxPath;
-          };
-        };
-
-        playwright = {
-          command = lib.getExe pkgs.mine.agent-browser;
-        };
-
-        dokploy = {
-          command = lib.getExe dokployMcp;
-          env_vars = [ "XDG_RUNTIME_DIR" ];
-          startup_timeout_sec = 60;
-          tool_timeout_sec = 300;
-          default_tools_approval_mode = "writes";
-        };
-      };
     };
 
     programs.codex = {

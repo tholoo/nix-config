@@ -43,12 +43,13 @@ All normal results and errors are JSON. `--help` describes each command.
 
 ## Browser automation
 
-Codex uses the `agent-browser` launcher. The launcher uses the
+Codex and Pi use the `agent-browser` launcher. The launcher uses the
 Playwright MCP and matching Chromium packages pinned by `flake.lock`, with no
 runtime npm installation.
 
 Profiles live under `$XDG_STATE_HOME/agent-browsers/codex/`, defaulting to
-`~/.local/state/agent-browsers/codex/`, with private permissions. A launcher
+`~/.local/state/agent-browsers/codex/`, with private permissions. Pi passes
+`--agent pi` and uses the separate `agent-browsers/pi/` namespace. A launcher
 leases `primary` or the first available `parallel-N` slot. Every slot is persistent
 and has its own cookies/logins; a new parallel slot may need a separate login.
 Slots are reused after sessions exit. They are separate from the human's browser.
@@ -64,10 +65,10 @@ Nix derivations, instruction files and diagnostic reports.
 
 ### Using the human's Zen session
 
-Enable `mine.firefox.enableMcp` alongside the browser and Codex modules. This adds
+Enable `mine.firefox.enableMcp` alongside the browser and an enabled agent MCP integration. This adds
 **Zen Browser (beta) (MCP)** to application launchers such as Vicinae and exposes
-the pinned `zen-mcp` server to Codex as `zen-browser`. Its dependencies are built
-by Nix; launching Codex needs no npm download.
+the pinned `zen-mcp` server as `zen-browser`. Its dependencies are built
+by Nix; starting this server needs no npm download.
 
 Quit Zen normally, then select the MCP launcher. It starts the configured Zen
 package with remote debugging on loopback port 9222, using the normal profile
@@ -75,8 +76,8 @@ and its logins. If Zen is already running without debugging, launching it again
 cannot turn debugging on in that process. Quit and reopen through the MCP entry.
 The ordinary Zen entry continues to launch without the debugging flag.
 
-Restart Codex after applying Home Manager. The MCP server can start while Zen is
-closed; it connects when a browser tool is used. Use one Codex session at a time
+Restart the agent after applying Home Manager. The MCP server can start while Zen is
+closed; it connects when a browser tool is used. Use one agent session at a time
 with this shared browser. If the server reports a stale automation session,
 restart Zen through the MCP launcher. Browser access includes the profile's
 authenticated tabs; keep its debugging endpoint local.

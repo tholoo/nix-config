@@ -1,0 +1,11 @@
+{
+  "name": "pi-extensions",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "pi-mcp-adapter": "2.34.0",
+    "pi-subagents": "0.68.0",
+    "pi-web-access": "0.29.0",
+    "@aliou/pi-processes": "0.12.0"
+  }
+}

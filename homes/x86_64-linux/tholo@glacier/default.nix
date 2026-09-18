@@ -92,11 +92,13 @@ in
       enableBoardService = true;
     };
 
-    pi.hostContext = ''
-      # Host: glacier
-      You are on **glacier**, a laptop (IdeaPad Slim 5, AMD CPU+GPU, x86_64).
-      This is the primary mobile dev machine with full GUI + TUI suites.
-    '';
+    agent-mcp.dokployUrl = "https://dokploy.ditollo.com";
+    pi = {
+      enable = true;
+      hostContext = config.mine.codex.hostContext;
+      proxyUrl = config.mine.codex.proxyUrl;
+      noProxy = config.mine.codex.noProxy;
+    };
 
     # uv needs PyPI on first frdict launch — route through the local proxy
     # since direct PyPI is blocked here. Once ~/.cache/uv is warm, restarts

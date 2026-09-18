@@ -6,397 +6,280 @@
   ...
 }:
 let
-  inherit (lib)
-    mkIf
-    mkOption
-    types
-    ;
-  inherit (lib.mine) mkEnable;
-  cfg = config.mine.${name};
-  name = "pi";
-
-  jsonFormat = pkgs.formats.json { };
-  llmAgents = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system};
-  pi = llmAgents.pi.overrideAttrs (oldAttrs: {
-    postInstall = (oldAttrs.postInstall or "") + ''
-      substituteInPlace "$out/lib/node_modules/@mariozechner/pi-coding-agent/node_modules/@mariozechner/pi-tui/dist/tui.js" \
-        --replace-fail 'buffer += "\x1b[2J\x1b[H\x1b[3J"; // Clear screen, home, then clear scrollback' \
-                       'buffer += "\x1b[2J\x1b[H"; // Clear screen and home without clearing scrollback'
-
-      substituteInPlace "$out/lib/node_modules/@mariozechner/pi-coding-agent/node_modules/@mariozechner/pi-tui/dist/terminal.js" \
-        --replace-fail '        this.queryAndEnableKittyProtocol();' \
-                       '        this.setupStdinBuffer(); process.stdin.on("data", this.stdinDataHandler);'
-
-      substituteInPlace "$out/bin/pi" \
-        --replace-fail "export PI_TELEMETRY='0'" \
-                       "export PI_TELEMETRY='0'
-      export PANDOC_PATH='${lib.getExe pkgs.pandoc}'
-      export PANDOC_PDF_ENGINE='${lib.getExe' pkgs.texliveFull "xelatex"}'
-      export PUPPETEER_EXECUTABLE_PATH='${lib.getExe pkgs.chromium}'
-      export CHROME_PATH='${lib.getExe pkgs.chromium}'
-      export MERMAID_CLI_PATH='${lib.getExe' pkgs.mermaid-cli "mmdc"}'"
+  inherit (lib) mkIf mkOption types;
+  cfg = config.mine.pi;
+  json = pkgs.formats.json { };
+  basePi = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.pi;
+  extensionRoot = "${pkgs.mine.pi-extensions}/lib/pi-extensions/node_modules";
+  agentSkills = import ../ai/skills.nix { inherit inputs lib; };
+  skills = pkgs.linkFarm "pi-skills" (
+    lib.mapAttrsToList (name: path: { inherit name path; }) agentSkills
+  );
+  noProxy = lib.concatStringsSep "," cfg.noProxy;
+  package = pkgs.symlinkJoin {
+    name = "${basePi.name}-configured";
+    paths = [ basePi ];
+    nativeBuildInputs = [ pkgs.makeWrapper ];
+    postBuild = ''
+      rm "$out/bin/pi"
+      wrapper_args=(
+        --set-default PI_CODING_AGENT_DIR ${lib.escapeShellArg "${config.home.homeDirectory}/.pi/agent"}
+        --set PI_OFFLINE 1
+        --set PI_TELEMETRY 0
+        --set PI_MCP_CONFIG_MODE exclusive
+        --unset OPENAI_API_KEY
+        --set-default NO_PROXY ${lib.escapeShellArg noProxy}
+        --set-default no_proxy ${lib.escapeShellArg noProxy}
+        --prefix PATH : ${
+          lib.makeBinPath [
+            pkgs.nodejs
+            pkgs.git
+            pkgs.ripgrep
+            pkgs.fd
+          ]
+        }
+      )
+      ${lib.optionalString (cfg.proxyUrl != null) ''
+        wrapper_args+=(
+          --set-default HTTP_PROXY ${lib.escapeShellArg cfg.proxyUrl}
+          --set-default HTTPS_PROXY ${lib.escapeShellArg cfg.proxyUrl}
+          --set-default ALL_PROXY ${lib.escapeShellArg cfg.proxyUrl}
+          --set-default http_proxy ${lib.escapeShellArg cfg.proxyUrl}
+          --set-default https_proxy ${lib.escapeShellArg cfg.proxyUrl}
+          --set-default all_proxy ${lib.escapeShellArg cfg.proxyUrl}
+        )
+      ''}
+      makeWrapper ${lib.getExe basePi} "$out/bin/pi" "''${wrapper_args[@]}"
     '';
-  });
+    meta.mainProgram = "pi";
+  };
 
-  piNpm = pkgs.writeShellScriptBin "pi-npm" ''
-    export PATH="${
-      lib.makeBinPath [
-        pkgs.nodejs
-        pkgs.bash
-        pkgs.coreutils
+  # Translate only supported adapter fields. In particular, Codex's dynamic
+  # header helper is a per-request executable in Pi, never a stored token.
+  mcpServers = lib.mapAttrs (
+    name: server:
+    let
+      remote = (server.url or null) != null;
+      helper = server.http_headers_helper or null;
+    in
+    {
+      lifecycle =
+        if
+          lib.elem name [
+            "playwright"
+            "zen-browser"
+          ]
+        then
+          "lazy-keep-alive"
+        else
+          "lazy";
+      directTools = "search";
+    }
+    // (
+      if remote then
+        {
+          inherit (server) url;
+          headers = (server.headers or { }) // (server.http_headers or { });
+        }
+      else
+        {
+          inherit (server) command;
+          args =
+            (server.args or [ ])
+            ++ lib.optionals (name == "playwright") [
+              "--agent"
+              "pi"
+            ];
+          env = server.env or { };
+        }
+    )
+    // lib.optionalAttrs (helper != null) {
+      requestHeadersCommand = {
+        command = helper;
+        timeoutMs = 5000;
+      };
+      auth = false;
+    }
+    // lib.optionalAttrs ((server.tool_timeout_sec or null) != null) {
+      requestTimeoutMs = server.tool_timeout_sec * 1000;
+    }
+    # These service catalogs can change; explicit approval is conservative
+    # until a server supplies a stable, reviewed set of mutating tool names.
+    // lib.optionalAttrs ((server.default_tools_approval_mode or null) == "writes") {
+      approveTools = true;
+    }
+  ) (lib.filterAttrs (_: server: !(server.disabled or false)) config.programs.mcp.servers);
+
+  managedSettings = {
+    defaultProvider = "openai-codex";
+    defaultModel = cfg.model;
+    defaultThinkingLevel = "high";
+    enabledModels = [ "openai-codex/*" ];
+    defaultProjectTrust = "ask";
+    theme = "dark";
+    quietStartup = false;
+    collapseChangelog = true;
+    enableInstallTelemetry = false;
+    enableAnalytics = false;
+    hideThinkingBlock = true;
+    compaction = {
+      enabled = true;
+      reserveTokens = 16384;
+      keepRecentTokens = 20000;
+    };
+    retry = {
+      enabled = true;
+      maxRetries = 3;
+      baseDelayMs = 2000;
+      maxAgentDelayMs = 60000;
+      provider = {
+        maxRetries = 0;
+        maxRetryDelayMs = 60000;
+      };
+    };
+    steeringMode = "one-at-a-time";
+    followUpMode = "one-at-a-time";
+    enableSkillCommands = true;
+    terminal = {
+      showImages = true;
+      clearOnShrink = false;
+    };
+    packages =
+      lib.optional cfg.enableMcp "${extensionRoot}/pi-mcp-adapter"
+      ++ [
+        "${extensionRoot}/pi-web-access"
+        "${extensionRoot}/pi-subagents"
       ]
-    }:$PATH"
-    export npm_config_fetch_retries="''${npm_config_fetch_retries:-3}"
-    export npm_config_fetch_retry_mintimeout="''${npm_config_fetch_retry_mintimeout:-2000}"
-    export npm_config_fetch_retry_maxtimeout="''${npm_config_fetch_retry_maxtimeout:-30000}"
-    export npm_config_fetch_timeout="''${npm_config_fetch_timeout:-60000}"
-    exec ${pkgs.nodejs}/bin/npm --prefix "$HOME/.pi/agent/npm" "$@"
-  '';
-
-  npx = "${pkgs.nodejs}/bin/npx";
-  npxPath = lib.makeBinPath [
-    pkgs.nodejs
-    pkgs.bash
-    pkgs.coreutils
-  ];
-
-  defaultPackages = [
-    "npm:pi-wierd-statusline"
-    "npm:pi-better-openai"
-    "npm:pi-model-cycler"
-    "npm:pi-subagents"
-    "npm:pi-mcp-adapter"
-    "npm:pi-web-access"
-    "npm:pi-lens"
-    "npm:pi-markdown-preview"
-    "npm:pi-permission-system"
-    "npm:taskplane"
-    "npm:@aliou/pi-processes"
-    "npm:@juicesharp/rpiv-ask-user-question"
-    "npm:pi-btw"
-    "npm:@pi-unipi/notify"
-    "npm:@llblab/pi-telegram"
-    "npm:pi-show"
-  ];
+      ++ lib.optional cfg.enableProcesses "${extensionRoot}/@aliou/pi-processes";
+    # Replace the old discovery lists as well as the old npm package list.
+    extensions = [ ];
+    skills = [ (toString skills) ];
+    subagents = {
+      defaultProvider = "openai-codex";
+      disableBuiltins = true;
+      defaultExtensions = [ ];
+      modelScope = {
+        enforce = true;
+        strict = true;
+        allow = [ "openai-codex/*" ];
+      };
+      agentOverrides.researcher.extensions = [ "${extensionRoot}/pi-web-access/index.js" ];
+    };
+  };
+  managedConfig = json.generate "pi-managed-settings.json" managedSettings;
+  agents = import ./roles.nix;
 in
 {
-  options.mine.${name} = mkEnable config {
+  options.mine.pi = lib.mine.mkEnable config {
     tags = [
       "tui"
       "develop"
       "cli-tools"
       "ai"
     ];
-
     hostContext = mkOption {
       type = types.nullOr types.str;
       default = null;
-      description = "Host-specific context for Pi (rendered as global AGENTS.md).";
+      description = "Host instructions for Pi.";
     };
-
-    enableUsageTools = mkOption {
-      type = types.bool;
-      default = true;
-      description = "Whether to install Pi usage/session analysis tools from llm-agents.nix.";
+    model = mkOption {
+      type = types.str;
+      default = "gpt-6-astra";
+      description = "Default model on the OpenAI subscription provider.";
     };
-
-    enableLSPs = mkOption {
-      type = types.bool;
-      default = true;
-      description = "Whether to install LSP, linter, and formatter binaries on PATH for Pi packages such as pi-lens.";
+    proxyUrl = mkOption {
+      type = types.nullOr types.str;
+      default = null;
+      description = "Default proxy for Pi and its tools.";
     };
-
+    noProxy = mkOption {
+      type = types.listOf types.str;
+      default = [
+        "localhost"
+        "127.0.0.1"
+        "::1"
+      ];
+      description = "Hosts reached without the proxy.";
+    };
     enableMcp = mkOption {
       type = types.bool;
       default = true;
-      description = "Whether to configure pi-mcp-adapter with shared MCP servers.";
+      description = "Load the pinned adapter and shared MCP servers.";
     };
-
-    enableMemctx = mkOption {
+    enableProcesses = mkOption {
       type = types.bool;
-      default = false;
-      description = "Whether to enable the pi-memctx package by default.";
+      default = true;
+      description = "Load background process management.";
     };
-
-    enableCodexDelegation = mkOption {
-      type = types.bool;
-      default = false;
-      description = "Whether to enable the pi-codex package for nested Codex delegation.";
+    package = mkOption {
+      type = types.package;
+      readOnly = true;
+      default = package;
+      description = "Configured Pi launcher.";
     };
-
-    packages = mkOption {
-      type = types.listOf types.str;
-      default = defaultPackages;
-      description = "Pi package specs to load from ~/.pi/agent/settings.json.";
-    };
-
-    extraPackages = mkOption {
-      type = types.listOf types.str;
-      default = [ ];
-      description = "Additional Pi package specs to append to the default package list.";
+    settingsFile = mkOption {
+      type = types.path;
+      readOnly = true;
+      default = managedConfig;
+      description = "Declarative settings used by activation and isolated verification.";
     };
   };
 
-  config = mkIf cfg.enable { };
-
-  /*
   config = mkIf cfg.enable {
-    home.packages = [
-      pi
-      piNpm
-      pkgs.chromium
-      pkgs.mermaid-cli
-      pkgs.pandoc
-      pkgs.texliveFull
-    ]
-    ++ lib.optionals cfg.enableLSPs (
-      with pkgs;
-      [
-        bash-language-server
-        basedpyright
-        clang-tools
-        gopls
-        jdt-language-server
-        lua-language-server
-        nil
-        nixd
-        ruff
-        typescript-language-server
-        vscode-langservers-extracted
-        yaml-language-server
-      ]
-    )
-    ++ lib.optionals cfg.enableUsageTools [
-      llmAgents.ccusage-pi
-      llmAgents.agentsview
-    ];
+    home.packages = [ package ];
 
-    home.sessionVariables = {
-      PI_SKIP_VERSION_CHECK = "1";
-      PANDOC_PATH = lib.getExe pkgs.pandoc;
-      PANDOC_PDF_ENGINE = lib.getExe' pkgs.texliveFull "xelatex";
-      PUPPETEER_EXECUTABLE_PATH = lib.getExe pkgs.chromium;
-      CHROME_PATH = lib.getExe pkgs.chromium;
-      MERMAID_CLI_PATH = lib.getExe' pkgs.mermaid-cli "mmdc";
-    };
-
-    # pi-wierd-statusline has no persisted config/env for these defaults.
-    # Disable the cost segment and its fixed editor compositor, which enters
-    # alternate screen and prevents Zellij pane scrollback from working.
-    home.activation.piExtensionPatches = config.lib.dag.entryAfter [ "writeBoundary" ] ''
-      statusline="$HOME/.pi/agent/npm/lib/node_modules/pi-wierd-statusline/index.ts"
-      if [ -f "$statusline" ]; then
-        ${pkgs.gnused}/bin/sed -i '0,/if (cost > 0) {/s//if (false \&\& cost > 0) {/' "$statusline"
-        ${pkgs.gnused}/bin/sed -i '0,/let fixedEditorEnabled = true;/s//let fixedEditorEnabled = false;/' "$statusline"
-      fi
+    # Pi writes settings interactively. Preserve unmanaged preferences, replace
+    # managed top-level sections, and never merge back a removed npm package.
+    home.activation.piWritableConfig = config.lib.dag.entryAfter [ "writeBoundary" ] ''
+      run ${pkgs.python3}/bin/python ${./merge-settings.py} \
+        ${managedConfig} ${lib.escapeShellArg "${config.home.homeDirectory}/.pi/agent/settings.json"}
     '';
 
     home.file = {
-      ".pi/agent/settings.json".source = jsonFormat.generate "pi-settings.json" {
-        theme = "dark";
-        quietStartup = false;
-        collapseChangelog = true;
-        enableInstallTelemetry = false;
-        defaultThinkingLevel = "high";
-        hideThinkingBlock = false;
-
-        doubleEscapeAction = "tree";
-        treeFilterMode = "default";
-        editorPaddingX = 1;
-        autocompleteMaxVisible = 10;
-        showHardwareCursor = true;
-
-        compaction = {
-          enabled = true;
-          reserveTokens = 16384;
-          keepRecentTokens = 20000;
+      ".pi/agent/AGENTS.md" = mkIf (cfg.hostContext != null) { text = cfg.hostContext; };
+      ".pi/agent/APPEND_SYSTEM.md".source = ./instructions.md;
+      ".pi/agent/mcp.json".source = json.generate "pi-mcp.json" {
+        settings = {
+          hostConfigDiscovery = "off";
+          requestTimeoutMs = 60000;
+          toolResultRendering = "compact";
         };
-
-        branchSummary = {
-          reserveTokens = 16384;
-          skipPrompt = false;
-        };
-
-        retry = {
-          enabled = true;
-          maxRetries = 3;
-          baseDelayMs = 2000;
-          provider = {
-            timeoutMs = 3600000;
-            maxRetryDelayMs = 60000;
-          };
-        };
-
-        steeringMode = "one-at-a-time";
-        followUpMode = "one-at-a-time";
-
-        terminal = {
-          showImages = true;
-          imageWidthCells = 60;
-          clearOnShrink = false;
-        };
-
-        images = {
-          autoResize = true;
-          blockImages = false;
-        };
-
-        npmCommand = [ "${piNpm}/bin/pi-npm" ];
-        packages =
-          cfg.packages
-          ++ cfg.extraPackages
-          ++ lib.optional cfg.enableMemctx "npm:pi-memctx"
-          ++ lib.optional cfg.enableCodexDelegation "npm:pi-codex";
-        enableSkillCommands = true;
+        mcpServers = if cfg.enableMcp then mcpServers else { };
       };
-
-      ".pi/agent/keybindings.json".source = jsonFormat.generate "pi-keybindings.json" {
+      ".pi/agent/web-search.json".source = json.generate "pi-web-search.json" {
+        provider = "openai";
+        openaiSearchProviders = [ "openai-codex" ];
+        webSearch.allowedProviders = [ "openai" ];
+        workflow = "none";
+        allowBrowserCookies = false;
+        fetchRouting = {
+          providers = [ "http" ];
+          allowRemoteHostedProviders = false;
+        };
+      };
+      ".pi/agent/extensions/subagent/config.json".source = json.generate "pi-subagents.json" {
+        toolDescriptionMode = "compact";
+        inlineToolDisplay = "summary";
+        parallel = {
+          maxTasks = 4;
+          concurrency = 2;
+        };
+        maxSubagentDepth = 1;
+        worktreeProvider = "native";
+        scheduledRuns.enabled = false;
+      };
+      ".pi/agent/keybindings.json".source = json.generate "pi-keybindings.json" {
         "tui.input.newLine" = [
           "shift+enter"
           "ctrl+j"
         ];
         "app.model.select" = [ "ctrl+l" ];
-        "app.model.cycleForward" = [ "ctrl+p" ];
-        "app.model.cycleBackward" = [ "ctrl+shift+p" ];
         "app.session.tree" = [ "ctrl+alt+t" ];
         "app.session.resume" = [ "ctrl+alt+r" ];
       };
-
-      ".pi/agent/extensions/pi-better-openai.json".source = jsonFormat.generate "pi-better-openai.json" {
-        persistState = false;
-        footer.mode = "off";
-      };
-
-      ".pi/agent/mcp.json" = mkIf cfg.enableMcp {
-        source = jsonFormat.generate "pi-mcp.json" {
-          settings = {
-            toolPrefix = "mcp";
-            requestTimeoutMs = 30000;
-            maxRetries = 5;
-          };
-
-          mcpServers = {
-            context7 = {
-              command = npx;
-              args = [
-                "-y"
-                "@upstash/context7-mcp"
-              ];
-              transport = "stdio";
-              lifecycle = "lazy";
-              env = {
-                PATH = npxPath;
-              };
-            };
-
-            playwright = {
-              command = npx;
-              args = [
-                "-y"
-                "@playwright/mcp@latest"
-                "--browser"
-                "chromium"
-                "--executable-path"
-                "${pkgs.playwright-driver.browsers}/chromium-${pkgs.playwright-driver.passthru.browsersJSON.chromium.revision}/chrome-linux64/chrome"
-                "--user-data-dir"
-                "/tmp/playwright-mcp-userdata"
-              ];
-              transport = "stdio";
-              lifecycle = "lazy";
-              env = {
-                PATH = npxPath;
-                PLAYWRIGHT_BROWSERS_PATH = "${pkgs.playwright-driver.browsers}";
-                PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS = "true";
-              };
-            };
-          };
-        };
-      };
-
-      ".pi/agent/pi-permissions.jsonc".source = jsonFormat.generate "pi-permissions.jsonc" {
-        defaultPolicy = {
-          tools = "ask";
-          bash = "ask";
-          mcp = "ask";
-          skills = "ask";
-          special = "ask";
-        };
-
-        tools = {
-          read = "allow";
-          grep = "allow";
-          find = "allow";
-          ls = "allow";
-          write = "ask";
-          edit = "ask";
-          bash = "ask";
-          mcp = "ask";
-          task = "ask";
-        };
-
-        bash = {
-          "git status" = "allow";
-          "git diff" = "allow";
-          "git diff *" = "allow";
-          "git log" = "allow";
-          "git log *" = "allow";
-          "git show" = "allow";
-          "git show *" = "allow";
-          "pwd" = "allow";
-          "ls" = "allow";
-          "ls *" = "allow";
-          "find" = "allow";
-          "find *" = "allow";
-          "rg *" = "allow";
-          "fd" = "allow";
-          "fd *" = "allow";
-          "cat" = "allow";
-          "cat *" = "allow";
-          "file *" = "allow";
-          "realpath *" = "allow";
-          "stat *" = "allow";
-          "tree" = "allow";
-          "tree *" = "allow";
-          "wc *" = "allow";
-          "which *" = "allow";
-          "command -v *" = "allow";
-          "rm *" = "ask";
-          "rm -rf *" = "ask";
-          "nixos-rebuild *" = "ask";
-          "deploy *" = "ask";
-        };
-
-        skills = {
-          "*" = "allow";
-        };
-
-        mcp = {
-          mcp_status = "allow";
-          mcp_list = "allow";
-          mcp_search = "allow";
-          mcp_describe = "allow";
-          mcp_connect = "ask";
-        };
-
-        special = {
-          external_directory = "allow";
-          doom_loop = "deny";
-        };
-      };
-
-      ".pi/agent/extensions/pi-permission-system/config.json".source =
-        jsonFormat.generate "pi-permission-system-config.json"
-          {
-            debugLog = false;
-            permissionReviewLog = true;
-            yoloMode = false;
-          };
-
-      ".pi/agent/AGENTS.md" = mkIf (cfg.hostContext != null) {
-        text = cfg.hostContext;
-      };
-
-    };
+    }
+    // lib.mapAttrs' (
+      name: text: lib.nameValuePair ".pi/agent/agents/${name}.md" { inherit text; }
+    ) agents;
   };
-  */
 }
