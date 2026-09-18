@@ -1196,6 +1196,7 @@
         "snowfall-lib": "snowfall-lib",
         "srvos": "srvos",
         "stylix": "stylix",
+        "tandem": "tandem",
         "vigiland": "vigiland",
         "zellij-agent-deck": "zellij-agent-deck",
         "zellij-switch": "zellij-switch",
@@ -1475,6 +1476,26 @@
       "original": {
         "owner": "nix-systems",
         "repo": "default",
+        "type": "github"
+      }
+    },
+    "tandem": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1789716065,
+        "narHash": "sha256-QnxYw2ZWJfLpIFGZmKG7r5ASfrOjrJ6Dp11VZA9LcSo=",
+        "owner": "tholoo",
+        "repo": "tandem.hx",
+        "rev": "8756c6452a004383881dc7e82b3fb335fab499ab",
+        "type": "github"
+      },
+      "original": {
+        "owner": "tholoo",
+        "repo": "tandem.hx",
         "type": "github"
       }
     },

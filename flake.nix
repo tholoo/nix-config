@@ -102,6 +102,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    tandem = {
+      url = "github:tholoo/tandem.hx";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     zellij-switch.url = "github:mostafaqanbaryan/zellij-switch";
 
     zellij-agent-deck = {

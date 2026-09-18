@@ -1,5 +1,6 @@
 {
   pkgs,
+  inputs,
   config,
   lib,
   host,
@@ -22,6 +23,7 @@ let
       hash = "sha256-i6OrbcHNkrsAW5cpYOI7r0F6xn94KZWB9ZJMUH+k2ds=";
     };
   };
+  tandemPackage = inputs.tandem.packages.${pkgs.stdenv.hostPlatform.system}.default;
   helixShell = pkgs.writeScriptBin "helix-shell" ''
     #!${pkgs.python3}/bin/python3
     ${builtins.readFile ./yazi.py}
@@ -36,6 +38,8 @@ with lib.mine;
       "editor"
     ];
 
+    tandem.enable = mkEnableOption "the native Tandem conversation and tour panels";
+
     enableLSP = mkOption {
       type = types.bool;
       default = true;
@@ -45,8 +49,15 @@ with lib.mine;
   };
 
   config = mkIf cfg.enable {
+    home.packages = lib.optionals cfg.tandem.enable [ tandemPackage ];
     xdg.configFile = {
       "helix/runtime/grammars/rust.so".source = "${rustGrammar}/parser";
+    }
+    // lib.optionalAttrs cfg.tandem.enable {
+      "helix/tandem".source = "${tandemPackage}/share/tandem/helix/tandem";
+      "helix/init.scm".text = ''
+        (require "tandem/tandem.scm")
+      '';
     };
     home.sessionVariables = {
       EDITOR = lib.mkForce "hx";
@@ -167,6 +178,7 @@ with lib.mine;
             ];
           space = {
             space = "file_picker";
+            a = mkIf cfg.tandem.enable ":tandem";
             i = ":toggle lsp.display-inlay-hints";
             o = ":write";
           };
