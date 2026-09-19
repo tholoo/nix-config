@@ -3,6 +3,8 @@
   buildNpmPackage,
   esbuild,
   python3,
+  inputs,
+  stdenv,
 }:
 buildNpmPackage {
   pname = "pi-extensions";
@@ -17,8 +19,27 @@ buildNpmPackage {
   ];
   buildPhase = ''
     runHook preBuild
+    # Dependencies only exist after npm's configure hook. Patch before bundling;
+    # fail on upstream drift rather than silently shipping the old renderer.
+    patch --batch --fuzz=0 -d node_modules/pi-claude-code-ui -p1 < claude-ui-previews.patch
+    cp output-preview.ts node_modules/pi-claude-code-ui/extensions/output-preview.ts
     python compile.py node_modules ${lib.getExe esbuild}
     runHook postBuild
+  '';
+  doCheck = true;
+  nativeCheckInputs = [ inputs.llm-agents.packages.${stdenv.hostPlatform.system}.pi ];
+  checkPhase = ''
+    runHook preCheck
+    node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test tests/output-preview.test.mjs
+    # Real Pi renderer/SDK, isolated settings and synthetic results, no provider.
+    export HOME="$TMPDIR/ui-test-home"
+    export PI_CODING_AGENT_DIR="$HOME/.pi/agent"
+    export PI_OFFLINE=1 PI_TELEMETRY=0
+    mkdir -p "$PI_CODING_AGENT_DIR"
+    timeout 90 pi --mode json --no-session --no-extensions --no-skills --no-prompt-templates \
+      --no-themes --no-context-files -e ./tests/renderer-smoke.ts </dev/null
+    test -s "$HOME/renderer-smoke-passed"
+    runHook postCheck
   '';
   # Pi supplies its own SDK aliases. Installing peer copies here gives
   # extensions a second runtime and breaks shared provider registration.

@@ -1,0 +1,186 @@
+--- a/extensions/index.ts
++++ b/extensions/index.ts
+@@ -53,6 +53,8 @@
+ 	getLastBashOutputLine,
+ } from "./bash-command";
+ 
++import { bashFailureLabel, outputLines, selectOutputPreview, type OutputPreviewSettings } from "./output-preview";
++
+ const RESET = "\x1b[0m";
+ const TRANSPARENT_BG = "\x1b[49m";
+ const TRANSPARENT_RESET = `${RESET}${TRANSPARENT_BG}`;
+@@ -83,7 +85,7 @@
+ 
+ let toolBackgroundMode: "default" | "transparent" | "outlines" = "outlines";
+ 
+-interface SettingsFile {
++interface SettingsFile extends OutputPreviewSettings {
+ 	toolBackground?: "default" | "transparent" | "outlines" | "border";
+ 	readOutputMode?: "hidden" | "summary" | "preview";
+ 	searchOutputMode?: "hidden" | "count" | "preview";
+@@ -780,13 +782,20 @@
+ 	subject: string;
+ }
+ 
++// A compact group must not erase a preview, command, or failed call.
++function keepToolPreviewInGroup(tool: any): boolean {
++	return readSettings().completedToolPreview !== false
++		|| getToolStatusForGroup(tool) === "error"
++		|| (getToolName(tool) === "bash" && readSettings().bashAlwaysShowCommand !== false);
++}
++
+ function collapseRepeatedToolEntries(tools: any[]): CollapsedToolEntry[] {
+ 	const entries: CollapsedToolEntry[] = [];
+ 	for (const tool of tools) {
+ 		const name = getToolName(tool);
+ 		const subject = getRepeatedToolSubject([tool], name);
+ 		const previous = entries[entries.length - 1];
+-		if (subject && previous?.name === name && previous.subject === subject) {
++		if (!keepToolPreviewInGroup(tool) && !previous?.tools.some(keepToolPreviewInGroup) && subject && previous?.name === name && previous.subject === subject) {
+ 			previous.tools.push(tool);
+ 		} else {
+ 			entries.push({ tools: [tool], name, subject });
+@@ -815,6 +824,10 @@
+ }
+ 
+ function getCollapsedToolEntryLines(entry: CollapsedToolEntry, width: number, groupedLabel?: string): string[] {
++	if (entry.tools.some(keepToolPreviewInGroup)) {
++		// Child expanded state stays false: reuse its bounded collapsed renderer.
++		return entry.tools.flatMap((tool) => getExpandedToolGroupLines(tool, width, groupedLabel));
++	}
+ 	const lines = [getCollapsedToolEntryLine(entry, width, groupedLabel)];
+ 	if (entry.name !== "bash") return lines;
+ 	const running = [...entry.tools].reverse().find((tool) => getToolStatusForGroup(tool) === "pending");
+@@ -1002,7 +1015,7 @@
+ 		const total = this.tools.length;
+ 		const lines: string[] = [];
+ 		const subject = this.expanded ? "" : getRepeatedToolSubject(this.tools, groupedName);
+-		const collapseToSingleRow = !this.expanded && !!groupedName && !!subject;
++		const collapseToSingleRow = !this.expanded && !!groupedName && !!subject && !this.tools.some(keepToolPreviewInGroup);
+ 		if (collapseToSingleRow) {
+ 			const entry = { tools: this.tools, name: groupedName, subject };
+ 			const entryLine = getCollapsedToolEntryLine(entry, Math.max(1, safeWidth - 3));
+@@ -2659,7 +2672,13 @@
+ 		if (typeof renderer !== "function") return renderer;
+ 		// Strip transient Magic Context tags from the text the renderer sees,
+ 		// without touching the stored result message.
+-		return (result: any, options: any, theme: Theme, ctx: any) => renderer(sanitizeToolResultForDisplay(result), options, theme, ctx);
++		return (result: any, options: any, theme: Theme, ctx: any) => {
++			const displayResult = sanitizeToolResultForDisplay(result);
++			if (shouldPreviewCompletedResult(toolName, displayResult, options, ctx)) {
++				return renderCompletedToolPreview(toolName, displayResult, options, theme, ctx);
++			}
++			return renderer(displayResult, options, theme, ctx);
++		};
+ 	};
+ 
+ 	// Fallback path for tools without a renderer definition formats raw text.
+@@ -3477,7 +3496,7 @@
+ ): string {
+ 	const presentation = buildBashCommandPresentation(command);
+ 	const limit = bashCommandPreviewLimit();
+-	if (!expanded && (limit === 0 || presentation.sourceLineCount < 2)) return "";
++	if (!expanded && (limit === 0 || (presentation.sourceLineCount < 2 && readSettings().bashAlwaysShowCommand === false))) return "";
+ 	const sourceLimit = expandedPreviewLimit();
+ 	const lines = expanded ? presentation.sourceLines.slice(0, sourceLimit) : buildBashPreview(presentation.sourceLines, limit);
+ 	if (lines.length === 0) return "";
+@@ -5533,7 +5552,7 @@
+ }
+ 
+ function genericToolLabel(name: string): string {
+-	return isMcpToolName(name) ? "MCP" : humanizeToolName(name);
++	return name === "mcp" ? "MCP" : humanizeToolName(name);
+ }
+ 
+ function renderGenericToolCall(name: string, args: any, theme: Theme, ctx: any): Text {
+@@ -5569,6 +5588,51 @@
+ 		.filter((block: any) => block?.type === "text" && typeof block.text === "string")
+ 		.map((block: any) => block.text)
+ 		.join("\n");
++}
++
++// Completed previews are computed from the stored result on every rebuild, so
++// subsequent activity and session resume cannot release them. Tool execution,
++// model context, image rendering, and successful diff renderers remain unchanged.
++function shouldPreviewCompletedResult(name: string, result: any, options: any, ctx: any): boolean {
++	if (options?.isPartial) return false;
++	if (ctx?.isError) return true;
++	if (readSettings().completedToolPreview === false) return false;
++	if (["edit", "write", "apply_patch", "TaskList"].includes(name)) return false;
++	if (getFirstImageBlock(result)) return false;
++	// Honor deliberate suppression of successful MCP output.
++	if (isMcpToolName(name) && ["hidden", "summary"].includes(readSettings().mcpOutputMode ?? "preview")) return false;
++	return true;
++}
++
++function renderCompletedToolPreview(name: string, result: any, options: any, theme: Theme, ctx: any): Text {
++	clearBlinkTimer(ctx);
++	const failed = ctx?.isError === true;
++	setToolStatus(ctx, failed ? "error" : "success");
++	if (name === "bash") syncBashDuration(ctx, false);
++	const raw = getTextContent(result);
++	const lines = outputLines(raw);
++	const expanded = options?.expanded === true;
++	const label = name === "bash" ? bashFailureLabel(raw, failed) : failed ? "Failed" : "Done";
++	const color = failed ? "error" : "dim";
++	let text = theme.fg(failed ? "error" : "success", label);
++	text += theme.fg("muted", ` (${lineCountLabel(lines.length)})`);
++	if (result.details?.truncation?.truncated) {
++		text += theme.fg("warning", " [tool output truncated; preview uses returned output]");
++	}
++	if (lines.length === 0) {
++		text += theme.fg("muted", " (no output)");
++	} else if (expanded) {
++		text += `\n${buildPreviewText(lines, true, theme, previewLimit(), lines.length, (line) => theme.fg(color, line || " "))}`;
++	} else {
++		const preview = selectOutputPreview(lines, readSettings(), failed).map((row) =>
++			"hidden" in row
++				? theme.fg("muted", `… ${row.hidden} lines hidden${toolOutputDetailHint(theme, false, true)}`)
++				: theme.fg(color, row.text || " "),
++		).join("\n");
++		text += `\n${preview}`;
++	}
++	// Keep long JSON/log lines to one screen row while collapsed; expand to wrap.
++	return makeText(ctx.lastComponent, expanded ? withBranch(text, theme) : withClippedBranch(text, theme));
+ }
+ 
+ function collectNonEmptyLines(text: string, tailLimit?: number): { lines: string[]; total: number } {
+@@ -6129,7 +6193,7 @@
+ }
+ 
+ function summarizeGenericToolCall(name: string, args: any, theme: Theme, sp: (path: string) => string): string {
+-	if (isMcpToolName(name)) return summarizeMcpToolCall(args, theme);
++	if (name === "mcp") return summarizeMcpToolCall(args, theme);
+ 	return summarizeOpenAiToolCall(name, args, theme, sp);
+ }
+ 
+@@ -6247,7 +6311,7 @@
+ 		}
+ 		default:
+ 			return summarizeText(
+-				getStringArg(args, "path", "file_path", "url", "query", "name", "subject", "tool", "description", "prompt") || humanizeToolName(name),
++				getStringArg(args, "path", "file", "file_path", "url", "query", "pattern", "selector", "target", "applicationId", "composeId", "name", "subject", "tool", "description", "prompt") || humanizeToolName(name),
+ 				72,
+ 			);
+ 	}
+@@ -6883,7 +6947,7 @@
+ 				const skillName = basename(dirname(absPath)) || "SKILL.md";
+ 				const line =
+ 					theme.fg("customMessageLabel", `\x1b[1m[skill]\x1b[22m `) +
+-					theme.fg("customMessageText", skillName);
++					theme.fg("customMessageText", skillName) + theme.fg("muted", ` ${sp(rawPath)}`);
+ 				return makeText(ctx.lastComponent, `${toolStatusDot(ctx, theme)}${line}${liveLineCountTrailing(ctx, theme)}`);
+ 			}
+ 			const summary = stableCallSummary(ctx, "_callSummary", () => {
+@@ -6938,9 +7002,9 @@
+ 			const summary = stableCallSummary(ctx, "_bashHeadline", () => presentation.headline);
+ 			const rtkBadge = rewrite ? theme.fg("muted", " (RTK)") : "";
+ 			const status = ctx?.state?._toolStatus;
+-			const showCommand = ctx.argsComplete === true && (status === "pending" || status === "error" || ctx.expanded === true);
++			const showCommand = ctx.argsComplete === true && (readSettings().bashAlwaysShowCommand !== false || status === "pending" || status === "error" || ctx.expanded === true);
+ 			const commandBlock = showCommand ? renderBashCommandBlock(command, ctx.expanded === true, theme) : "";
+-			const headerSummary = ctx.expanded === true && commandBlock ? describeBashSource(presentation) : summary;
++			const headerSummary = commandBlock ? describeBashSource(presentation) : summary;
+ 			const header = toolHeader(
+ 				"Bash",
+ 				`${headerSummary}${rtkBadge}`,

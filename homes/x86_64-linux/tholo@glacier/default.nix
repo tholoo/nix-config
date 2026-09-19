@@ -1,27 +1,9 @@
 {
   config,
   inputs,
-  lib,
-  pkgs,
   ...
 }:
 let
-  taskviewMcpHeaders = pkgs.writeShellApplication {
-    name = "taskview-mcp-headers";
-    runtimeInputs = [ pkgs.jq ];
-    text = ''
-      runtime_dir="''${XDG_RUNTIME_DIR:-/run/user/$UID}"
-      token_file="$runtime_dir/agenix/taskview-token"
-
-      if [[ ! -s "$token_file" ]]; then
-        echo "TaskView API token is missing: $token_file" >&2
-        exit 1
-      fi
-
-      token="$(<"$token_file")"
-      jq -cn --arg token "$token" '{ Authorization: ("Bearer " + $token) }'
-    '';
-  };
   kbModel = "Qwen3.5-9B-UD-Q4_K_XL";
   kbModelFile = "${kbModel}.gguf";
 in
@@ -108,14 +90,6 @@ in
     frdict.proxy = "http://127.0.0.1:10808";
     glance.proxy = "http://127.0.0.1:10808";
 
-  };
-
-  programs.mcp.servers.taskview = {
-    url = "http://192.168.88.31:3100/mcp";
-    http_headers_helper = lib.getExe taskviewMcpHeaders;
-    startup_timeout_sec = 30;
-    tool_timeout_sec = 120;
-    default_tools_approval_mode = "writes";
   };
 
   programs.kb = {
