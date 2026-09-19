@@ -75,6 +75,10 @@
             group = "find";
           }
           {
+            __unkeyed-1 = "<leader>g";
+            group = "git";
+          }
+          {
             __unkeyed-1 = "<leader>u";
             group = "toggles";
           }
