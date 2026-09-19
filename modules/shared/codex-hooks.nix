@@ -4,12 +4,7 @@
   pkgs,
 }:
 let
-  # Keep this fix applied until the pinned upstream includes it.
-  agentDeck =
-    inputs.zellij-agent-deck.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs
-      (old: {
-        patches = (old.patches or [ ]) ++ [ ./agent-deck-read-state.patch ];
-      });
+  agentDeck = inputs.zellij-agent-deck.packages.${pkgs.stdenv.hostPlatform.system}.default;
   codexCli = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.codex;
 
   codexNotify = pkgs.writeShellApplication {
