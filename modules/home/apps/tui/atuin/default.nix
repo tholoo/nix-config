@@ -10,19 +10,12 @@ let
   cfg = config.mine.${name};
   name = "atuin";
   nushellConfig =
-    pkgs.runCommand "atuin-nushell-config-helix.nu"
+    pkgs.runCommand "atuin-nushell-config.nu"
       {
         nativeBuildInputs = [ pkgs.writableTmpDirAsHomeHook ];
       }
       ''
         ${lib.getExe config.programs.atuin.package} init nu ${lib.escapeShellArgs config.programs.atuin.flags} > "$out"
-        substituteInPlace "$out" \
-          --replace-fail \
-          'name: atuin' \
-          'name: history_menu' \
-          --replace-fail \
-          'mode: [emacs, vi_normal, vi_insert]' \
-          'mode: [emacs, vi_normal, vi_insert, helix_normal, helix_select, helix_insert]'
       '';
 in
 {
@@ -54,12 +47,12 @@ in
         };
       };
 
-      # TODO: Remove this workaround once Atuin's Nushell init supports Helix
-      # modes and replaces Nushell 0.115's history_menu binding by name.
-      # Atuin 18.19 uses a separate binding name and only covers Emacs and Vi.
-      # Patch its generated binding to replace Nushell's built-in history menu
-      # and cover Helix, so Atuin owns Ctrl-R in every configured editor mode.
+      # Nushell merges nonempty keybinding assignments. Clear before restoring
+      # the other bindings so the built-in Ctrl-R menu is actually removed.
       nushell.extraConfig = lib.mkOrder 2000 ''
+        let atuin_keybindings = ($env.config.keybindings | where name not-in [history_menu atuin])
+        $env.config.keybindings = []
+        $env.config.keybindings = $atuin_keybindings
         source-env ${nushellConfig}
       '';
     };

@@ -132,11 +132,10 @@ let abbreviations = {
 
 $env.config = {
    show_banner: false,
-   edit_mode: helix,
+   edit_mode: vi,
    cursor_shape: {
-      helix_normal: block
-      helix_select: underscore
-      helix_insert: line
+      vi_normal: block
+      vi_insert: line
    }
    completions: {
    external: {
@@ -180,7 +179,7 @@ $env.config = {
         name: paste_bash_multiline
         modifier: alt
         keycode: char_v
-        mode: [emacs, helix_normal, helix_insert, helix_select]
+        mode: [emacs, vi_normal, vi_insert]
         event: { send: ExecuteHostCommand 
             cmd: r#'commandline edit (
                     wl-paste
@@ -193,7 +192,7 @@ $env.config = {
       name: fuzzy_file_dir_completion
       modifier: control
       keycode: char_t
-      mode: [emacs, helix_normal, helix_insert, helix_select]
+      mode: [emacs, vi_normal, vi_insert]
       event: [
         {
           send: ExecuteHostCommand
@@ -214,7 +213,7 @@ $env.config = {
       name: abbr_menu_enter
       modifier: none
       keycode: enter
-      mode: [emacs, helix_normal, helix_insert, helix_select]
+      mode: [emacs, vi_normal, vi_insert]
       event: [
           { send: menu name: abbr_menu }
           { send: enter }
@@ -224,7 +223,7 @@ $env.config = {
       name: abbr_menu_space
       modifier: none
       keycode: space
-      mode: [emacs, helix_normal, helix_insert, helix_select]
+      mode: [emacs, vi_insert]
       event: [
           { send: menu name: abbr_menu }
           { edit: insertchar value: ' '}
@@ -260,8 +259,12 @@ def e_completer [] {
     core-ls -la | get name
 }
 
-export def e [path: string@e_completer = "."] {
-    env $env.EDITOR $path
+export def e [path?: string@e_completer] {
+    if $path == null {
+        env $env.EDITOR
+    } else {
+        env $env.EDITOR $path
+    }
 }
 
 export def shell [...pkgs: string] {

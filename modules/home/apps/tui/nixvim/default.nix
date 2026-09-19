@@ -38,6 +38,21 @@ in
         ./plugins/treesitter.nix
       ];
       # Stylix supplies the full desktop palette through mini.base16.
+      highlightOverride = {
+        # Cover upstream defaults that do not inherit the theme's palette.
+        FzfLuaLivePrompt.link = "Special";
+        FzfLuaBackdrop.link = "Normal";
+        DiagnosticDeprecated = {
+          sp = "#${config.lib.stylix.colors.base08}";
+          strikethrough = true;
+        };
+        "@markup.link" = {
+          fg = "#${config.lib.stylix.colors.base0D}";
+          underline = true;
+        };
+        "@markup.link.label".link = "@markup.link";
+        "@markup.link.url".link = "@markup.link";
+      };
       globals.mapleader = " ";
       globals.maplocalleader = ",";
       luaLoader.enable = true;
