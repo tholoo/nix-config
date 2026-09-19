@@ -53,6 +53,7 @@ in
 
     programs.zellij-agent-deck = {
       enable = config.mine.codex.enable || config.mine.opencode.enable;
+      package = codexHooks.agentDeckPackage;
       opencode.enable = config.mine.opencode.enable;
     };
     programs.zellij.enable = true;

@@ -4,7 +4,12 @@
   pkgs,
 }:
 let
-  agentDeck = inputs.zellij-agent-deck.packages.${pkgs.stdenv.hostPlatform.system}.default;
+  # Keep this fix applied until the pinned upstream includes it.
+  agentDeck =
+    inputs.zellij-agent-deck.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs
+      (old: {
+        patches = (old.patches or [ ]) ++ [ ./agent-deck-read-state.patch ];
+      });
   codexCli = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.codex;
 
   codexNotify = pkgs.writeShellApplication {
@@ -110,6 +115,7 @@ let
     deckHooks // lib.mapAttrs (event: groups: (deckHooks.${event} or [ ]) ++ groups) dashboardHooks;
 in
 {
+  agentDeckPackage = agentDeck;
   boardPackage = codexBoard;
   notifyCommand = lib.getExe codexNotify;
   agentDeckCommand = "${managedDir}/agent-deck";
