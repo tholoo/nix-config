@@ -189,6 +189,14 @@ let
     liveToolPreview = true;
     liveToolPreviewLines = 5;
     bashCommandPreviewLines = 8;
+    # Local display-only patch in packages/pi-extensions; keep settled results
+    # readable without expanding every tool call in the transcript.
+    completedToolPreview = true;
+    outputPreviewFullLines = 8;
+    outputPreviewHeadLines = 3;
+    outputPreviewTailLines = 3;
+    failurePreviewTailLines = 12;
+    bashAlwaysShowCommand = true;
     diffCollapsedLines = 16;
     themeAdaptive = true;
     extraToolOutputExpanded = false;
@@ -203,6 +211,9 @@ let
   };
   managedWorktreeConfig = json.generate "pi-managed-worktree-settings.json" {
     worktreeRoot = "~/worktrees";
+  };
+  managedProcessesConfig = json.generate "pi-managed-processes-settings.json" {
+    widget.showStatusWidget = true;
   };
   agents = import ./roles.nix;
 in
@@ -276,6 +287,10 @@ in
         ${managedStampConfig} ${lib.escapeShellArg "${config.home.homeDirectory}/.pi/agent/pi-stamp.json"}
       run ${pkgs.python3}/bin/python ${./merge-settings.py} \
         ${managedWorktreeConfig} ${lib.escapeShellArg "${config.home.homeDirectory}/.pi/agent/pi-worktree.json"}
+      ${lib.optionalString cfg.enableProcesses ''
+        run ${pkgs.python3}/bin/python ${./merge-settings.py} \
+          ${managedProcessesConfig} ${lib.escapeShellArg "${config.home.homeDirectory}/.pi/agent/extensions/processes.json"}
+      ''}
     '';
 
     home.file = {

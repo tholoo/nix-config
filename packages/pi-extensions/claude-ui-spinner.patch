@@ -1,0 +1,33 @@
+--- a/extensions/spinner.ts
++++ b/extensions/spinner.ts
+@@ -692,7 +692,6 @@
+ 	let refreshTimer: ReturnType<typeof setTimeout> | null = null;
+ 	let completionTimer: ReturnType<typeof setTimeout> | null = null;
+ 	let thoughtStatusTimer: ReturnType<typeof setTimeout> | null = null;
+-	let currentVerb = "";
+ 	let responseLength = 0;
+ 	let responseTextBlockLengths: number[] = [];
+ 	let thinkingStatus: "thinking" | number /* duration ms */ | null = null;
+@@ -735,11 +734,9 @@
+ 			statusParts.push(formatDuration(elapsed));
+ 		}
+ 
+-		let message = `${CLAUDE_ORANGE}${currentVerb}…${RESET}`;
+-		if (statusParts.length > 0) {
+-			message += statusText(` (${statusParts.join(" · ")})`);
+-		}
+-		return message;
++		// Local display preference: keep the glyph and stats, omit the novelty verb.
++		// Retain ANSI even when empty so Pi does not fall back to "Working...".
++		return statusText(statusParts.length > 0 ? `(${statusParts.join(" · ")})` : "");
+ 	}
+ 
+ 	function setResponseTextBlockLength(index: number, length: number): void {
+@@ -925,7 +922,6 @@
+ 		applyThemeColors(ctx.ui?.theme);
+ 		turnStartTime = Date.now();
+ 		if (!agentStartTime) agentStartTime = turnStartTime;
+-		currentVerb = pickVerb();
+ 		resetResponseTracking();
+ 		clearCompletionTimer();
+ 		if (typeof thinkingStatus !== "number" || Date.now() - thoughtForSetAt >= THOUGHT_DISPLAY_MS) {

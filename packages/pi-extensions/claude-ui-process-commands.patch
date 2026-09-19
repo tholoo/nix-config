@@ -1,0 +1,67 @@
+--- a/extensions/index.ts
++++ b/extensions/index.ts
+@@ -784,7 +784,8 @@
+ 
+ // A compact group must not erase a preview, command, or failed call.
+ function keepToolPreviewInGroup(tool: any): boolean {
+-	return readSettings().completedToolPreview !== false
++	return isProcessStart(getToolName(tool), tool?.args)
++		|| readSettings().completedToolPreview !== false
+ 		|| getToolStatusForGroup(tool) === "error"
+ 		|| (getToolName(tool) === "bash" && readSettings().bashAlwaysShowCommand !== false);
+ }
+@@ -3493,10 +3494,12 @@
+ 	command: string,
+ 	expanded: boolean,
+ 	theme: Theme,
++	alwaysShow = false,
+ ): string {
+ 	const presentation = buildBashCommandPresentation(command);
+-	const limit = bashCommandPreviewLimit();
+-	if (!expanded && (limit === 0 || (presentation.sourceLineCount < 2 && readSettings().bashAlwaysShowCommand === false))) return "";
++	// Process launches always show at least one source line plus an omission hint.
++	const limit = alwaysShow ? Math.max(2, bashCommandPreviewLimit()) : bashCommandPreviewLimit();
++	if (!alwaysShow && !expanded && (limit === 0 || (presentation.sourceLineCount < 2 && readSettings().bashAlwaysShowCommand === false))) return "";
+ 	const sourceLimit = expandedPreviewLimit();
+ 	const lines = expanded ? presentation.sourceLines.slice(0, sourceLimit) : buildBashPreview(presentation.sourceLines, limit);
+ 	if (lines.length === 0) return "";
+@@ -5555,8 +5558,20 @@
+ 	return name === "mcp" ? "MCP" : humanizeToolName(name);
+ }
+ 
++function isProcessStart(name: string, args: any): boolean {
++	return name === "process" && args?.action === "start";
++}
++
+ function renderGenericToolCall(name: string, args: any, theme: Theme, ctx: any): Text {
+ 	syncToolCallStatus(ctx);
++	if (isProcessStart(name, args)) {
++		const header = toolHeader("Process start", getStringArg(args, "name"), theme, toolStatusDot(ctx, theme));
++		const command = typeof args.command === "string" ? args.command : "";
++		const commandBlock = command && ctx.argsComplete === true
++			? renderBashCommandBlock(command, ctx.expanded === true, theme, true)
++			: "";
++		return makeText(ctx.lastComponent, commandBlock ? `${header}\n${commandBlock}` : header);
++	}
+ 	ctx.state._openAiPatchFiles = [];
+ 	// Agent / subagent tools get a size-breathing pending marker, not on/off ●.
+ 	if (isAgentFamilyToolName(name)) ctx.state._agentBreathe = true;
+@@ -5596,6 +5611,8 @@
+ function shouldPreviewCompletedResult(name: string, result: any, options: any, ctx: any): boolean {
+ 	if (options?.isPartial) return false;
+ 	if (ctx?.isError) return true;
++	// A completed launch request is not a completed background command.
++	if (isProcessStart(name, ctx?.args)) return true;
+ 	if (readSettings().completedToolPreview === false) return false;
+ 	if (["edit", "write", "apply_patch", "TaskList"].includes(name)) return false;
+ 	if (getFirstImageBlock(result)) return false;
+@@ -5612,7 +5629,8 @@
+ 	const raw = getTextContent(result);
+ 	const lines = outputLines(raw);
+ 	const expanded = options?.expanded === true;
+-	const label = name === "bash" ? bashFailureLabel(raw, failed) : failed ? "Failed" : "Done";
++	const label = name === "bash" ? bashFailureLabel(raw, failed)
++		: failed ? "Failed" : isProcessStart(name, ctx?.args) ? "Started" : "Done";
+ 	const color = failed ? "error" : "dim";
+ 	let text = theme.fg(failed ? "error" : "success", label);
+ 	text += theme.fg("muted", ` (${lineCountLabel(lines.length)})`);

@@ -154,6 +154,66 @@ export default function (pi: ExtensionAPI) {
 				assert.ok(text.includes("Done (0 lines) (no output)"));
 				assert.ok(text.includes("Failed (0 lines) (no output)"));
 			});
+			check("process starts retain commands while pending, settled and restored", () => {
+				setSettings();
+				const args = { action: "start", name: "synthetic-check", command: "nix eval --raw '.#example.drvPath'", cwd: "/synthetic/project" };
+				const output = result("Started process synthetic-check (proc_example) with pid 123.", false, { action: "start", process: { id: "proc_example" } });
+				const before = JSON.stringify({ args, output });
+				const tool = make("process", args, result("launching"), true);
+				assert.ok(render(tool).includes(args.command), "pending command");
+				tool.updateResult(output, false);
+				for (const expanded of [false, true]) {
+					tool.setExpanded(expanded);
+					const text = render(tool, 140);
+					for (const value of ["Process start", "synthetic-check", args.command, "Started", "proc_example"]) assert.ok(text.includes(value), value);
+					assert.ok(!text.includes("Done ("), "launch success must not imply command completion");
+				}
+				tool.setExpanded(false);
+				for (const handler of hooks.get("tool_execution_start") ?? []) handler({ toolName: "read", toolCallId: "later-process", args: {} }, ctx);
+				tool.invalidate();
+				assert.ok(render(tool).includes(args.command));
+				assert.ok(render(make("process", args, output)).includes(args.command), "restored history");
+				assert.equal(JSON.stringify({ args, output }), before, "display-only change");
+			});
+			check("process commands survive grouping and disabled bash/result previews", () => {
+				setSettings({ completedToolPreview: false, bashAlwaysShowCommand: false, bashCommandPreviewLines: 0 });
+				const group = new Container();
+				for (const command of ["printf first-command", "printf second-command"]) {
+					group.addChild(make("process", { action: "start", name: "same", command }, result("Started process same")));
+				}
+				assert.equal(group.children.length, 1, "fixture must group process calls");
+				const text = render(group, 140);
+				for (const value of ["printf first-command", "printf second-command", "Started"]) assert.ok(text.includes(value), value);
+				assert.ok(!text.includes("Done ("));
+				for (const width of [12, 40, 80]) render(group, width);
+			});
+			check("multiline process commands have bounded previews and expand", () => {
+				setSettings({ bashCommandPreviewLines: 3 });
+				const command = Array.from({ length: 12 }, (_, i) => `printf command-${i + 1}`).join("\n");
+				const tool = make("process", { action: "start", name: "multiline", command }, result("Started process multiline"));
+				const text = render(tool);
+				assert.ok(text.includes("printf command-1"));
+				assert.ok(text.includes("more lines"));
+				assert.ok(!text.includes("printf command-6"));
+				tool.setExpanded(true);
+				assert.ok(render(tool).includes("printf command-6"));
+				tool.setExpanded(false);
+				for (const width of [12, 40, 80]) render(tool, width);
+				const wide = make("process", { action: "start", name: "wide", command: `printf '${"x".repeat(1000)}'` }, result("Started"));
+				for (const width of [12, 40, 80]) render(wide, width);
+			});
+			check("process launch failures keep commands and other actions stay unchanged", () => {
+				setSettings();
+				const failed = render(make("process", { action: "start", name: "failed", command: "synthetic-invalid" }, result("spawn failed", true)));
+				for (const value of ["synthetic-invalid", "Failed", "spawn failed"]) assert.ok(failed.includes(value), value);
+				assert.ok(!failed.includes("Started"));
+				for (const action of ["output", "list", "stop"]) {
+					const text = render(make("process", { action, id: "proc_example" }, result("synthetic action result")));
+					assert.ok(text.includes("Done (1 line)"), action);
+					assert.ok(!text.includes("Process start"), action);
+				}
+				assert.ok(render(make("process", { action: "start" }, result("missing command", true))).includes("Failed"));
+			});
 			check("successful diffs and images retain their specialized rendering", () => {
 				setSettings();
 				const edit = make("edit", { path: "sample.txt", edits: [] }, result("do-not-replace-diff", false, { _type: "editInfo", added: 1, removed: 0, hunks: 1, editLine: 2 }));
