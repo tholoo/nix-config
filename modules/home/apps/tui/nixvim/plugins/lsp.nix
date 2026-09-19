@@ -1,162 +1,85 @@
+{ ... }:
 {
-  inputs,
-  pkgs,
-  lib,
-  host,
-  config,
-  ...
-}:
-{
-  rustaceanvim.enable = true;
-  lsp = {
-    enable = true;
-    keymaps = {
-      silent = true;
-      diagnostic = {
-        # Navigate in diagnostics
-        "[d" = "goto_prev";
-        "]d" = "goto_next";
-        "<leader>cd" = "open_float";
+  # nvim-lspconfig supplies server definitions; Neovim's native API starts them.
+  plugins.lspconfig.enable = true;
+  lsp.servers = {
+    "*".config.capabilities.__raw = "require('blink.cmp').get_lsp_capabilities()";
+    nixd.enable = true;
+    lua_ls = {
+      enable = true;
+      config.settings.Lua = {
+        runtime.version = "LuaJIT";
+        diagnostics.globals = [ "vim" ];
+        workspace.checkThirdParty = false;
+        telemetry.enable = false;
       };
-      lspBuf = {
-        gd = "definition";
-        gr = "references";
-        gt = "type_definition";
-        gD = "implementation";
-        K = "hover";
-        "<leader>cr" = "rename";
-        "<leader>fs" = "workspace_symbol";
-        "<ctrl-s>" = "workspace_symbol";
-        "<leader>ca" = "code_action";
-        "<leader>ch" = "signature_help";
-      };
-      extra = [
-        {
-          key = "<leader>fs";
-          action.__raw = # lua
-            ''
-              function()
-                require("telescope.builtin").lsp_dynamic_workspace_symbols({})
-              end
-            '';
-        }
-      ];
     };
-    postConfig = # lua
-      ''
-        vim.fn.sign_define('DiagnosticSignError', { text = '', texthl = 'DiagnosticSignError' })
-        vim.fn.sign_define('DiagnosticSignWarn', { text = '', texthl = 'DiagnosticSignWarn' })
-        vim.fn.sign_define('DiagnosticSignInfo', { text = '', texthl = 'DiagnosticSignInfo' })
-        vim.fn.sign_define('DiagnosticSignHint', { text = '', texthl = 'DiagnosticSignHint' })
-
-        vim.diagnostic.config({
-          severity_sort = true
-        })
-      '';
-    servers =
-      lib.foldr (name: c: { "${name}".enable = true; } // c)
-        {
-          nil_ls = {
-            enable = true;
-            settings = {
-              formatting.command = [ "${lib.getExe pkgs.nixfmt}" ];
-              nix.flake = {
-                autoArchive = true;
-                autoEvalInputs = true;
-              };
-            };
-          };
-          # nixd = {
-          # enable = true;
-          # settings = {
-          # nixpkgs = {
-          # expr = "import <nixpkgs> { }";
-          # };
-          # formatting = {
-          # command = [ "nixfmt" ];
-          # };
-          # options = {
-          # nixos = {
-          # expr = ''(builtins.getFlake "${inputs.self}").nixosConfigurations.${host}.options'';
-          # };
-          # home-manager = {
-          # expr = ''(builtins.getFlake "${inputs.self}").homeConfigurations."${config.mine.user.name}@${host}".options'';
-          # };
-          # # snowfall = {
-          # # expr = ''(builtins.getFlake "${inputs.self}").snowfall."${config.mine.user.name}@${host}".options'';
-          # # };
-          # };
-          # };
-          # };
-          # pylyzer = {
-          # enable = true;
-          # };
-          pyright = {
-            enable = true;
-            # package = pkgs.basedpyright;
-            # extraOptions = {
-            #   typeCheckingMode = "basic";
-            #   reportAny = false;
-            #   reportUnusedCallResult = false;
-            # };
-            # cmd = [
-            #   "basedpyright-langserver"
-            #   "--stdio"
-            # ];
-          };
-        }
-        [
-          # "ts_ls"
-          "volar"
-
-          "lua_ls"
-
-          "ruff"
-          # "pyright"
-          # "pylyzer"
-          # "pylsp"
-
-          # "nixd"
-
-          "html"
-          # "htmx"
-
-          "dockerls"
-          "docker_compose_language_service"
-
-          "jsonls"
-          "yamlls"
-
-          "eslint"
-
-          "gopls"
-
-          # NOTE: Broken
-          # "graphql"
-
-          "typos_lsp"
-
-          "sqls"
-          "java_language_server"
-
-          "bashls"
-        ];
-
-    onAttach = # lua
-      ''
-        if client.server_capabilities.inlayHintProvider and vim.lsp.inlay_hint then
-            vim.lsp.inlay_hint.enable(true, {bufnr})
-        end
-      '';
+    basedpyright = {
+      enable = true;
+      config.settings.basedpyright.analysis = {
+        typeCheckingMode = "standard";
+        diagnosticMode = "openFilesOnly";
+      };
+    };
+    ruff.enable = true;
+    ts_ls.enable = true;
+    rust_analyzer = {
+      enable = true;
+      config.settings.rust-analyzer = {
+        check.command = "clippy";
+        cargo.buildScripts.enable = true;
+        procMacro.enable = true;
+      };
+    };
+    gopls.enable = true;
+    clangd.enable = true;
+    bashls.enable = true;
+    jsonls.enable = true;
+    yamlls.enable = true;
+    taplo.enable = true;
+    html.enable = true;
+    cssls.enable = true;
+    marksman.enable = true;
   };
-
-  lsp-format.enable = true;
-
-  lspkind.enable = true;
-  # lspsaga.enable = true;
-  navic = {
-    enable = true;
-    settings.lsp.auto_attach = true;
-  };
-  # lsp-lines.enable = true;
+  lsp.keymaps = [
+    {
+      key = "gd";
+      lspBufAction = "definition";
+      options.desc = "Go to definition";
+    }
+    {
+      key = "gD";
+      lspBufAction = "declaration";
+      options.desc = "Go to declaration";
+    }
+    {
+      key = "gy";
+      lspBufAction = "type_definition";
+      options.desc = "Go to type definition";
+    }
+    {
+      key = "<leader>cr";
+      lspBufAction = "rename";
+      options.desc = "Rename symbol";
+    }
+    {
+      key = "<leader>ca";
+      lspBufAction = "code_action";
+      mode = [
+        "n"
+        "x"
+      ];
+      options.desc = "Code action";
+    }
+    {
+      key = "gr";
+      action.__raw = "require('fzf-lua').lsp_references";
+      options.desc = "References";
+    }
+    {
+      key = "gi";
+      action.__raw = "require('fzf-lua').lsp_implementations";
+      options.desc = "Implementations";
+    }
+  ];
 }

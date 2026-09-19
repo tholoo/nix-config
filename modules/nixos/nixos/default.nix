@@ -60,8 +60,8 @@ with lib.mine;
       ];
 
       environment.variables = {
-        EDITOR = lib.mkForce "hx";
-        SUDO_EDITOR = lib.mkForce "hx";
+        EDITOR = lib.mkForce "nvim";
+        SUDO_EDITOR = lib.mkForce "nvim";
         # Native wayland support
         NIXOS_OZONE_WL = "1";
         GDK_BACKEND = "wayland";

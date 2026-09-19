@@ -54,7 +54,7 @@ in
         ui.theme = "Default";
         general = {
           vimMode = true;
-          preferredEditor = "hx";
+          preferredEditor = config.home.sessionVariables.EDITOR or "vi";
           previewFeatures = true;
         };
         ide.enabled = true;

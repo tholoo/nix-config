@@ -49,7 +49,7 @@ let
       wrapper_args=(
         --set-default NO_PROXY ${lib.escapeShellArg noProxy}
         --set-default no_proxy ${lib.escapeShellArg noProxy}
-        --set-default EDITOR hx
+        --set-default EDITOR ${lib.escapeShellArg (config.home.sessionVariables.EDITOR or "vi")}
       )
       ${lib.optionalString (cfg.proxyUrl != null) ''
         wrapper_args+=(

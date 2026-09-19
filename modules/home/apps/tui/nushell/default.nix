@@ -22,8 +22,9 @@ in
     programs.nushell = {
       enable = true;
       environmentVariables = {
-        EDITOR = "hx";
-        SUDO_EDITOR = "hx";
+        EDITOR = config.home.sessionVariables.EDITOR or "vi";
+        SUDO_EDITOR = config.home.sessionVariables.SUDO_EDITOR or "vi";
+        VISUAL = config.home.sessionVariables.VISUAL or "vi";
       };
 
       configFile.text =

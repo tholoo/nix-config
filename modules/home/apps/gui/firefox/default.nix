@@ -58,7 +58,12 @@ in
       "${pkgs.tridactyl-native}/lib/mozilla/native-messaging-hosts/tridactyl.json";
 
     xdg.configFile."tridactyl/tridactylrc".text =
-      builtins.replaceStrings [ "@terminal@" ] [ config.mine.terminal.command ]
+      builtins.replaceStrings
+        [ "@terminal@" "@editor@" ]
+        [
+          config.mine.terminal.command
+          (config.home.sessionVariables.EDITOR or "vi")
+        ]
         (builtins.readFile ./tridactylrc);
     programs.zen-browser = {
       enable = true;

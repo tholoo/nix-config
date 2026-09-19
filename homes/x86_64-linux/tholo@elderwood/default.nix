@@ -23,6 +23,8 @@
 
     gui.enable = false;
     tui.enable = true;
+    # Keep the server's existing Helix setup; Nixvim is used on the desktop.
+    nixvim.enable = false;
 
     claude-code.enable = false;
     pi.enable = false;

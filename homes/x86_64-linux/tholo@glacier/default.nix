@@ -43,7 +43,8 @@ in
     gui.enable = true;
     tui.enable = true;
     terminal.emulator = "cosmic-term";
-    helix.tandem.enable = true;
+    helix.enable = false;
+    nixvim.enable = true;
     agent-desktop.enable = true;
     firefox.enableMcp = true;
 

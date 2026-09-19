@@ -68,6 +68,7 @@ let
           lib.elem name [
             "playwright"
             "zen-browser"
+            "nvim"
           ]
         then
           "lazy-keep-alive"
@@ -238,7 +239,16 @@ in
 
     home.file = {
       ".pi/agent/AGENTS.md" = mkIf (cfg.hostContext != null) { text = cfg.hostContext; };
-      ".pi/agent/APPEND_SYSTEM.md".source = ./instructions.md;
+      ".pi/agent/APPEND_SYSTEM.md".text =
+        builtins.readFile ./instructions.md
+        + lib.optionalString (cfg.enableMcp && config.mine.nixvim.enable) ''
+
+          When asked to work with Neovim, discover the nvim MCP tools and connect
+          to the running editor. Match the instance to the current project; ask
+          if multiple instances still match. Read editor state before acting.
+          Use buffer edits for open files so unsaved changes and undo history are
+          preserved. Save only as required by the task, then check diagnostics.
+        '';
       ".pi/agent/mcp.json".source = json.generate "pi-mcp.json" {
         settings = {
           hostConfigDiscovery = "off";

@@ -47,6 +47,10 @@ in
       servers = {
         context7.command = lib.getExe pkgs.context7-mcp;
 
+        nvim = lib.mkIf config.mine.nixvim.enable {
+          command = lib.getExe inputs.nvim-mcp.packages.${pkgs.stdenv.hostPlatform.system}.default;
+        };
+
         playwright = {
           command = lib.getExe pkgs.mine.agent-browser;
         };

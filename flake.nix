@@ -33,11 +33,11 @@
 
     nixvim = {
       url = "github:nix-community/nixvim";
-      # If you are not running an unstable channel of nixpkgs, select the corresponding branch of nixvim.
-      # url = "github:nix-community/nixvim/nixos-23.05";
-
-      inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # Keep upstream's package set intact so the nightly matches its binary cache.
+    neovim-nightly-overlay.url = "github:nix-community/neovim-nightly-overlay";
+    nvim-mcp.url = "github:paulburgess1357/nvim-mcp";
 
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
 
@@ -188,7 +188,6 @@
       };
 
       overlays = with inputs; [
-        # neovim-nightly-overlay.overlays.default
         nur.overlays.default
         fenix.overlays.default
       ];

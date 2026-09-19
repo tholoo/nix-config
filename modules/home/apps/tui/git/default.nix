@@ -64,7 +64,7 @@ in
         signing.format = null;
         # diff-so-fancy.enable = true;
         settings = {
-          core.editor = "hx";
+          core.editor = config.home.sessionVariables.EDITOR or "vi";
           core.sshCommand = "${pkgs.openssh}/bin/ssh";
           init.defaultBranch = "main";
           pull.rebase = true;
