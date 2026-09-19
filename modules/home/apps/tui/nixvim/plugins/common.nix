@@ -49,6 +49,7 @@
         };
       };
     };
+    lazygit.enable = true;
     gitsigns = {
       enable = true;
       settings = {

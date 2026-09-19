@@ -15,6 +15,7 @@ map("n", "<leader>fd", fzf.diagnostics_workspace, "Diagnostics")
 map("n", "<leader>fh", fzf.help_tags, "Help")
 map("n", "<leader>e", "<cmd>Yazi<cr>", "Yazi at current file")
 map("n", "<leader>E", "<cmd>Yazi cwd<cr>", "Yazi at working directory")
+map("n", "<leader>gg", "<cmd>LazyGit<cr>", "Lazygit")
 -- Keep one current-file comparison per tab; never close unrelated splits.
 local git_diffs = {}
 map("n", "<leader>gd", function()
