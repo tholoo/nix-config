@@ -112,6 +112,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    ghostty = {
+      url = "github:real0x0a1/ghostty/feat/rtl-bidi";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.home-manager.follows = "home-manager";
+    };
+
     zellij-switch.url = "github:mostafaqanbaryan/zellij-switch";
 
     zellij-agent-deck = {

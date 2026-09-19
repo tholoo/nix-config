@@ -24,7 +24,7 @@ in
 
     gui.enable = true;
     tui.enable = true;
-    terminal.emulator = "cosmic-term";
+    terminal.emulator = "ghostty";
     helix.enable = false;
     nixvim.enable = true;
     agent-desktop.enable = true;

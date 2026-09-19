@@ -77,6 +77,10 @@ in
         cursorline = true;
         signcolumn = "yes";
         termguicolors = true;
+        # Our Ghostty RTL build handles bidi and Arabic-script shaping itself.
+        # Keep Neovim from shaping the same text a second time.
+        termbidi = config.mine.terminal.emulator == "ghostty";
+        rightleft = false;
         showmode = false;
         showtabline = 0;
         laststatus = 3;

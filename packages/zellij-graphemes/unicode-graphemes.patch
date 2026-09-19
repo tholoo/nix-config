@@ -1,0 +1,1408 @@
+diff --git a/Cargo.lock b/Cargo.lock
+index 5a47f9b27194b84055ce80e53f6d79cbc7ae9846..7036c01eeeb8be45fd259374c43a7a772d991748 100644
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -4056,6 +4056,12 @@ version = "0.1.5"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "3b09c83c3c29d37506a3e260c08c03743a6bb66a9cd432c6934ab501a190571f"
+ 
++[[package]]
++name = "unicode-segmentation"
++version = "1.13.3"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "c6f5d3c3b1bf09027a88a6bc961fc00497d651009560b5463668dc81b0fa87a8"
++
+ [[package]]
+ name = "unicode-width"
+ version = "0.1.14"
+@@ -5114,6 +5120,7 @@ dependencies = [
+  "sysinfo",
+  "tempfile",
+  "tokio",
++ "unicode-segmentation",
+  "unicode-width 0.2.2",
+  "url",
+  "uuid",
+diff --git a/zellij-server/Cargo.toml b/zellij-server/Cargo.toml
+index eb9c2c7cf286774291c5af4c07f9d3367fc64fca..2049727c831c88c11ec888a27ec15a6acadc1789 100644
+--- a/zellij-server/Cargo.toml
++++ b/zellij-server/Cargo.toml
+@@ -38,6 +38,7 @@ sysinfo = { version = "0.39.5", default-features = false, features = ["system"]
+ tempfile = { workspace = true }
+ tokio = { workspace = true }
+ unicode-width = { workspace = true }
++unicode-segmentation = "1.13.3"
+ url = { workspace = true }
+ uuid = { workspace = true }
+ vte = { workspace = true }
+diff --git a/zellij-server/src/output/mod.rs b/zellij-server/src/output/mod.rs
+index ee2138f2b1fc854b0f8c46103b0f80fdc39a5364..e7e90122ed73e30c9f5ac1bbf4e9f636e1652bd1 100644
+--- a/zellij-server/src/output/mod.rs
++++ b/zellij-server/src/output/mod.rs
+@@ -190,7 +190,7 @@ fn serialize_chunks_with_newlines(
+             )
+             .with_context(err_context)?;
+             chunk_width += t_character.width();
+-            vte_output.push(t_character.character);
++            t_character.push_to(&mut vte_output);
+         }
+     }
+     Ok(vte_output)
+@@ -256,7 +256,7 @@ fn serialize_chunks(
+             )
+             .with_context(err_context)?;
+             chunk_width += t_character.width();
+-            vte_output.push(t_character.character);
++            t_character.push_to(&mut vte_output);
+         }
+     }
+     if let Some(sixel_image_store) = sixel_image_store {
+diff --git a/zellij-server/src/output/unit/output_tests.rs b/zellij-server/src/output/unit/output_tests.rs
+index 928efad4aa594e00a207a9d91135a368a0a0f62a..b1e245d34fabc70fd47a0e8a7e0e8d8fa36955eb 100644
+--- a/zellij-server/src/output/unit/output_tests.rs
++++ b/zellij-server/src/output/unit/output_tests.rs
+@@ -1635,3 +1635,67 @@ fn kitty_host_ids_stay_within_signed_32_bit_range() {
+         }
+     }
+ }
++
++#[test]
++fn serializers_preserve_complete_graphemes() {
++    for text in include_str!("../../panes/unit/fixtures/unicode_graphemes.txt").lines() {
++        let mut cells: Vec<TerminalCharacter> = vec![];
++        for character in text.chars() {
++            if let Some(last) = cells.last_mut() {
++                if let Some(extended) = last.extended_with(character) {
++                    *last = extended;
++                    continue;
++                }
++            }
++            cells.push(TerminalCharacter::new(character));
++        }
++        let chunk = CharacterChunk::new(cells, 0, 0);
++        let output = super::super::serialize_chunks(
++            vec![chunk.clone()],
++            None,
++            None,
++            None,
++            true,
++            true,
++            None,
++            None,
++        )
++        .unwrap();
++        assert!(output.contains(text), "positioned serializer: {text:?}");
++        let output =
++            super::super::serialize_chunks_with_newlines(vec![chunk], None, None, true, true, None)
++                .unwrap();
++        assert!(output.contains(text), "newline serializer: {text:?}");
++    }
++}
++
++#[test]
++fn clipping_never_serializes_part_of_an_emoji_grapheme() {
++    let emoji = TerminalCharacter::new('👶').extended_with('🏽').unwrap();
++    let mut chunk = CharacterChunk::new(vec![emoji.clone(), TerminalCharacter::new('x')], 0, 0);
++    let clipped: String = chunk
++        .drain_by_width(1)
++        .flat_map(|cell| cell.characters().collect::<Vec<_>>())
++        .collect();
++    assert_eq!(clipped, " ");
++    let remaining: String = chunk
++        .terminal_characters
++        .iter()
++        .flat_map(|cell| cell.characters())
++        .collect();
++    assert_eq!(remaining, " x");
++    let chunk = CharacterChunk::new(vec![emoji], 0, 0);
++    let output = super::super::serialize_chunks(
++        vec![chunk],
++        None,
++        None,
++        None,
++        true,
++        true,
++        Some(Size { rows: 1, cols: 1 }),
++        None,
++    )
++    .unwrap();
++    assert!(!output.contains('👶'));
++    assert!(!output.contains('🏽'));
++}
+diff --git a/zellij-server/src/panes/grid.rs b/zellij-server/src/panes/grid.rs
+index 0b2af88b978920ff056473804b57e33abeefbebf..8e6145d9d680ef6f98065bbbc5779a7511a80aeb 100644
+--- a/zellij-server/src/panes/grid.rs
++++ b/zellij-server/src/panes/grid.rs
+@@ -12,7 +12,6 @@ use std::cell::RefCell;
+ use std::collections::BTreeMap;
+ use std::collections::HashMap;
+ use std::rc::Rc;
+-use unicode_width::UnicodeWidthChar;
+ use zellij_utils::data::{
+     HighlightLayer, HighlightStyle, HostTerminalThemeMode, RegexHighlight, Style,
+ };
+@@ -576,7 +575,10 @@ macro_rules! dump_screen {
+             if line.is_canonical && !is_first {
+                 buf.push_str("\n");
+             }
+-            let s: String = (&line.columns).into_iter().map(|x| x.character).collect();
++            let s: String = (&line.columns)
++                .into_iter()
++                .flat_map(|x| x.characters())
++                .collect();
+             // Replace the spaces at the end of the line. Sometimes, the lines are
+             // collected with spaces until the end of the panel.
+             buf.push_str(&s.trim_end_matches(' '));
+@@ -603,7 +605,7 @@ macro_rules! dump_screen_with_ansi {
+                 .columns
+                 .iter()
+                 .rposition(|tc| {
+-                    let space = tc.character == ' ';
++                    let space = tc.is_plain_space();
+                     let styled = !matches!(tc.styles.background, Some(AnsiCode::Reset) | None);
+                     !space || styled // it's, something drawable
+                 })
+@@ -616,7 +618,7 @@ macro_rules! dump_screen_with_ansi {
+                     write!(buf, "{}", tc.styles).unwrap();
+                     last_styles = Some(tc.styles.clone());
+                 }
+-                buf.push(tc.character);
++                tc.push_to(&mut buf);
+             }
+             is_first = false;
+         }
+@@ -685,14 +687,14 @@ fn collect_and_build_logical_line(
+     let mut boundaries: Vec<(usize, usize)> = Vec::with_capacity(group_len);
+     boundaries.push((canonical, 0));
+     for ch in &canonical_row.columns {
+-        text.push(ch.character);
++        ch.push_to(&mut text);
+     }
+     for i in 0..tail_count {
+         let idx = canonical + 1 + i;
+         boundaries.push((idx, text.len()));
+         if let Some(row) = viewport.get(idx) {
+             for ch in &row.columns {
+-                text.push(ch.character);
++                ch.push_to(&mut text);
+             }
+         }
+     }
+@@ -712,6 +714,7 @@ fn byte_offset_to_display_col(
+     byte_offset: usize,
+     boundaries: &[(usize, usize)],
+     viewport: &VecDeque<Row>,
++    round_up: bool,
+ ) -> Option<(usize, usize)> {
+     if boundaries.is_empty() {
+         return None;
+@@ -731,8 +734,11 @@ fn byte_offset_to_display_col(
+         if bytes_seen >= intra_byte_offset {
+             break;
+         }
+-        bytes_seen += ch.character.len_utf8();
+-        display_col += ch.character.width().unwrap_or(1);
++        bytes_seen += ch.characters().map(char::len_utf8).sum::<usize>();
++        if bytes_seen > intra_byte_offset && !round_up {
++            break;
++        }
++        display_col += ch.width();
+     }
+     Some((row_idx, display_col))
+ }
+@@ -744,8 +750,9 @@ fn match_to_selection(
+     boundaries: &[(usize, usize)],
+     viewport: &VecDeque<Row>,
+ ) -> Option<(Selection, usize, usize, usize, usize)> {
+-    let (start_row, start_col) = byte_offset_to_display_col(mat.start(), boundaries, viewport)?;
+-    let (end_row, end_col) = byte_offset_to_display_col(mat.end(), boundaries, viewport)?;
++    let (start_row, start_col) =
++        byte_offset_to_display_col(mat.start(), boundaries, viewport, false)?;
++    let (end_row, end_col) = byte_offset_to_display_col(mat.end(), boundaries, viewport, true)?;
+     let mut sel = Selection::default();
+     sel.set_start_and_end_positions(
+         Position::new(start_row as i32, start_col as u16),
+@@ -1703,8 +1710,7 @@ impl Grid {
+             for line in &mut viewport_canonical_lines {
+                 let mut trim_at = None;
+                 for (index, character) in line.columns.iter().enumerate() {
+-                    let is_trimmable_space = character.character
+-                        == EMPTY_TERMINAL_CHARACTER.character
++                    let is_trimmable_space = character.is_plain_space()
+                         && matches!(character.styles.background, Some(AnsiCode::Reset) | None);
+ 
+                     if !is_trimmable_space {
+@@ -2460,12 +2466,74 @@ impl Grid {
+             },
+         }
+     }
++    /// Try the cell immediately before the cursor before considering line wrapping. A mark
++    /// arriving at the right margin still belongs to that cell, including across PTY reads.
++    fn extend_previous_character(&mut self, character: char) -> bool {
++        let Some(row) = self.viewport.get_mut(self.cursor.y) else {
++            return false;
++        };
++        if self.cursor.x == 0 || self.cursor.x > row.width_cached() {
++            return false;
++        }
++        let (index, offset) = if self.cursor.x == row.width_cached() {
++            let index = row.columns.len() - 1;
++            (index, row.columns[index].width() - 1)
++        } else {
++            row.absolute_character_index_and_position_in_char(self.cursor.x - 1)
++        };
++        let previous = &row.columns[index];
++        if offset + 1 != previous.width() {
++            // The cursor is inside, rather than immediately after, a wide cell.
++            return false;
++        }
++        let Some(extended) = previous.extended_with(character) else {
++            return false;
++        };
++        let old_width = previous.width();
++        let new_width = extended.width();
++        self.preceding_char = Some(extended.clone());
++        let start = self.cursor.x - old_width;
++        if start + new_width > self.width {
++            if self.disable_linewrap || new_width > self.width {
++                // Keep the existing cell when the completed cluster cannot fit.
++                return true;
++            }
++            // A late VS16 can turn the last narrow cell into a wide one. Move the
++            // entire cluster to the next row rather than splitting it at the margin.
++            row.columns.remove(index);
++            row.width = None;
++            self.output_buffer.update_line(self.cursor.y);
++            self.line_wrap();
++            self.add_character_at_cursor_position(extended, false);
++            self.move_cursor_forward_until_edge(new_width);
++        } else {
++            if old_width == new_width {
++                row.columns[index] = extended;
++            } else if self.cursor.x == row.width_cached() {
++                row.columns[index] = extended;
++                row.width = None;
++            } else if self.insert_mode {
++                row.columns.remove(index);
++                row.width = None;
++                row.insert_character_at(extended, start);
++                if row.width() > self.width {
++                    row.truncate(self.width);
++                }
++            } else {
++                row.add_character_at(extended, start);
++            }
++            self.cursor.x = start + new_width;
++            self.output_buffer.update_line(self.cursor.y);
++        }
++        true
++    }
++
+     pub fn add_character(&mut self, terminal_character: TerminalCharacter) {
++        if self.extend_previous_character(terminal_character.character) {
++            return;
++        }
+         let character_width = terminal_character.width();
+-        // Drop zero-width Unicode/UTF-8 codepoints, like for example Variation Selectors.
+-        // This breaks unicode grapheme segmentation, and is the reason why some characters
+-        // aren't displayed correctly. Refer to this issue for more information:
+-        //     https://github.com/zellij-org/zellij/issues/1538
++        // With no preceding cell, an orphan zero-width codepoint has no display anchor.
+         if character_width == 0 {
+             return;
+         }
+@@ -3304,7 +3372,7 @@ impl Grid {
+             let mut terminal_col = 0;
+             for terminal_character in &row.columns {
+                 if (start_column..end_column).contains(&terminal_col) {
+-                    line_selection.push(terminal_character.character);
++                    terminal_character.push_to(&mut line_selection);
+                 }
+ 
+                 terminal_col += terminal_character.width();
+@@ -4338,13 +4406,19 @@ impl Grid {
+     ) -> PaneContents {
+         let mut viewport: Vec<String> = Vec::with_capacity(self.viewport.len());
+         for row in &self.viewport {
+-            let s: String = (&row.columns).into_iter().map(|x| x.character).collect();
++            let s: String = (&row.columns)
++                .into_iter()
++                .flat_map(|x| x.characters())
++                .collect();
+             viewport.push(s);
+         }
+         let mut contents = if get_full_scrollback {
+             let mut lines_above_viewport: Vec<String> = Vec::with_capacity(self.lines_above.len());
+             for row in &self.lines_above {
+-                let s: String = (&row.columns).into_iter().map(|x| x.character).collect();
++                let s: String = (&row.columns)
++                    .into_iter()
++                    .flat_map(|x| x.characters())
++                    .collect();
+                 lines_above_viewport.push(s);
+             }
+             // Truncate to last N lines if max specified (Some(0) means "all" — no truncation)
+@@ -4356,7 +4430,10 @@ impl Grid {
+             }
+             let mut lines_below_viewport: Vec<String> = Vec::with_capacity(self.lines_below.len());
+             for row in &self.lines_below {
+-                let s: String = (&row.columns).into_iter().map(|x| x.character).collect();
++                let s: String = (&row.columns)
++                    .into_iter()
++                    .flat_map(|x| x.characters())
++                    .collect();
+                 lines_below_viewport.push(s);
+             }
+             PaneContents::new_with_scrollback(
+@@ -4387,7 +4464,7 @@ impl Grid {
+                 .columns
+                 .iter()
+                 .rposition(|tc| {
+-                    let space = tc.character == ' ';
++                    let space = tc.is_plain_space();
+                     let styled = !matches!(tc.styles.background, Some(AnsiCode::Reset) | None);
+                     !space || styled
+                 })
+@@ -4399,7 +4476,7 @@ impl Grid {
+                     write!(buf, "{}", tc.styles).unwrap();
+                     last_styles = Some(tc.styles.clone());
+                 }
+-                buf.push(tc.character);
++                tc.push_to(&mut buf);
+             }
+             if last_styles.is_some() {
+                 buf.push_str("\u{1b}[m");
+@@ -5867,7 +5944,7 @@ impl Row {
+                 break;
+             }
+             if terminal_character.width() > 1 {
+-                absolute_index = absolute_index.saturating_sub(1);
++                absolute_index = absolute_index.saturating_sub(terminal_character.width() - 1);
+             }
+         }
+         absolute_index
+diff --git a/zellij-server/src/panes/search.rs b/zellij-server/src/panes/search.rs
+index 80a2bf5f80675f171dd0313d7c89aee3ba91c9cc..a2934b3857f4faa279b05bebd7688ab78a484a69 100644
+--- a/zellij-server/src/panes/search.rs
++++ b/zellij-server/src/panes/search.rs
+@@ -12,79 +12,6 @@ fn is_word_boundary(x: &Option<char>) -> bool {
+     x.map_or(true, |c| !c.is_ascii_alphanumeric() && c != '_')
+ }
+ 
+-#[derive(Debug)]
+-enum SearchSource<'a> {
+-    Main(&'a Row),
+-    Tail(&'a Row),
+-}
+-
+-impl<'a> SearchSource<'a> {
+-    /// Returns true, if a new source was found, false otherwise (reached the end of the tail).
+-    /// If we are in the middle of a line, nothing will be changed.
+-    /// Only, when we have to switch to a new line, will the source update itself,
+-    /// as well as the corresponding indices.
+-    fn get_next_source(
+-        &mut self,
+-        ridx: &mut usize,
+-        hidx: &mut usize,
+-        tailit: &mut std::slice::Iter<&'a Row>,
+-        start: &Option<Position>,
+-    ) -> bool {
+-        match self {
+-            SearchSource::Main(row) => {
+-                // If we are at the end of the main row, we need to start looking into the tail
+-                if hidx >= &mut row.columns.len() {
+-                    let curr_tail = tailit.next();
+-                    // If we are at the end and found a partial hit, we have to extend the search into the next line
+-                    if let Some(curr_tail) = start.and(curr_tail) {
+-                        *ridx += 1; // Go one line down
+-                        *hidx = 0; // and start from the beginning of the new line
+-                        *self = SearchSource::Tail(curr_tail);
+-                    } else {
+-                        return false; // We reached the end of the tail
+-                    }
+-                }
+-            },
+-            SearchSource::Tail(tail) => {
+-                if hidx >= &mut tail.columns.len() {
+-                    // If we are still searching (didn't hit a mismatch yet) and there is still more tail to go
+-                    // just continue with the next line
+-                    if let Some(curr_tail) = tailit.next() {
+-                        *ridx += 1; // Go one line down
+-                        *hidx = 0; // and start from the beginning of the new line
+-                        *self = SearchSource::Tail(curr_tail);
+-                    } else {
+-                        return false; // We reached the end of the tail
+-                    }
+-                }
+-            },
+-        }
+-        // We have found a new source, or we are in the middle of a line, so no need to change anything
+-        true
+-    }
+-
+-    // Get the char at hidx and, if existing, the following char as well
+-    fn get_next_two_chars(&self, hidx: usize, whole_word_search: bool) -> (char, Option<char>) {
+-        // Get the current haystack character
+-        let haystack_char = match self {
+-            SearchSource::Main(row) => row.columns[hidx].character,
+-            SearchSource::Tail(tail) => tail.columns[hidx].character,
+-        };
+-
+-        // Get the next haystack character (relevant for whole-word search only)
+-        let next_haystack_char = if whole_word_search {
+-            // Everything (incl. end of line) that is not [a-zA-Z0-9_] is considered a word boundary
+-            match self {
+-                SearchSource::Main(row) => row.columns.get(hidx + 1).map(|c| c.character),
+-                SearchSource::Tail(tail) => tail.columns.get(hidx + 1).map(|c| c.character),
+-            }
+-        } else {
+-            None // Doesn't get used, when not doing whole-word search
+-        };
+-        (haystack_char, next_haystack_char)
+-    }
+-}
+-
+ #[derive(Debug, Clone, Default)]
+ pub struct SearchResult {
+     // What we have already found in the viewport
+@@ -145,139 +72,73 @@ impl SearchResult {
+         self.wrap_search || self.whole_word_only || self.case_insensitive
+     }
+ 
+-    fn check_if_haystack_char_matches_needle(
+-        &self,
+-        nidx: usize,
+-        needle_char: char,
+-        haystack_char: char,
+-        prev_haystack_char: Option<char>,
+-    ) -> bool {
+-        let mut chars_match = if self.case_insensitive {
+-            // Case insensitive search
+-            // Currently only ascii, as this whole search-function is very sub-optimal anyways
+-            haystack_char.to_ascii_lowercase() == needle_char.to_ascii_lowercase()
+-        } else {
+-            // Case sensitive search
+-            haystack_char == needle_char
+-        };
+-
+-        // Whole-word search
+-        // It's a match only, if the first haystack char that is _not_ a hit, is a word-boundary
+-        if chars_match
+-            && self.whole_word_only
+-            && nidx == 0
+-            && !is_word_boundary(&prev_haystack_char)
+-        {
+-            // Start of the match is not a word boundary, so this is not a hit
+-            chars_match = false;
+-        }
+-
+-        chars_match
+-    }
+-
+-    /// Search a row and its tail.
+-    /// The tail are all the non-canonical lines below `row`, with `row` not necessarily being canonical itself.
+-    pub(crate) fn search_row(&self, mut ridx: usize, row: &Row, tail: &[&Row]) -> Vec<Selection> {
+-        let mut res = Vec::new();
+-        if self.needle.is_empty() || row.columns.is_empty() {
+-            return res;
++    /// Search scalar text while keeping display-cell positions. Every scalar in a
++    /// grapheme maps to the same cell, so a hit cannot split an accent or emoji.
++    pub(crate) fn search_row(&self, ridx: usize, row: &Row, tail: &[&Row]) -> Vec<Selection> {
++        let needle: Vec<char> = self.needle.chars().collect();
++        if needle.is_empty() || row.columns.is_empty() {
++            return vec![];
+         }
+-
+-        let mut tailit = tail.iter();
+-        let mut source = SearchSource::Main(row); // Where we currently get the haystack-characters from
+-        let orig_ridx = ridx;
+-        let mut start = None; // If we find a hit, this is where it starts
+-        let mut nidx = 0; // Needle index
+-        let mut hidx = 0; // Haystack index
+-        let mut prev_haystack_char: Option<char> = None;
+-        loop {
+-            // Get the current and next haystack character
+-            let (mut haystack_char, next_haystack_char) =
+-                source.get_next_two_chars(hidx, self.whole_word_only);
+-
+-            // Get current needle character
+-            let needle_char = self.needle.chars().nth(nidx).unwrap(); // Unwrapping is safe here
+-
+-            // Check if needle and haystack match (with search-options)
+-            let chars_match = self.check_if_haystack_char_matches_needle(
+-                nidx,
+-                needle_char,
+-                haystack_char,
+-                prev_haystack_char,
+-            );
+-
+-            if chars_match {
+-                // If the needle is only 1 long, the next `if` could also happen, so we are not merging it into one big if-else
+-                if nidx == 0 {
+-                    start = Some(Position::new(ridx as i32, hidx as u16));
++        let main_len: usize = row
++            .columns
++            .iter()
++            .map(|cell| cell.characters().count())
++            .sum();
++        // Only matches starting in the main row belong to this call. Retain just
++        // enough tail for a crossing match and its whole-word boundary check.
++        let max_len = main_len.saturating_add(needle.len());
++        let mut haystack = Vec::new();
++        'rows: for (offset, source) in std::iter::once(row).chain(tail.iter().copied()).enumerate()
++        {
++            let mut column = 0;
++            for cell in &source.columns {
++                let start = Position::new((ridx + offset) as i32, column as u16);
++                column += cell.width();
++                let end = Position::new((ridx + offset) as i32, column as u16);
++                for character in cell.characters() {
++                    if haystack.len() == max_len {
++                        break 'rows;
++                    }
++                    haystack.push((character, start, end));
+                 }
+-                if nidx == self.needle.len() - 1 {
+-                    let mut end_found = true;
+-                    // If we search whole-word-only, the next non-needle char needs to be a word-boundary,
+-                    // otherwise its not a hit (e.g. some occurrence inside a longer word).
+-                    if self.whole_word_only && !is_word_boundary(&next_haystack_char) {
+-                        // The end of the match is not a word boundary, so this is not a hit!
+-                        // We have to jump back from where we started (plus one char)
+-                        nidx = 0;
+-                        ridx = start.unwrap().line() as usize;
+-                        hidx = start.unwrap().column(); // Will be incremented below
+-                        if start.unwrap().line() as usize == orig_ridx {
+-                            source = SearchSource::Main(row);
+-                            haystack_char = row.columns[hidx].character; // so that prev_char gets set correctly
++            }
++        }
++        let mut results = vec![];
++        let mut index = 0;
++        while index < main_len && index + needle.len() <= haystack.len() {
++            let end = index + needle.len();
++            let matches =
++                needle
++                    .iter()
++                    .zip(&haystack[index..end])
++                    .all(|(needle, (character, _, _))| {
++                        if self.case_insensitive {
++                            needle.eq_ignore_ascii_case(character)
+                         } else {
+-                            // The -1 comes from the main row
+-                            let tail_idx = start.unwrap().line() as usize - orig_ridx - 1;
+-                            // We have to reset the tail-iterator as well.
+-                            tailit = tail[tail_idx..].iter();
+-                            let trow = tailit.next().unwrap();
+-                            haystack_char = trow.columns[hidx].character; // so that prev_char gets set correctly
+-                            source = SearchSource::Tail(trow);
+-                        }
+-                        start = None;
+-                        end_found = false;
+-                    }
+-                    if end_found {
+-                        let mut selection = Selection::default();
+-                        selection.start(start.unwrap());
+-                        selection.end(Position::new(ridx as i32, (hidx + 1) as u16));
+-                        res.push(selection);
+-                        nidx = 0;
+-                        if matches!(source, SearchSource::Tail(..)) {
+-                            // When searching the tail, we can only find one additional selection, so stopping here
+-                            break;
++                            needle == character
+                         }
+-                    }
+-                } else {
+-                    nidx += 1;
++                    });
++            let previous = index.checked_sub(1).map(|i| haystack[i].0);
++            let next = haystack.get(end).map(|entry| entry.0);
++            if matches
++                && (!self.whole_word_only
++                    || (is_word_boundary(&previous) && is_word_boundary(&next)))
++            {
++                let mut selection = Selection::default();
++                selection.start(haystack[index].1);
++                selection.end(haystack[end - 1].2);
++                // Scrollback tails can still be unwrapped.
++                while row.width() > 0 && selection.end.column() > row.width() {
++                    selection.end.column.0 -= row.width();
++                    selection.end.line.0 += 1;
+                 }
++                results.push(selection);
++                index = end;
+             } else {
+-                // Chars don't match. Start searching the needle from the beginning
+-                start = None;
+-                nidx = 0;
+-                if matches!(source, SearchSource::Tail(..)) {
+-                    // When searching the tail and we find a mismatch, just quit right now
+-                    break;
+-                }
+-            }
+-
+-            hidx += 1;
+-            prev_haystack_char = Some(haystack_char);
+-            // We might need to switch to a new line in the tail
+-            if !source.get_next_source(&mut ridx, &mut hidx, &mut tailit, &start) {
+-                break;
+-            }
+-        }
+-
+-        // The tail may have not been wrapped yet (when coming from lines_below),
+-        // so it could be that the end extends across more characters than the row is wide.
+-        // Therefore we need to reflow the end:
+-        for s in res.iter_mut() {
+-            while s.end.column() > row.width() {
+-                s.end.column.0 -= row.width();
+-                s.end.line.0 += 1;
++                index += 1;
+             }
+         }
+-        res
++        results
+     }
+ 
+     pub(crate) fn move_active_selection_to_next(&mut self) {
+diff --git a/zellij-server/src/panes/terminal_character.rs b/zellij-server/src/panes/terminal_character.rs
+index 12463af88e7efc02d13a7fddc4b790ac45eea527..897b219092b9e57a894e8a677c7bf99da3b04e58 100644
+--- a/zellij-server/src/panes/terminal_character.rs
++++ b/zellij-server/src/panes/terminal_character.rs
+@@ -1,7 +1,9 @@
++use std::borrow::Cow;
+ use std::convert::From;
+ use std::fmt::{self, Debug, Display, Formatter};
+ use std::ops::{Index, IndexMut};
+ use std::rc::Rc;
++use unicode_segmentation::UnicodeSegmentation;
+ use unicode_width::UnicodeWidthChar;
+ 
+ use unicode_width::UnicodeWidthStr;
+@@ -14,6 +16,7 @@ use crate::panes::alacritty_functions::parse_sgr_color;
+ 
+ pub const EMPTY_TERMINAL_CHARACTER: TerminalCharacter = TerminalCharacter {
+     character: ' ',
++    grapheme: None,
+     width: 1,
+     styles: RcCharacterStyles::Reset,
+ };
+@@ -919,15 +922,19 @@ impl Cursor {
+ 
+ #[derive(Clone, PartialEq)]
+ pub struct TerminalCharacter {
++    // The first scalar remains available for character-based operations (eg. word boundaries).
+     pub character: char,
++    // Allocate only for multi-scalar cells; sharing keeps scrollback/render clones cheap.
++    grapheme: Option<Rc<String>>,
+     pub styles: RcCharacterStyles,
+-    width: u8,
++    width: u32,
+ }
+ 
+ // This size has significant memory and CPU implications for long lines,
+-// be careful about allowing it to grow
++// be careful about allowing it to grow. The optional shared grapheme adds one
++// pointer (8 bytes) over the scalar-only representation; ASCII does not allocate.
+ #[cfg(target_arch = "x86_64")]
+-const _: [(); 16] = [(); std::mem::size_of::<TerminalCharacter>()];
++const _: [(); 24] = [(); std::mem::size_of::<TerminalCharacter>()];
+ 
+ impl TerminalCharacter {
+     #[inline]
+@@ -939,8 +946,9 @@ impl TerminalCharacter {
+     pub fn new_styled(character: char, styles: RcCharacterStyles) -> Self {
+         TerminalCharacter {
+             character,
++            grapheme: None,
+             styles,
+-            width: character.width().unwrap_or(0) as u8,
++            width: character.width().unwrap_or(0) as u32,
+         }
+     }
+ 
+@@ -953,6 +961,7 @@ impl TerminalCharacter {
+     pub fn new_singlewidth_styled(character: char, styles: RcCharacterStyles) -> Self {
+         TerminalCharacter {
+             character,
++            grapheme: None,
+             styles,
+             width: 1,
+         }
+@@ -961,11 +970,70 @@ impl TerminalCharacter {
+     pub fn width(&self) -> usize {
+         self.width as usize
+     }
++
++    pub fn characters(&self) -> impl Iterator<Item = char> + '_ {
++        self.grapheme
++            .is_none()
++            .then_some(self.character)
++            .into_iter()
++            .chain(self.grapheme.iter().flat_map(|text| text.chars()))
++    }
++
++    pub fn push_to(&self, output: &mut String) {
++        if let Some(text) = &self.grapheme {
++            output.push_str(text);
++        } else {
++            output.push(self.character);
++        }
++    }
++
++    pub fn is_plain_space(&self) -> bool {
++        self.character == ' ' && self.grapheme.is_none()
++    }
++
++    /// Extend a cell using Unicode grapheme boundaries, not a script-specific allowlist.
++    /// Zero-width format characters are retained even when they form their own grapheme.
++    pub fn extended_with(&self, character: char) -> Option<Self> {
++        if self.grapheme.is_none() && self.character.is_ascii() && character.is_ascii() {
++            return None;
++        }
++        let mut buffer = [0; 8];
++        let (candidate, previous_len) = if let Some(text) = &self.grapheme {
++            let mut candidate = String::with_capacity(text.len() + character.len_utf8());
++            candidate.push_str(text);
++            candidate.push(character);
++            (Cow::Owned(candidate), text.len())
++        } else {
++            // Most non-ASCII scalars start a new cell too. Test that boundary on the
++            // stack rather than allocating for every CJK letter or pair of letters.
++            let first_len = self.character.encode_utf8(&mut buffer[..4]).len();
++            let second_len = character.encode_utf8(&mut buffer[first_len..]).len();
++            let candidate = std::str::from_utf8(&buffer[..first_len + second_len]).unwrap();
++            (Cow::Borrowed(candidate), first_len)
++        };
++        let joins = candidate
++            .grapheme_indices(true)
++            .next_back()
++            .map(|(start, _)| start < previous_len)
++            .unwrap_or(false);
++        if !joins && character.width() != Some(0) {
++            return None;
++        }
++        let mut extended = self.clone();
++        // A cell always occupies at least one column. Orphan marks are handled by the grid.
++        extended.width = candidate.width().max(1).min(u32::MAX as usize) as u32;
++        extended.grapheme = Some(Rc::new(candidate.into_owned()));
++        Some(extended)
++    }
+ }
+ 
+ impl ::std::fmt::Debug for TerminalCharacter {
+     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+-        write!(f, "{}", self.character)
++        if let Some(text) = &self.grapheme {
++            f.write_str(text)
++        } else {
++            write!(f, "{}", self.character)
++        }
+     }
+ }
+ 
+diff --git a/zellij-server/src/panes/terminal_pane.rs b/zellij-server/src/panes/terminal_pane.rs
+index 9230b24595753045df7feef928467d548c7851ea..25bb44fd5d3bb13158efbda63886018a536fe3ef 100644
+--- a/zellij-server/src/panes/terminal_pane.rs
++++ b/zellij-server/src/panes/terminal_pane.rs
+@@ -179,6 +179,30 @@ pub struct TerminalPane {
+     kitty_interceptor: KittyApcInterceptor,
+ }
+ 
++/// vte 0.15 can skip valid scalars after completing a partial UTF-8 codepoint:
++/// its partial-buffer error path consumes `valid_up_to()` but only prints the first
++/// scalar. Feed an initial run of continuation bytes separately, so completion
++/// cannot read ahead into another scalar. The remaining input stays batched.
++pub(crate) fn advance_vte_bytes<P: vte::Perform>(
++    parser: &mut vte::Parser,
++    performer: &mut P,
++    bytes: &[u8],
++) -> usize {
++    let prefix_len = bytes
++        .iter()
++        .take(3)
++        .take_while(|b| **b & 0xc0 == 0x80)
++        .count();
++    let mut consumed = 0;
++    for byte in &bytes[..prefix_len] {
++        if parser.advance_until_terminated(performer, std::slice::from_ref(byte)) == 0 {
++            return consumed;
++        }
++        consumed += 1;
++    }
++    consumed + parser.advance_until_terminated(performer, &bytes[consumed..])
++}
++
+ impl Pane for TerminalPane {
+     fn x(&self) -> usize {
+         self.get_x()
+@@ -251,9 +275,8 @@ impl Pane for TerminalPane {
+                         // in the middle of this flush can never strand a
+                         // capture that has already left the input buffer.
+                         if !forwarded.is_empty() {
+-                            let consumed = self
+-                                .vte_parser
+-                                .advance_until_terminated(&mut self.grid, &forwarded);
++                            let consumed =
++                                advance_vte_bytes(&mut self.vte_parser, &mut self.grid, &forwarded);
+                             if consumed < forwarded.len() {
+                                 self.pending_pty_input.extend(&forwarded[consumed..]);
+                                 self.pending_pty_input.extend(&bytes[index - 1..]);
+@@ -267,9 +290,8 @@ impl Pane for TerminalPane {
+                 InterceptorResult::Captured(cmd) => {
+                     capture_started = false;
+                     if !forwarded.is_empty() {
+-                        let consumed = self
+-                            .vte_parser
+-                            .advance_until_terminated(&mut self.grid, &forwarded);
++                        let consumed =
++                            advance_vte_bytes(&mut self.vte_parser, &mut self.grid, &forwarded);
+                         if consumed < forwarded.len() {
+                             self.pending_pty_input.extend(&forwarded[consumed..]);
+                             self.pending_pty_input.extend(b"\x1b_G");
+@@ -291,9 +313,7 @@ impl Pane for TerminalPane {
+                 },
+             }
+         }
+-        let consumed = self
+-            .vte_parser
+-            .advance_until_terminated(&mut self.grid, &forwarded);
++        let consumed = advance_vte_bytes(&mut self.vte_parser, &mut self.grid, &forwarded);
+         if consumed < forwarded.len() {
+             self.pending_pty_input.extend(&forwarded[consumed..]);
+         }
+@@ -642,7 +662,7 @@ impl Pane for TerminalPane {
+                 self.get_content_x() + cursor_x + 1,
+                 &character_under_cursor.styles,
+             );
+-            fake_cursor.push(character_under_cursor.character);
++            character_under_cursor.push_to(&mut fake_cursor);
+             vte_output = Some(fake_cursor);
+         }
+         vte_output
+diff --git a/zellij-server/src/panes/unit/grid_tests.rs b/zellij-server/src/panes/unit/grid_tests.rs
+index fa221da9cc2e48625014b08a1778674439ffec64..df17626d7dd01d9ce9ca0e6463f23bdada9bec80 100644
+--- a/zellij-server/src/panes/unit/grid_tests.rs
++++ b/zellij-server/src/panes/unit/grid_tests.rs
+@@ -9125,7 +9125,7 @@ fn rendered_row(grid: &Grid, row_index: usize) -> String {
+     grid.viewport[row_index]
+         .columns
+         .iter()
+-        .map(|terminal_character| terminal_character.character)
++        .flat_map(|terminal_character| terminal_character.characters())
+         .collect()
+ }
+ 
+@@ -9158,47 +9158,31 @@ fn kana_and_hangul_syllables_occupy_two_columns_each() {
+ }
+ 
+ #[test]
+-fn zwj_emoji_sequence_keeps_one_wide_cell_per_emoji() {
+-    let grid =
+-        create_grid_with_content("\u{1f468}\u{200d}\u{1f469}\u{200d}\u{1f467}\u{200d}\u{1f466}");
+-
+-    let row = &grid.viewport[0];
+-    assert_eq!(
+-        rendered_row(&grid, 0),
+-        "\u{1f468}\u{1f469}\u{1f467}\u{1f466}"
+-    );
+-    assert_eq!(row.width(), 8);
+-    assert_eq!(cursor_position(&grid), Some((8, 0)));
+-}
+-
+-#[test]
+-fn skin_tone_modifier_occupies_its_own_two_columns() {
+-    let grid = create_grid_with_content("\u{1f44b}\u{1f3fd}");
+-
+-    let row = &grid.viewport[0];
+-    assert_eq!(row.columns.len(), 2);
+-    assert!(row
+-        .columns
+-        .iter()
+-        .all(|terminal_character| terminal_character.width() == 2));
+-    assert_eq!(row.width(), 4);
+-    assert_eq!(cursor_position(&grid), Some((4, 0)));
++fn emoji_sequences_occupy_one_wide_cell() {
++    for text in ["👨‍👩‍👧‍👦", "👋🏽", "🇺🇸", "1️⃣", "🏳️‍🌈", "👨‍❤️‍💋‍👨"]
++    {
++        let grid = create_grid_with_content(text);
++        assert_eq!(rendered_row(&grid, 0), text);
++        assert_eq!(grid.viewport[0].columns.len(), 1, "{text:?}");
++        assert_eq!(grid.viewport[0].width(), 2, "{text:?}");
++        assert_eq!(cursor_position(&grid), Some((2, 0)));
++    }
+ }
+ 
+ #[test]
+-fn variation_selector_and_zero_width_joiner_do_not_advance_the_cursor() {
+-    let grid = create_grid_with_content("\u{26a0}\u{fe0f}\u{200d}\u{200b}");
+-
+-    assert_eq!(rendered_row(&grid, 0), "\u{26a0}");
+-    assert_eq!(grid.viewport[0].width(), 1);
+-    assert_eq!(cursor_position(&grid), Some((1, 0)));
++fn variation_selector_updates_width_and_preserves_format_characters() {
++    let text = "\u{26a0}\u{fe0f}\u{200d}\u{200b}";
++    let grid = create_grid_with_content(text);
++    assert_eq!(rendered_row(&grid, 0), text);
++    assert_eq!(grid.viewport[0].width(), 2);
++    assert_eq!(cursor_position(&grid), Some((2, 0)));
+ }
+ 
+ #[test]
+-fn combining_marks_are_dropped_and_do_not_advance_the_cursor() {
+-    let grid = create_grid_with_content("e\u{301}a\u{300}\u{308}o\u{331}");
+-
+-    assert_eq!(rendered_row(&grid, 0), "eao");
++fn combining_marks_are_preserved_without_advancing_the_cursor() {
++    let text = "e\u{301}a\u{300}\u{308}o\u{331}";
++    let grid = create_grid_with_content(text);
++    assert_eq!(rendered_row(&grid, 0), text);
+     assert_eq!(grid.viewport[0].width(), 3);
+     assert_eq!(cursor_position(&grid), Some((3, 0)));
+ }
+@@ -9330,7 +9314,7 @@ fn yijing_and_trigram_symbols_are_wide_under_the_new_width_tables() {
+ fn halfwidth_katakana_sound_marks_are_zero_width_under_the_new_width_tables() {
+     let grid = create_grid_with_content("\u{ff76}\u{ff9e}\u{ff8a}\u{ff9f}");
+ 
+-    assert_eq!(rendered_row(&grid, 0), "\u{ff76}\u{ff8a}");
++    assert_eq!(rendered_row(&grid, 0), "\u{ff76}\u{ff9e}\u{ff8a}\u{ff9f}");
+     assert_eq!(grid.viewport[0].width(), 2);
+     assert_eq!(cursor_position(&grid), Some((2, 0)));
+ }
+@@ -9339,7 +9323,7 @@ fn halfwidth_katakana_sound_marks_are_zero_width_under_the_new_width_tables() {
+ fn soft_hyphen_and_hangul_filler_are_zero_width_under_the_new_width_tables() {
+     let grid = create_grid_with_content("a\u{ad}b\u{3164}c");
+ 
+-    assert_eq!(rendered_row(&grid, 0), "abc");
++    assert_eq!(rendered_row(&grid, 0), "a\u{ad}b\u{3164}c");
+     assert_eq!(grid.viewport[0].width(), 3);
+     assert_eq!(cursor_position(&grid), Some((3, 0)));
+ }
+@@ -9354,3 +9338,242 @@ fn a_character_wider_than_two_columns_advances_the_cursor_by_its_full_width() {
+     assert_eq!(row.width(), 4);
+     assert_eq!(cursor_position(&grid), Some((4, 0)));
+ }
++
++#[test]
++fn zwnj_is_preserved_in_pane_text() {
++    let text = "می‌روم";
++    let grid = create_grid_with_content(text);
++    assert_eq!(rendered_row(&grid, 0), text);
++    assert_eq!(cursor_position(&grid), Some((5, 0)));
++}
++
++// Keep the original samples as UTF-8: these assertions check exact scalar preservation,
++// not normalization or the outer terminal's choice of fonts, shaping or bidi layout.
++const UNICODE_GRAPHEME_SAMPLES: &str = include_str!("fixtures/unicode_graphemes.txt");
++
++#[test]
++fn unicode_grapheme_samples_survive_parser_copy_and_dump() {
++    use unicode_segmentation::UnicodeSegmentation;
++    use unicode_width::UnicodeWidthStr;
++    for text in UNICODE_GRAPHEME_SAMPLES.lines() {
++        let mut grid = create_grid_with_content(text);
++        let width: usize = text.graphemes(true).map(UnicodeWidthStr::width).sum();
++        assert_eq!(rendered_row(&grid, 0), text, "{text:?}");
++        assert_eq!(grid.viewport[0].width(), width, "{text:?}");
++        assert_eq!(cursor_position(&grid), Some((width, 0)), "{text:?}");
++        assert_eq!(grid.dump_screen(false), text, "{text:?}");
++        let ansi = grid.dump_screen_with_ansi(false);
++        assert!(ansi.contains(text), "ANSI dump lost text: {text:?}");
++        grid.start_selection(&Position::new(0, 0));
++        grid.end_selection(&Position::new(0, width as u16));
++        assert_eq!(grid.get_selected_text().as_deref(), Some(text), "{text:?}");
++    }
++}
++
++#[test]
++fn unicode_grapheme_samples_survive_every_pty_byte_split() {
++    for text in UNICODE_GRAPHEME_SAMPLES.lines() {
++        for split in 0..=text.len() {
++            let mut grid = create_grid_with_content("");
++            let mut parser = vte::Parser::new();
++            crate::panes::terminal_pane::advance_vte_bytes(
++                &mut parser,
++                &mut grid,
++                &text.as_bytes()[..split],
++            );
++            // Force an intervening render, just as happens between PTY reads.
++            grid.read_changes(0, 0);
++            crate::panes::terminal_pane::advance_vte_bytes(
++                &mut parser,
++                &mut grid,
++                &text.as_bytes()[split..],
++            );
++            assert_eq!(rendered_row(&grid, 0), text, "{text:?}, byte {split}");
++        }
++    }
++}
++
++#[test]
++fn unicode_graphemes_survive_reflow_and_scrollback() {
++    for text in UNICODE_GRAPHEME_SAMPLES.lines() {
++        let mut grid = create_grid_with_size_and_raw(20, 80, text.as_bytes());
++        grid.change_size(20, 6);
++        let reflowed: String = grid
++            .viewport
++            .iter()
++            .flat_map(|row| row.columns.iter().flat_map(|cell| cell.characters()))
++            .collect();
++        assert_eq!(reflowed.trim_end(), text, "narrow: {text:?}");
++        grid.change_size(20, 80);
++        assert_eq!(grid.dump_screen(true), text, "wide: {text:?}");
++    }
++    let text = "می‌روم 👨‍👩‍👦‍👦 é";
++    let mut grid = create_grid_with_size_and_raw(2, 8, text.as_bytes());
++    let mut parser = vte::Parser::new();
++    parser.advance(&mut grid, b"\r\nnext\r\nlast");
++    let scrolled: String = grid
++        .lines_above
++        .iter()
++        .chain(grid.viewport.iter())
++        .flat_map(|row| row.columns.iter().flat_map(|cell| cell.characters()))
++        .collect();
++    assert!(scrolled.starts_with(text), "{scrolled:?}");
++}
++
++#[test]
++fn unicode_grapheme_extensions_repaint_after_a_render() {
++    for (base, extension, complete, width) in [
++        ("x", "\u{307}", "ẋ", 1),
++        ("می", "\u{200c}", "می‌", 2),
++        ("⚠", "\u{fe0f}", "⚠️", 2),
++        ("👶", "🏽", "👶🏽", 2),
++    ] {
++        let mut grid = create_grid_with_content(base);
++        grid.read_changes(0, 0);
++        let mut parser = vte::Parser::new();
++        parser.advance(&mut grid, extension.as_bytes());
++        let (chunks, _, _) = grid.read_changes(0, 0);
++        let emitted: String = chunks
++            .iter()
++            .flat_map(|chunk| {
++                chunk
++                    .terminal_characters
++                    .iter()
++                    .flat_map(|cell| cell.characters())
++            })
++            .collect();
++        assert!(emitted.contains(complete), "{complete:?}: {emitted:?}");
++        assert_eq!(cursor_position(&grid), Some((width, 0)));
++    }
++}
++
++#[test]
++fn unicode_graphemes_extend_at_the_right_margin_before_wrapping() {
++    let mut grid = create_grid_with_size_and_raw(3, 4, "abcx".as_bytes());
++    let mut parser = vte::Parser::new();
++    parser.advance(&mut grid, "\u{307}y".as_bytes());
++    assert_eq!(rendered_row(&grid, 0), "abcẋ");
++    assert_eq!(rendered_row(&grid, 1), "y");
++    assert_eq!(cursor_position(&grid), Some((1, 1)));
++
++    let grid = create_grid_with_size_and_raw(3, 4, "abc☁️x".as_bytes());
++    assert_eq!(rendered_row(&grid, 0), "abc");
++    assert_eq!(rendered_row(&grid, 1), "☁️x");
++    assert_eq!(cursor_position(&grid), Some((3, 1)));
++}
++
++#[test]
++fn unicode_graphemes_are_erased_and_overwritten_as_whole_cells() {
++    for text in ["é", "👶🏽", "🇩🇪", "1️⃣"] {
++        let mut grid = create_grid_with_content(text);
++        let mut parser = vte::Parser::new();
++        parser.advance(&mut grid, b"\r\x1b[2X");
++        assert_eq!(grid.dump_screen(false), "");
++        parser.advance(&mut grid, b"z");
++        assert_eq!(grid.dump_screen(false), "z");
++    }
++}
++
++#[test]
++fn unicode_grapheme_search_uses_scalar_text_and_display_columns() {
++    for text in UNICODE_GRAPHEME_SAMPLES.lines() {
++        let mut grid = create_grid_with_content(text);
++        grid.set_search_string(text);
++        assert_eq!(grid.search_results.selections.len(), 1, "{text:?}");
++        let selection = grid.search_results.selections[0];
++        assert_eq!(selection.start, Position::new(0, 0), "{text:?}");
++        assert_eq!(selection.end.column(), grid.viewport[0].width(), "{text:?}");
++    }
++    let mut grid = create_grid_with_content("👶🏽éz");
++    grid.set_search_string("\u{301}");
++    let selection = grid.search_results.selections[0];
++    assert_eq!(selection.start, Position::new(0, 2));
++    assert_eq!(selection.end, Position::new(0, 3));
++}
++
++#[test]
++fn unicode_grapheme_repeat_repeats_the_complete_cell() {
++    let grid = create_grid_with_content("é\x1b[2b");
++    assert_eq!(rendered_row(&grid, 0), "ééé");
++    assert_eq!(cursor_position(&grid), Some((3, 0)));
++}
++
++#[test]
++fn unicode_grapheme_width_changes_preserve_neighboring_cells() {
++    for (sequence, expected, cursor) in [
++        ("abc\r☁️", "☁️c", 2),
++        ("abc\r\x1b[4h☁️", "☁️abc", 2),
++        ("⚡x\r\x1b[2C\u{fe0e}", "⚡︎ x", 1),
++        ("👶🏽x\r\x1b[1Cz", " zx", 2),
++        ("ábc\rX", "Xbc", 1),
++    ] {
++        let grid = create_grid_with_content(sequence);
++        assert_eq!(rendered_row(&grid, 0), expected, "{sequence:?}");
++        assert_eq!(cursor_position(&grid), Some((cursor, 0)), "{sequence:?}");
++    }
++}
++
++#[test]
++fn unicode_graphemes_keep_base_style_and_do_not_inherit_it_for_following_text() {
++    use crate::panes::terminal_character::{AnsiCode, NamedColor};
++    let grid = create_grid_with_content("\x1b[31me\x1b[32m\u{301}x");
++    assert_eq!(rendered_row(&grid, 0), "éx");
++    assert_eq!(
++        grid.viewport[0].columns[0].styles.foreground,
++        Some(AnsiCode::NamedColor(NamedColor::Red))
++    );
++    assert_eq!(
++        grid.viewport[0].columns[1].styles.foreground,
++        Some(AnsiCode::NamedColor(NamedColor::Green))
++    );
++}
++
++#[test]
++fn unicode_grapheme_copy_on_write_does_not_change_rendered_or_scrollback_clones() {
++    let mut grid = create_grid_with_content("ẋ");
++    let (chunks, _, _) = grid.read_changes(0, 0);
++    let mut parser = vte::Parser::new();
++    parser.advance(&mut grid, "\u{301}".as_bytes());
++    let old: String = chunks[0].terminal_characters[0].characters().collect();
++    assert_eq!(old, "ẋ");
++    assert_eq!(rendered_row(&grid, 0), "ẋ́");
++}
++
++#[test]
++fn unicode_parser_workaround_preserves_ascii_after_partial_utf8() {
++    // vte 0.15 prints the mark but skips 't' here without the continuation-prefix workaround.
++    let mut grid = create_grid_with_content("");
++    let mut parser = vte::Parser::new();
++    for bytes in [b"s\xcc".as_slice(), b"\xb6t\xcc\xb6".as_slice()] {
++        assert_eq!(
++            crate::panes::terminal_pane::advance_vte_bytes(&mut parser, &mut grid, bytes),
++            bytes.len()
++        );
++    }
++    assert_eq!(rendered_row(&grid, 0), "s̶t̶");
++}
++
++#[test]
++fn unicode_parser_workaround_respects_forwarding_termination() {
++    let mut grid = new_grid_for_forwarding_test();
++    let mut parser = vte::Parser::new();
++    let bytes = b"x\x1b]4;1;?\x07tail";
++    let consumed = crate::panes::terminal_pane::advance_vte_bytes(&mut parser, &mut grid, bytes);
++    assert_eq!(&bytes[consumed..], b"tail");
++    assert_eq!(rendered_row(&grid, 0), "x");
++}
++
++#[test]
++fn unicode_grapheme_regex_highlights_cover_whole_cells() {
++    let grid = create_grid_with_content("👶🏽éz");
++    let (_, _, text, boundaries) =
++        super::collect_and_build_logical_line(&grid.viewport, 0).unwrap();
++    for (pattern, start, end) in [("🏽", 0, 2), ("\u{301}", 2, 3), ("z", 3, 4)] {
++        let regex = regex::Regex::new(pattern).unwrap();
++        let matched = regex.find(&text).unwrap();
++        let (selection, _, _, _, _) =
++            super::match_to_selection(&matched, &boundaries, &grid.viewport).unwrap();
++        assert_eq!(selection.start, Position::new(0, start));
++        assert_eq!(selection.end, Position::new(0, end));
++    }
++}
+diff --git a/zellij-server/src/panes/unit/terminal_pane_tests.rs b/zellij-server/src/panes/unit/terminal_pane_tests.rs
+index a4307d49a5839d333b26e99ead67df5831122e14..a64cedfd216bcb1f752d9206eb914306f7818be5 100644
+--- a/zellij-server/src/panes/unit/terminal_pane_tests.rs
++++ b/zellij-server/src/panes/unit/terminal_pane_tests.rs
+@@ -1194,3 +1194,34 @@ pub fn guest_modal_no_modal_passes_input_through() {
+         Some(crate::tab::AdjustedInput::WriteBytesToTerminal(_))
+     ));
+ }
++
++#[test]
++fn unicode_graphemes_survive_real_pty_input_and_incremental_rendering() {
++    for text in include_str!("fixtures/unicode_graphemes.txt").lines() {
++        for chunk_size in [1, 2, 3, 4, 7, 64] {
++            let mut pane = make_terminal_pane_for_bell();
++            for bytes in text.as_bytes().chunks(chunk_size) {
++                pane.handle_pty_bytes(bytes.to_vec());
++                pane.render(None).unwrap();
++            }
++            assert_eq!(
++                pane.dump_screen(false, None),
++                text,
++                "{text:?}, chunk size {chunk_size}"
++            );
++            // A full repaint must include the same cells as the original stream.
++            pane.grid.force_change_size(20, 121);
++            let (full, _, _) = pane.grid.read_changes(0, 0);
++            let rendered: String = full
++                .iter()
++                .flat_map(|chunk| {
++                    chunk
++                        .terminal_characters
++                        .iter()
++                        .flat_map(|cell| cell.characters())
++                })
++                .collect();
++            assert!(rendered.starts_with(text), "{text:?}: {rendered:?}");
++        }
++    }
++}
+diff --git a/docs/UNICODE_GRAPHEMES.md b/docs/UNICODE_GRAPHEMES.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..83d0066e25b7072498f2f5135443f0c35767fb0f
+--- /dev/null
++++ b/docs/UNICODE_GRAPHEMES.md
+@@ -0,0 +1,74 @@
++# Unicode graphemes in terminal panes
++
++## What was broken
++
++The VTE parser delivers Unicode scalars one at a time. `Grid::add_character`
++previously discarded every scalar whose width was zero. A regression test showed
++`می‌روم` becoming `میروم`: U+200C ZERO WIDTH NON-JOINER was deleted. Accents,
++vowel marks, variation selectors and joiners were lost for the same reason.
++Emoji modifiers and regional indicators were instead stored as separate cells.
++
++## The change
++
++- A `TerminalCharacter` retains its first scalar and can additionally hold shared,
++  complete UTF-8 text. Unicode grapheme boundaries (`unicode-segmentation`), not
++  language-specific rules, decide whether another scalar extends the cell.
++  Zero-width format characters are also retained with the preceding cell.
++- The complete cell's width comes from `unicode-width`. The grid updates its
++  cursor and cached row width when a selector or other continuation changes it.
++  Extension happens before wrapping, so an accent at the right margin stays with
++  its base. A cluster that becomes wide at the margin can wrap as a whole.
++- Renderers, fake cursors, copy/selection, pane-content reports and dumps emit the
++  complete cell. Search matches scalar text but maps hits back to display cells;
++  regex highlights round partial-cluster matches out to the complete cell.
++- Completed cells keep their base character's style. A later style escape still
++  applies to subsequent cells. Repeating a character repeats the complete cell.
++
++A second bug appeared while testing arbitrary byte splits: VTE 0.15 can consume
++ASCII after a partially received UTF-8 scalar without printing it. The minimized
++case is `s\xcc` followed by `\xb6t\xcc\xb6` (the text `s̶t̶`). The pane's
++`advance_vte_bytes` helper feeds up to three initial continuation bytes separately,
++then processes the rest in a batch. All three pane parser entry points use it;
++forwarding/termination semantics are preserved and tested.
++
++## Coverage
++
++`zellij-server/src/panes/unit/fixtures/unicode_graphemes.txt` contains all 61
++original example lines, without normalization. Tests cover:
++
++- Exact text, display width, cursor position, copy, plain and ANSI dumps, search.
++- Every two-chunk byte split, including splits inside a UTF-8 scalar, with an
++  intervening render; actual pane input/rendering with six different chunk sizes.
++- Reflow and scrollback cell contents, late repaint, margins, overwrite, erase,
++  insert mode, style changes, repeat, shared-cell independence and output clipping.
++- Both positioned and newline output serializers; regex matches inside clusters.
++
++Useful commands (with native OpenSSL/zlib build dependencies available):
++
++```sh
++cargo test -p zellij-server --lib
++cargo fmt --all -- --check
++cargo build -p zellij --no-default-features
++```
++
++The no-default-features build is a local test executable, not an installation or
++replacement of a running Zellij session.
++
++## Scope and trade-offs
++
++- Terminal pane text only: this does not implement a shaping engine, font fallback,
++  Unicode bidi reordering, or grapheme-aware layout for every Zellij UI label.
++  Text remains in logical input order. Actual glyph appearance and agreement with
++  the width tables depend on the outer terminal. Automated tests are not visual
++  verification of every terminal/font combination.
++- A cell is now 24 rather than 16 bytes on x86-64. Single-scalar cells do not
++  allocate text; multi-scalar text is shared by clones. This has a scrollback
++  memory cost. No throughput or large-scrollback benchmark was performed.
++- Orphan zero-width scalars without a preceding cell are still ignored. If an
++  extension makes a cell too wide for the entire pane, or for the remaining space
++  with wrapping disabled, the existing cell is retained.
++- Case-insensitive and whole-word search retain their existing ASCII rules;
++  canonical-equivalence normalization is not added.
++- Existing screen-dump trimming of trailing spaces at soft-wrap boundaries is
++  unchanged. Reflow tests check the stored cells so this separate dump behavior
++  cannot conceal data loss in the grid.
+diff --git a/zellij-server/src/panes/unit/fixtures/unicode_graphemes.txt b/zellij-server/src/panes/unit/fixtures/unicode_graphemes.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..9b447e26f74341c854b3b6546329ccc21a2f199c
+--- /dev/null
++++ b/zellij-server/src/panes/unit/fixtures/unicode_graphemes.txt
+@@ -0,0 +1,61 @@
++ASCII abc 123
++ẋ
++ü
++é
++ấ
++s̶t̶r̶i̶k̶e̶
++می‌روم
++می‌توانم
++خانه‌ها
++مُحَمَّد
++السَّلَامُ عَلَيْكُمْ
++שָׁלוֹם
++สวัสดี
++น้ำ
++กรุงเทพ
++ที่บ้านทำตัวไม่ถูก
++सिखाया
++हिन्दी
++ব্যঞ্জনবর্ণ
++안녕하세요
++안녕하세요
++ありがとう
++日本語
++ｍｇ
++★☆
++–—
++👍
++👍🏻
++👶
++👶🏽
++🧑‍🌾
++👩‍👩‍👦‍👦
++👨‍❤️‍💋‍👨
++🏳️‍🌈
++🏳️‍⚧️
++☁
++☁️
++⚠
++⚠︎
++⚠️
++⚡
++⚡︎
++⚡️
++✔
++✔️
++🇺🇸
++🇺🇿
++🇩🇪
++1
++1️⃣
++#
++#️⃣
++*
++*️⃣
++Aمی‌رومB
++left שלום right
++abc فارسی 123 def
++فارسی test فارسی
++hello 👨‍👩‍👦‍👦 world
++ẋẋẋẋẋ
++üüüüü

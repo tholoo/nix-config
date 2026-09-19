@@ -58,6 +58,7 @@ in
       pi.enable = config.mine.pi.enable;
     };
     programs.zellij.enable = true;
+    programs.zellij.package = pkgs.mine.zellij-graphemes;
     # Zellij misses live updates through Nix-store symlinks. Keep the generated
     # source managed by Home Manager, and publish a regular file after old links
     # have been removed. Atomic replacement also avoids parsing partial writes.

@@ -82,6 +82,44 @@ Thinking expands only while streaming, then collapses to a summary. This uses
 five preview lines; Bash command previews allow eight lines; diffs collapse
 after sixteen lines. Colors follow the Pi theme. Extra detail starts disabled.
 
+A local, display-only patch to the pinned UI extension keeps completed text
+results visible: up to eight lines in full, otherwise the first three and last
+three with an exact hidden-line count. Failures keep the first three and last
+twelve lines (or all lines if the windows overlap), with `Failed` or the Bash
+exit code in the status row. Commands remain visible after completion; existing
+file/search targets remain in their headings, including skill file paths.
+Groups retain each call's bounded preview instead of merging repeated targets
+into one header. Failed calls stay visible even if completed previews are off.
+Successful diffs and image rendering retain their specialized upstream behavior.
+
+The additional writable UI settings and managed defaults are:
+
+| Setting | Default | Purpose |
+|---------|---------|---------|
+| `completedToolPreview` | `true` | Keep completed text previews, including inside groups |
+| `outputPreviewFullLines` | `8` | Show short output completely |
+| `outputPreviewHeadLines` | `3` | Beginning of longer output |
+| `outputPreviewTailLines` | `3` | End of longer successful output |
+| `failurePreviewTailLines` | `12` | Failure tail, never smaller than the normal tail |
+| `bashAlwaysShowCommand` | `true` | Keep the command/script block after success |
+
+Preview line settings accept zero and are bounded at 200 each. The existing
+`bashCommandPreviewLines` controls the command block budget; zero hides that
+block. Collapsed lines are clipped to terminal width to prevent one long JSON
+line from filling the screen; Ctrl+O wraps and expands the returned output up
+to `expandedPreviewMaxLines`, with extra detail using its separate larger cap.
+Existing explicit MCP `hidden`/`summary` modes still suppress successful output,
+but not failures. These options affect display only, not tool execution, stored
+results or model context. Tool-side truncation is labeled separately: a preview
+can only show the beginning/end of the output actually returned to Pi, not lines
+already discarded by the tool.
+
+`packages/pi-extensions/claude-ui-previews.patch` is applied before bundling,
+with the pure selection policy in `output-preview.ts`. Updating the pinned UI
+requires reviewing/rebasing this patch. The package build runs policy tests and
+synthetic renderer tests against the real Pi SDK, in an isolated profile without
+provider requests, live tool execution or changes to the user's running UI.
+
 Ctrl+O expands output; Ctrl+Shift+O toggles extra detail. `/cc-tools status`
 shows current display settings, `/cc-tools group toggle` changes grouping,
 and `/cc-theme` and `/cc-spinner` control theme and spinner colors. Prompt
@@ -124,6 +162,15 @@ additional tool stamps are off. `/stamp` opens its settings menu. Preferences
 are writable in the agent directory's `pi-stamp.json`; activation reapplies
 managed defaults while preserving other fields. Stamp rows stay outside model
 context. All three extensions are loaded in the main agent only.
+
+## Background process status
+
+With `mine.pi.enableProcesses`, activation enables the below-editor status widget
+in the writable `~/.pi/agent/extensions/processes.json`. The managed `widget`
+section is reapplied on activation; other top-level process preferences remain
+untouched. `/ps:settings` can change it during use. The line is empty when there
+are no managed processes; a runtime toggle may need a subsequent process refresh
+before appearing. `/ps:dock expand` opens the more detailed live dock.
 
 ## Prompt editing
 
