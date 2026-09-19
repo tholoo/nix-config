@@ -48,7 +48,8 @@ in
         context7.command = lib.getExe pkgs.context7-mcp;
 
         nvim = lib.mkIf config.mine.nixvim.enable {
-          command = lib.getExe inputs.nvim-mcp.packages.${pkgs.stdenv.hostPlatform.system}.default;
+          command = lib.getExe pkgs.mine.nvim-mcp-bound;
+          env_vars = [ "DEV_NVIM_SOCKET" ];
         };
 
         playwright = {

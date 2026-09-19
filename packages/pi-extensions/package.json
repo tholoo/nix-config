@@ -7,6 +7,11 @@
     "pi-subagents": "0.68.0",
     "pi-web-access": "0.29.0",
     "@aliou/pi-processes": "0.12.0",
-    "@narumitw/pi-goal": "0.54.5"
+    "@narumitw/pi-goal": "0.54.5",
+    "pi-vim": "0.14.2",
+    "pi-claude-code-ui": "1.0.83",
+    "@juicesharp/rpiv-ask-user-question": "2.10.1",
+    "@narumitw/pi-worktree": "0.51.7",
+    "@narumitw/pi-stamp": "0.51.1"
   }
 }

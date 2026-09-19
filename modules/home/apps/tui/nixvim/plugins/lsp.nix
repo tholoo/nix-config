@@ -41,20 +41,21 @@
     cssls.enable = true;
     marksman.enable = true;
   };
+  # fzf-lua centers after the async jump, including single-result navigation.
   lsp.keymaps = [
     {
       key = "gd";
-      lspBufAction = "definition";
+      action.__raw = "require('fzf-lua').lsp_definitions";
       options.desc = "Go to definition";
     }
     {
       key = "gD";
-      lspBufAction = "declaration";
+      action.__raw = "require('fzf-lua').lsp_declarations";
       options.desc = "Go to declaration";
     }
     {
       key = "gy";
-      lspBufAction = "type_definition";
+      action.__raw = "require('fzf-lua').lsp_typedefs";
       options.desc = "Go to type definition";
     }
     {

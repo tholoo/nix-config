@@ -112,6 +112,7 @@ in
           };
         };
       profiles.default = {
+        settings."zen.glance.enabled" = false;
         extensions = {
           force = true;
           settings = {

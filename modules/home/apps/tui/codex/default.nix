@@ -56,7 +56,7 @@ let
     name = "${llmAgents.codex.name}-zellij-resume";
   };
 
-  agentSkills = import ../ai/skills.nix { inherit inputs lib; };
+  agentSkills = import ../ai/skills.nix { inherit inputs lib pkgs; };
 
   codexSettings = {
     personality = "pragmatic";

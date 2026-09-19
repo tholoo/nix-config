@@ -1,4 +1,4 @@
-"""Precompile extension sources without bundling or moving import.meta paths."""
+"""Precompile extensions, bundling the UI with lazy Shiki imports."""
 
 import json
 from pathlib import Path
@@ -8,12 +8,31 @@ import sys
 
 PACKAGES = [
     "pi-mcp-adapter", "pi-web-access", "pi-subagents", "@aliou/pi-processes",
-    "@narumitw/pi-goal",
+    "@narumitw/pi-goal", "pi-vim",
+    "@juicesharp/rpiv-ask-user-question", "@narumitw/pi-worktree",
+    "@narumitw/pi-stamp",
 ]
 RELATIVE_TS = re.compile(r'''(["'])(\.{1,2}/[^"'\n]+)\.ts\1''')
 
 
 def compile_extensions(root, esbuild):
+    # Resolve Shiki's dynamic package imports at build time: Pi's standalone
+    # loader cannot resolve those bare imports at runtime. Splitting keeps
+    # languages/themes lazy, while SDK imports still use Pi's shared runtime.
+    ui = Path(root) / "pi-claude-code-ui"
+    subprocess.run([
+        esbuild, str(ui / "extensions/index.ts"),
+        str(ui / "extensions/spinner.ts"), "--bundle", "--splitting",
+        "--format=esm", "--platform=node", "--target=es2022",
+        "--external:@earendil-works/pi-coding-agent",
+        "--external:@earendil-works/pi-tui",
+        f"--outdir={ui / 'precompiled'}", "--log-level=warning",
+    ], check=True)
+    manifest = ui / "package.json"
+    data = json.loads(manifest.read_text())
+    data["pi"]["extensions"] = ["./precompiled/index.js", "./precompiled/spinner.js"]
+    manifest.write_text(json.dumps(data, indent=2) + "\n")
+
     for name in PACKAGES:
         package = Path(root) / name
         sources = [p for p in package.rglob("*.ts") if not p.name.endswith(".d.ts")]

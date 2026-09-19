@@ -1,4 +1,8 @@
-{ inputs, lib }:
+{
+  inputs,
+  lib,
+  pkgs,
+}:
 
 let
   discoverSkills =
@@ -19,9 +23,16 @@ let
 
   upstreamSkills = discoverSkills (inputs.matt-pocock-skills + "/skills");
   localSkills = if builtins.pathExists ./skills then discoverSkills ./skills else { };
-  duplicateNames = lib.intersectLists (lib.attrNames upstreamSkills) (lib.attrNames localSkills);
+  packagedSkills = {
+    tour = pkgs.mine.tour-skill;
+  };
+  duplicateNames =
+    lib.intersectLists (lib.attrNames upstreamSkills) (lib.attrNames localSkills)
+    ++ lib.intersectLists (lib.attrNames (upstreamSkills // localSkills)) (
+      lib.attrNames packagedSkills
+    );
 in
 assert lib.assertMsg (
   duplicateNames == [ ]
-) "Duplicate local and Matt Pocock skills: ${lib.concatStringsSep ", " duplicateNames}";
-upstreamSkills // localSkills
+) "Duplicate shared skills: ${lib.concatStringsSep ", " duplicateNames}";
+upstreamSkills // localSkills // packagedSkills

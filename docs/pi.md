@@ -1,7 +1,9 @@
 # Pi configuration
 
 `mine.pi.enable` installs the Pi release pinned by `llm-agents` and a separate
-locked package containing MCP, web search, subagents, background processes and goals.
+locked package containing MCP, web search, subagents, background processes, goals
+and Vim-style prompt editing, plus Claude-style tool displays, structured
+questions, worktree management, and transcript timestamps.
 The initial lock contains `pi-mcp-adapter` 2.34.0, `pi-web-access` 0.29.0,
 `pi-subagents` 0.68.0 and `@aliou/pi-processes` 0.12.0. The initial default is
 `openai-codex/gpt-6-astra` with high reasoning; `mine.pi.model` changes the model.
@@ -67,6 +69,76 @@ not establish a code-quality improvement.
 No custom personal extension, external memory store, Telegram integration,
 auto-fixing LSP suite, alternative statusline or second orchestrator is enabled.
 Shared skills are loaded from the same source used by the other coding agents.
+
+## Tool display
+
+`pi-claude-code-ui` 1.0.83 supplies grouped tool rows, bordered transparent
+backgrounds, highlighted diffs, MCP/custom tool styling, and a Claude-style
+spinner. It replaces `pi-code-previews` and is loaded only in the main agent.
+Bash commands use a single accent color rather than syntax highlighting.
+
+Thinking expands only while streaming, then collapses to a summary. This uses
+`thinkingMode: "live"` with Pi's `hideThinkingBlock: true`. Running tools show
+five preview lines; Bash command previews allow eight lines; diffs collapse
+after sixteen lines. Colors follow the Pi theme. Extra detail starts disabled.
+
+Ctrl+O expands output; Ctrl+Shift+O toggles extra detail. `/cc-tools status`
+shows current display settings, `/cc-tools group toggle` changes grouping,
+and `/cc-theme` and `/cc-spinner` control theme and spinner colors. Prompt
+editing remains provided by `pi-vim`.
+
+The extension reads and writes `~/.pi/settings.json`, separately from Pi's
+`~/.pi/agent/settings.json`. Activation merges the managed UI defaults into
+that writable file, retaining unrelated settings. Runtime customizations last
+until the next activation reapplies managed defaults.
+
+The Nix build bundles both UI entries with lazy Shiki chunks, resolving package
+imports for Pi's standalone loader. Highlighting loads on demand rather than
+initializing a highlighter at startup.
+
+## Questions, worktrees, and timestamps
+
+`@juicesharp/rpiv-ask-user-question` 2.10.1 adds the model's `ask_user_question`
+tool. Its dialog supports multiple questions, single/multiple selections,
+option previews, notes, and custom text answers. Tab changes questions and
+the Submit tab reviews answers. Ctrl+] collapses/reopens the dialog; Escape
+cancels it. English and the upstream question guidance remain the defaults.
+Ctrl+G in a text answer uses Pi's configured external editor.
+
+`@narumitw/pi-worktree` 0.51.7 adds `/worktree`, an interactive manager for
+listing, creating, switching, removing, and pruning worktrees. New worktree
+paths are configured as `~/worktrees/<repo>/<normalized-branch>`; the menu can
+change the root or override a path for an individual worktree. Activation
+reapplies that managed root in the writable agent directory's `pi-worktree.json`.
+It does not create a worktree automatically or replace subagents' own worktree
+handling.
+
+Switching through `/worktree` moves Pi's session, not the surrounding terminal
+or the Neovim pane paired by `dev`. The existing editor socket binding remains
+with the original workspace. To use a paired editor in another worktree, open
+a separate tab in that directory and run `dev` there.
+
+`@narumitw/pi-stamp` 0.51.1 adds dim message timestamps and response duration.
+Managed defaults use local 24-hour time with seconds; model/token metadata and
+additional tool stamps are off. `/stamp` opens its settings menu. Preferences
+are writable in the agent directory's `pi-stamp.json`; activation reapplies
+managed defaults while preserving other fields. Stamp rows stay outside model
+context. All three extensions are loaded in the main agent only.
+
+## Prompt editing
+
+`pi-vim` 0.14.2 adds Vim-style modal editing to the main prompt. It is pinned
+and precompiled with the other extensions, and is not loaded in subagents.
+Start typing in Insert mode; Escape enters Normal mode, where motions, operators,
+text objects, undo/redo and visual selections are available. Escape in Normal
+mode passes through to Pi's interrupt action. Existing model/session shortcuts
+remain configured as before.
+
+Only explicit yanks mirror to the system clipboard; deletes and changes use the
+extension's internal register. When Neovim is enabled, Ctrl+G opens the draft in
+the configured Neovim executable, independent of old `EDITOR`/`VISUAL` values.
+Save and quit to return the draft to Pi, then submit it normally. This opens a
+temporary editor in Pi's pane, not the paired editor in the left pane of `dev`.
 
 ## Goals
 

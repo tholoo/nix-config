@@ -18,7 +18,7 @@ let
   name = "antigravity-cli";
 
   llmAgents = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system};
-  agentSkills = import ../ai/skills.nix { inherit inputs lib; };
+  agentSkills = import ../ai/skills.nix { inherit inputs lib pkgs; };
 in
 {
   options.mine.${name} = mkEnable config {

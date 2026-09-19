@@ -38,6 +38,11 @@
     # Keep upstream's package set intact so the nightly matches its binary cache.
     neovim-nightly-overlay.url = "github:nix-community/neovim-nightly-overlay";
     nvim-mcp.url = "github:paulburgess1357/nvim-mcp";
+    # Plugin and authoring skill share the same pinned upstream source.
+    tour-nvim = {
+      url = "github:tholoo/tour.nvim";
+      flake = false;
+    };
 
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
 

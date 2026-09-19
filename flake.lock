@@ -1373,6 +1373,7 @@
         "srvos": "srvos",
         "stylix": "stylix",
         "tandem": "tandem",
+        "tour-nvim": "tour-nvim",
         "vigiland": "vigiland",
         "zellij-agent-deck": "zellij-agent-deck",
         "zellij-switch": "zellij-switch",
@@ -1736,6 +1737,22 @@
       "original": {
         "owner": "tinted-theming",
         "repo": "base16-zed",
+        "type": "github"
+      }
+    },
+    "tour-nvim": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1789830930,
+        "narHash": "sha256-vBQfIzdYFEUKJt10ahjQjMGqsH/vpWqeZtqOoOtdk5w=",
+        "owner": "tholoo",
+        "repo": "tour.nvim",
+        "rev": "1aec31cb27d0ff17e52688e0db367f5217278fa8",
+        "type": "github"
+      },
+      "original": {
+        "owner": "tholoo",
+        "repo": "tour.nvim",
         "type": "github"
       }
     },

@@ -52,9 +52,10 @@ in
     ];
 
     programs.zellij-agent-deck = {
-      enable = config.mine.codex.enable || config.mine.opencode.enable;
+      enable = config.mine.codex.enable || config.mine.opencode.enable || config.mine.pi.enable;
       package = codexHooks.agentDeckPackage;
       opencode.enable = config.mine.opencode.enable;
+      pi.enable = config.mine.pi.enable;
     };
     programs.zellij.enable = true;
     # Zellij misses live updates through Nix-store symlinks. Keep the generated

@@ -34,6 +34,11 @@ map("n", "<leader>uh", function()
 end, "Toggle inlay hints")
 map("n", "<C-d>", "<C-d>zz", "Half page down")
 map("n", "<C-u>", "<C-u>zz", "Half page up")
+map("n", "<C-o>", "<C-o>zvzz", "Older jump")
+map("n", "<C-i>", "<C-i>zvzz", "Newer jump")
+map("n", "<C-t>", "<C-t>zvzz", "Previous tag")
+map("n", "n", "nzvzz", "Next search match")
+map("n", "N", "Nzvzz", "Previous search match")
 map("x", "<", "<gv", "Indent left")
 map("x", ">", ">gv", "Indent right")
 
@@ -46,6 +51,37 @@ vim.diagnostic.config({
 })
 
 local group = vim.api.nvim_create_augroup("editor_workflow", { clear = true })
+local reading_stdin = false
+vim.api.nvim_create_autocmd("StdinReadPre", {
+	group = group,
+	once = true,
+	callback = function()
+		reading_stdin = true
+	end,
+})
+vim.api.nvim_create_autocmd("VimEnter", {
+	group = group,
+	once = true,
+	callback = function()
+		vim.schedule(function()
+			-- Only replace an empty interactive start, not files, stdin, or a session.
+			if
+				reading_stdin
+				or vim.fn.argc() ~= 0
+				or #vim.api.nvim_list_uis() == 0
+				or vim.v.this_session ~= ""
+				or vim.api.nvim_buf_get_name(0) ~= ""
+				or vim.bo.buftype ~= ""
+				or vim.bo.modified
+				or vim.api.nvim_buf_line_count(0) ~= 1
+				or vim.api.nvim_buf_get_lines(0, 0, 1, false)[1] ~= ""
+			then
+				return
+			end
+			fzf.files()
+		end)
+	end,
+})
 -- Reload external AI edits only when Neovim has no conflicting unsaved changes.
 vim.api.nvim_create_autocmd({ "FocusGained", "TermClose", "TermLeave" }, {
 	group = group,

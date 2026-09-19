@@ -11,7 +11,7 @@ let
   json = pkgs.formats.json { };
   basePi = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.pi;
   extensionRoot = "${pkgs.mine.pi-extensions}/lib/pi-extensions/node_modules";
-  agentSkills = import ../ai/skills.nix { inherit inputs lib; };
+  agentSkills = import ../ai/skills.nix { inherit inputs lib pkgs; };
   skills = pkgs.linkFarm "pi-skills" (
     lib.mapAttrsToList (name: path: { inherit name path; }) agentSkills
   );
@@ -123,6 +123,7 @@ let
     enableInstallTelemetry = false;
     enableAnalytics = false;
     hideThinkingBlock = true;
+    piVim.clipboardMirror = "yank";
     compaction = {
       enabled = true;
       reserveTokens = 16384;
@@ -151,6 +152,11 @@ let
         "${extensionRoot}/pi-web-access"
         "${extensionRoot}/pi-subagents"
         "${extensionRoot}/@narumitw/pi-goal"
+        "${extensionRoot}/pi-vim"
+        "${extensionRoot}/pi-claude-code-ui"
+        "${extensionRoot}/@juicesharp/rpiv-ask-user-question"
+        "${extensionRoot}/@narumitw/pi-worktree"
+        "${extensionRoot}/@narumitw/pi-stamp"
       ]
       ++ lib.optional cfg.enableProcesses "${extensionRoot}/@aliou/pi-processes";
     # Replace the old discovery lists as well as the old npm package list.
@@ -168,7 +174,36 @@ let
       agentOverrides.researcher.extensions = [ "${extensionRoot}/pi-web-access/index.js" ];
     };
   };
-  managedConfig = json.generate "pi-managed-settings.json" managedSettings;
+  managedConfig = json.generate "pi-managed-settings.json" (
+    managedSettings
+    // lib.optionalAttrs config.mine.nixvim.enable {
+      externalEditor = "${config.programs.nixvim.build.package}/bin/nvim";
+    }
+  );
+  # This extension reads/writes ~/.pi/settings.json rather than Pi's agent
+  # settings. Keep it writable for /cc-tools, /cc-theme and /cc-spinner.
+  managedUiConfig = json.generate "pi-managed-ui-settings.json" {
+    toolBackground = "border";
+    groupToolCalls = true;
+    thinkingMode = "live";
+    liveToolPreview = true;
+    liveToolPreviewLines = 5;
+    bashCommandPreviewLines = 8;
+    diffCollapsedLines = 16;
+    themeAdaptive = true;
+    extraToolOutputExpanded = false;
+  };
+  managedStampConfig = json.generate "pi-managed-stamp-settings.json" {
+    hourCycle = "24h";
+    showSeconds = true;
+    timeZone = "local";
+    responseTiming = "duration";
+    assistantMetadata = "off";
+    toolStamps = false;
+  };
+  managedWorktreeConfig = json.generate "pi-managed-worktree-settings.json" {
+    worktreeRoot = "~/worktrees";
+  };
   agents = import ./roles.nix;
 in
 {
@@ -235,6 +270,12 @@ in
     home.activation.piWritableConfig = config.lib.dag.entryAfter [ "writeBoundary" ] ''
       run ${pkgs.python3}/bin/python ${./merge-settings.py} \
         ${managedConfig} ${lib.escapeShellArg "${config.home.homeDirectory}/.pi/agent/settings.json"}
+      run ${pkgs.python3}/bin/python ${./merge-settings.py} \
+        ${managedUiConfig} ${lib.escapeShellArg "${config.home.homeDirectory}/.pi/settings.json"}
+      run ${pkgs.python3}/bin/python ${./merge-settings.py} \
+        ${managedStampConfig} ${lib.escapeShellArg "${config.home.homeDirectory}/.pi/agent/pi-stamp.json"}
+      run ${pkgs.python3}/bin/python ${./merge-settings.py} \
+        ${managedWorktreeConfig} ${lib.escapeShellArg "${config.home.homeDirectory}/.pi/agent/pi-worktree.json"}
     '';
 
     home.file = {
@@ -243,11 +284,21 @@ in
         builtins.readFile ./instructions.md
         + lib.optionalString (cfg.enableMcp && config.mine.nixvim.enable) ''
 
-          When asked to work with Neovim, discover the nvim MCP tools and connect
-          to the running editor. Match the instance to the current project; ask
-          if multiple instances still match. Read editor state before acting.
+          Treat Neovim configuration changes (Nix modules, plugins, keymaps, and
+          startup behavior) as repository work: edit and validate the configuration
+          without connecting to a running editor unless the user requests live
+          inspection or testing.
+          When the user asks to interact with a running Neovim session (inspect
+          buffers, edit in the editor, or open a tour), discover the nvim MCP tools
+          and connect to that editor. When DEV_NVIM_SOCKET is set, it identifies the
+          editor paired with this dev workspace; use that connection. If it is
+          unavailable, report that the workspace editor needs restarting.
+          Otherwise match the instance to the current project and ask if multiple
+          instances still match. Read editor state before acting.
           Use buffer edits for open files so unsaved changes and undo history are
           preserved. Save only as required by the task, then check diagnostics.
+          For requested code tours or walkthroughs in Neovim, use the shared
+          tour skill to author and open the walkthrough in that same editor.
         '';
       ".pi/agent/mcp.json".source = json.generate "pi-mcp.json" {
         settings = {

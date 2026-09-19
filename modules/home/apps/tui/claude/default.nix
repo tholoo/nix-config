@@ -17,7 +17,7 @@ let
 
   jsonFormat = pkgs.formats.json { };
 
-  agentSkills = import ../ai/skills.nix { inherit inputs lib; };
+  agentSkills = import ../ai/skills.nix { inherit inputs lib pkgs; };
 
 in
 {
