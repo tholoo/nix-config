@@ -3,6 +3,26 @@
 Dependencies are pinned in `package.json` and `package-lock.json`. Pi supplies
 its own SDK/TUI runtime; `compile.py` keeps those imports external.
 
+## Readable web fetching
+
+`compile.py` bundles the HTML extraction dependencies of `pi-web-access`
+(`linkedom`, Readability, Turndown and Defuddle) into local ESM chunks. Pi's
+standalone loader can load static package imports, but the extractor's native
+lazy imports fail to resolve bare packages, even when installed. Rewriting only
+the first package path merely moves the failure to a transitive dependency.
+
+The extractor keeps its upstream logic, shared state and first-use loading;
+only the four dependency imports are redirected to bundled relative paths.
+Import-count guards fail the build on upstream drift. No wrapper, model calls,
+browser cookies, providers or hosted fallbacks are introduced.
+
+The `web-fetch` smoke suite serves synthetic HTML over loopback and runs the
+packaged extractor through Pi's real extension loader. It checks exact raw
+content, readable Markdown (headings, code and links), the lazy Defuddle
+fallback, redirects, plain text, 404s and private-address blocking. Its isolated
+configuration allows only the fixture's loopback address; live policy is not
+changed. Short-page quality warnings remain upstream behavior, not loader errors.
+
 ## Claude UI compatibility patches
 
 The source is upstream [`pi-claude-code-ui`](https://github.com/FammasMaz/pi-cc-tools),

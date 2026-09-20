@@ -52,7 +52,7 @@ buildNpmPackage {
     mkdir -p "$PI_CODING_AGENT_DIR"
     export PI_PERMISSION_TEST_CONFIG=${../../modules/home/apps/tui/pi/permissions.json}
     export PI_REVIEW_TEST_CONFIG=${../../modules/home/apps/tui/pi/permission-review.json}
-    for smoke in renderer spinner markdown processes-status permissions desktop-notify paired-editor question-header; do
+    for smoke in renderer spinner markdown processes-status permissions desktop-notify paired-editor question-header web-fetch; do
       timeout 90 pi --mode json --no-session --no-extensions --no-skills --no-prompt-templates \
         --no-themes --no-context-files -e "./tests/$smoke-smoke.ts" </dev/null
       test -s "$HOME/$smoke-smoke-passed"

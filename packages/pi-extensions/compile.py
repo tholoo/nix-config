@@ -3,6 +3,7 @@
 import json
 from pathlib import Path
 import re
+import shutil
 import subprocess
 import sys
 
@@ -13,6 +14,42 @@ PACKAGES = [
     "@narumitw/pi-stamp",
 ]
 RELATIVE_TS = re.compile(r'''(["'])(\.{1,2}/[^"'\n]+)\.ts\1''')
+
+
+def bundle_web_html_dependencies(package, esbuild):
+    # Pi's standalone loader handles static imports, but native lazy imports
+    # cannot resolve bare packages (including their transitive dependencies).
+    # Bundle only the HTML libraries; keep extraction and shared state unbundled
+    # and preserve upstream first-use loading via relative chunk imports.
+    dependencies = [
+        ("linkedom", "linkedom", "*", 2),
+        ("@mozilla/readability", "readability", "{ Readability }", 1),
+        ("turndown", "turndown", "{ default }", 1),
+        ("defuddle/node", "defuddle", "{ Defuddle }", 1),
+    ]
+    extractor = package / "extract.js"
+    source = extractor.read_text()
+    # Stable paths keep esbuild's source labels and chunk hashes reproducible.
+    temporary = package / ".html-deps"
+    temporary.mkdir()
+    try:
+        entries = []
+        for specifier, name, exports, count in dependencies:
+            old = f'import("{specifier}")'
+            if source.count(old) != count:
+                raise RuntimeError(f"Unexpected pi-web-access lazy imports: {specifier}")
+            source = source.replace(old, f'import("./precompiled/html/{name}.js")')
+            entry = temporary / f"{name}.js"
+            entry.write_text(f'export {exports} from "{specifier}";\n')
+            entries.append(str(entry))
+        subprocess.run([
+            esbuild, *entries, "--bundle", "--splitting", "--format=esm",
+            "--platform=node", "--target=es2022",
+            f"--outdir={package / 'precompiled/html'}", "--log-level=warning",
+        ], check=True)
+    finally:
+        shutil.rmtree(temporary)
+    extractor.write_text(source)
 
 
 def compile_extensions(root, esbuild):
@@ -87,6 +124,8 @@ def compile_extensions(root, esbuild):
             if key in data:
                 data[key] = rewrite(data[key])
         manifest.write_text(json.dumps(data, indent=2) + "\n")
+        if name == "pi-web-access":
+            bundle_web_html_dependencies(package, esbuild)
 
 
 if __name__ == "__main__":
