@@ -173,6 +173,31 @@ def run(args):
             def editor():
                 return next(p for p in panes() if p["id"] == pane_id)
 
+            # Manual Zellij fullscreen must also rebalance existing Neovim splits.
+            # A detached session is only 50 columns wide. Allow equal splits in
+            # its half-width pane instead of reserving 20 columns for focus.
+            winwidth = lua("vim.o.winwidth")
+            execute('vim.o.winwidth = 1; vim.cmd.vsplit(); vim.cmd.wincmd("=")')
+
+            def balanced_at_pane_size():
+                pane = editor()
+                return lua(
+                    "(function() local wins = vim.api.nvim_tabpage_list_wins(0); "
+                    "return vim.o.columns == "
+                    + str(pane["pane_content_columns"])
+                    + " and math.abs(vim.api.nvim_win_get_width(wins[1]) - "
+                    "vim.api.nvim_win_get_width(wins[2])) <= 1 end)()"
+                )
+
+            for _ in range(2):
+                action("toggle-fullscreen", "--pane-id", f"terminal_{pane_id}")
+                wait_for(
+                    balanced_at_pane_size,
+                    "manual fullscreen/restore left existing splits unbalanced",
+                )
+            execute(f"vim.cmd.only(); vim.o.winwidth = {winwidth}")
+            print("PASS: manual fullscreen and restore rebalance existing splits")
+
             # Record state at the exact point the real Gitsigns diff is invoked.
             execute(
                 'local gs = require("gitsigns"); local original = gs.diffthis; '
@@ -277,7 +302,7 @@ def run(args):
                 print(
                     "Fixture diagnostics:",
                     lua(
-                        '(function() local result = {}; for _, w in ipairs(vim.api.nvim_list_wins()) do table.insert(result, {window=w, tab=vim.api.nvim_win_get_tabpage(w), diff=vim.wo[w].diff, buffer=vim.api.nvim_buf_get_name(vim.api.nvim_win_get_buf(w))}) end; return {windows=result, messages=vim.api.nvim_exec2("messages", {output=true}).output} end)()'
+                        '(function() local result = {}; for _, w in ipairs(vim.api.nvim_list_wins()) do table.insert(result, {window=w, width=vim.api.nvim_win_get_width(w), tab=vim.api.nvim_win_get_tabpage(w), diff=vim.wo[w].diff, buffer=vim.api.nvim_buf_get_name(vim.api.nvim_win_get_buf(w))}) end; return {windows=result, columns=vim.o.columns, messages=vim.api.nvim_exec2("messages", {output=true}).output} end)()'
                     ),
                 )
             raise

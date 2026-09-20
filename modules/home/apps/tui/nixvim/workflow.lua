@@ -68,6 +68,23 @@ vim.diagnostic.config({
 })
 
 local group = vim.api.nvim_create_augroup("editor_workflow", { clear = true })
+-- Terminal resizes (including Zellij fullscreen) otherwise grow only edge splits.
+vim.api.nvim_create_autocmd("VimResized", {
+	group = group,
+	callback = function()
+		for _, tab in ipairs(vim.api.nvim_list_tabpages()) do
+			for _, win in ipairs(vim.api.nvim_tabpage_list_wins(tab)) do
+				if vim.api.nvim_win_get_config(win).relative == "" then
+					-- Keep focus, leave floats alone, and respect winfixwidth/winfixheight.
+					vim.api.nvim_win_call(win, function()
+						vim.cmd.wincmd("=")
+					end)
+					break
+				end
+			end
+		end
+	end,
+})
 local reading_stdin = false
 vim.api.nvim_create_autocmd("StdinReadPre", {
 	group = group,
