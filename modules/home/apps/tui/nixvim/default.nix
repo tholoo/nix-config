@@ -71,6 +71,10 @@ in
         pkgs.fd
       ];
       dependencies.yazi.package = config.programs.yazi.package;
+      # Use the configured Zellij build, including its pane-targeted CLI.
+      globals.editor_zellij_command = lib.getExe config.programs.zellij.package;
+      extraFiles."lua/editor/zellij-zoom.lua".source = ./zellij-zoom.lua;
+      extraFiles."lua/editor/git-diff.lua".source = ./git-diff.lua;
       extraConfigLua = builtins.readFile ./workflow.lua;
 
       opts = {

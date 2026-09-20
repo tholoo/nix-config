@@ -108,6 +108,7 @@
       settings = {
         render_modes = [
           "n"
+          "no"
           "c"
         ];
         # Preserve Stylix's code-span color when Markdown is rendered.

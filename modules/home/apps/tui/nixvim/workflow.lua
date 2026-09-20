@@ -16,55 +16,8 @@ map("n", "<leader>fh", fzf.help_tags, "Help")
 map("n", "<leader>e", "<cmd>Yazi<cr>", "Yazi at current file")
 map("n", "<leader>E", "<cmd>Yazi cwd<cr>", "Yazi at working directory")
 map("n", "<leader>gg", "<cmd>LazyGit<cr>", "Lazygit")
--- Keep one current-file comparison per tab; never close unrelated splits.
-local git_diffs = {}
-map("n", "<leader>gd", function()
-	local tab = vim.api.nvim_get_current_tabpage()
-	local diff = git_diffs[tab]
-	if diff then
-		if diff.pending then
-			return
-		end
-		for win, buf in pairs(diff.originals) do
-			if vim.api.nvim_win_is_valid(win) and vim.api.nvim_win_get_buf(win) == buf then
-				vim.api.nvim_win_close(win, false)
-			end
-		end
-		if vim.api.nvim_win_is_valid(diff.source) then
-			vim.api.nvim_set_current_win(diff.source)
-			vim.cmd.diffoff()
-		end
-		git_diffs[tab] = nil
-		return
-	end
-	-- Leave manually opened vimdiff sessions alone.
-	if vim.wo.diff then
-		return
-	end
-	local existing = {}
-	for _, win in ipairs(vim.api.nvim_tabpage_list_wins(tab)) do
-		existing[win] = true
-	end
-	diff = { source = vim.api.nvim_get_current_win(), originals = {}, pending = true }
-	git_diffs[tab] = diff
-	-- HEAD includes both staged and unstaged edits; Gitsigns restores source focus.
-	require("gitsigns").diffthis("HEAD", { vertical = true, split = "aboveleft" }, function(err)
-		diff.pending = false
-		if vim.api.nvim_tabpage_is_valid(tab) then
-			for _, win in ipairs(vim.api.nvim_tabpage_list_wins(tab)) do
-				if not existing[win] and vim.wo[win].diff then
-					diff.originals[win] = vim.api.nvim_win_get_buf(win)
-				end
-			end
-		end
-		if not next(diff.originals) then
-			git_diffs[tab] = nil
-		end
-		if err then
-			vim.notify(err, vim.log.levels.ERROR)
-		end
-	end)
-end, "Toggle original/current-file diff")
+local git_diff = require("editor.git-diff").setup()
+map("n", "<leader>gd", git_diff.toggle, "Toggle original/current-file diff")
 map("n", "]h", function()
 	if vim.wo.diff then
 		vim.cmd.normal({ vim.v.count1 .. "]c", bang = true })

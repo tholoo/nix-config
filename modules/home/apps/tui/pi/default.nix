@@ -160,7 +160,7 @@ let
       ]
       ++ lib.optional cfg.enableProcesses "${extensionRoot}/@aliou/pi-processes";
     # Replace the old discovery lists as well as the old npm package list.
-    extensions = [ ];
+    extensions = lib.optional cfg.enableProcesses "${pkgs.mine.pi-extensions}/lib/pi-extensions/processes-status.js";
     skills = [ (toString skills) ];
     subagents = {
       defaultProvider = "openai-codex";
@@ -213,7 +213,8 @@ let
     worktreeRoot = "~/worktrees";
   };
   managedProcessesConfig = json.generate "pi-managed-processes-settings.json" {
-    widget.showStatusWidget = true;
+    # The read-only companion shows only live jobs; /ps retains all history.
+    widget.showStatusWidget = false;
   };
   agents = import ./roles.nix;
 in

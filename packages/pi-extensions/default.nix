@@ -29,6 +29,9 @@ buildNpmPackage {
     patch --batch --fuzz=0 -d node_modules/pi-claude-code-ui -p1 < claude-ui-markdown.patch
     cp output-preview.ts node_modules/pi-claude-code-ui/extensions/output-preview.ts
     python compile.py node_modules ${lib.getExe esbuild}
+    # Local read-only widget; pi-processes itself remains unpatched.
+    esbuild processes-status.ts --format=esm --platform=node --target=es2022 \
+      --outfile=processes-status.js --log-level=warning
     runHook postBuild
   '';
   doCheck = true;
@@ -40,8 +43,9 @@ buildNpmPackage {
     export HOME="$TMPDIR/ui-test-home"
     export PI_CODING_AGENT_DIR="$HOME/.pi/agent"
     export PI_OFFLINE=1 PI_TELEMETRY=0
+    export SHELL=${lib.escapeShellArg stdenv.shell}
     mkdir -p "$PI_CODING_AGENT_DIR"
-    for smoke in renderer spinner markdown; do
+    for smoke in renderer spinner markdown processes-status; do
       timeout 90 pi --mode json --no-session --no-extensions --no-skills --no-prompt-templates \
         --no-themes --no-context-files -e "./tests/$smoke-smoke.ts" </dev/null
       test -s "$HOME/$smoke-smoke-passed"
@@ -54,6 +58,7 @@ buildNpmPackage {
     runHook preInstall
     mkdir -p $out/lib/pi-extensions
     cp -r node_modules $out/lib/pi-extensions/
+    cp processes-status.js $out/lib/pi-extensions/
     runHook postInstall
   '';
   meta = {

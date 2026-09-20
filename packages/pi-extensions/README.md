@@ -27,6 +27,24 @@ Keep this as a patch stack for now. If migrating to a maintained fork later,
 carry over these regression tests and upstream provenance, then pin the fork
 revision rather than retaining a second patch stack.
 
+## Running-process status companion
+
+`processes-status.ts` is a local, read-only extension; `@aliou/pi-processes`
+remains unpatched. Home Manager disables the stock status widget and loads this
+companion only when process management is enabled.
+
+The companion reads `processes:request:list` on startup and on
+`processes:changed`, then displays only live jobs below the editor. It hides
+itself when none remain. Stopping jobs and jobs whose stop timed out remain
+visible because they may still be running. Successful, failed, and killed
+process records and logs are untouched and remain available through `/ps`.
+The dock, notifications, process tool, and `/ps:clear` retain upstream behavior.
+
+There is no polling, automatic clearing, or replacement of the process tool.
+Listeners are removed on shutdown/reload; RPC/JSON/print modes do not install a
+TUI widget. The small event-bus contract is verified against the pinned package
+in the smoke test. Names are sanitized and rendering is width-bounded.
+
 ## Validation
 
 ```sh
@@ -34,13 +52,16 @@ nix build .#pi-extensions
 ```
 
 The package check phase runs the output-preview unit tests and renderer,
-spinner, and Markdown smoke suites against the real Pi SDK in an isolated
+spinner, Markdown, and running-process widget smoke suites against the real Pi SDK in an isolated
 home, offline, without a model call. Markdown checks cover Mermaid modes,
 streaming/final/restored content, arbitrary transformations, full-block scope,
 transformer ordering/error fallback, thinking, user-message invalidation,
 resizing, ordinary Markdown, math, links, literal code (including incomplete
 streaming fences) and narrow terminal widths.
 Existing renderer checks cover tool previews, diffs and image-result handling.
+The process-widget suite checks lifecycle cleanup, filtering, narrow/Unicode
+rendering, headless modes, and the upstream event bridge with actual successful
+and failing synthetic processes. It verifies completed records and logs survive.
 
 A successful build validates the package; it does not activate Home Manager
 or replace extensions in an already-running Pi session.
