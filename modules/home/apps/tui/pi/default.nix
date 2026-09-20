@@ -11,6 +11,10 @@ let
   json = pkgs.formats.json { };
   basePi = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.pi;
   extensionRoot = "${pkgs.mine.pi-extensions}/lib/pi-extensions/node_modules";
+  permissionExtensions = [
+    "${extensionRoot}/@gotgenes/pi-permission-system/precompiled/index.js"
+    "${extensionRoot}/@mzwing/pi-permission-auto-review/dist/index.js"
+  ];
   agentSkills = import ../ai/skills.nix { inherit inputs lib pkgs; };
   skills = pkgs.linkFarm "pi-skills" (
     lib.mapAttrsToList (name: path: { inherit name path; }) agentSkills
@@ -149,6 +153,8 @@ let
     packages =
       lib.optional cfg.enableMcp "${extensionRoot}/pi-mcp-adapter"
       ++ [
+        "${extensionRoot}/@gotgenes/pi-permission-system"
+        "${extensionRoot}/@mzwing/pi-permission-auto-review"
         "${extensionRoot}/pi-web-access"
         "${extensionRoot}/pi-subagents"
         "${extensionRoot}/@narumitw/pi-goal"
@@ -165,13 +171,16 @@ let
     subagents = {
       defaultProvider = "openai-codex";
       disableBuiltins = true;
-      defaultExtensions = [ ];
+      defaultExtensions = permissionExtensions;
       modelScope = {
         enforce = true;
         strict = true;
         allow = [ "openai-codex/*" ];
       };
-      agentOverrides.researcher.extensions = [ "${extensionRoot}/pi-web-access/index.js" ];
+      # Explicit role extensions replace defaults rather than extending them.
+      agentOverrides.researcher.extensions = permissionExtensions ++ [
+        "${extensionRoot}/pi-web-access/index.js"
+      ];
     };
   };
   managedConfig = json.generate "pi-managed-settings.json" (
@@ -289,6 +298,10 @@ in
         ${managedStampConfig} ${lib.escapeShellArg "${config.home.homeDirectory}/.pi/agent/pi-stamp.json"}
       run ${pkgs.python3}/bin/python ${./merge-settings.py} \
         ${managedWorktreeConfig} ${lib.escapeShellArg "${config.home.homeDirectory}/.pi/agent/pi-worktree.json"}
+      run ${pkgs.python3}/bin/python ${./merge-settings.py} \
+        ${./permissions.json} ${lib.escapeShellArg "${config.home.homeDirectory}/.pi/agent/extensions/pi-permission-system/config.json"}
+      run ${pkgs.python3}/bin/python ${./merge-settings.py} \
+        ${./permission-review.json} ${lib.escapeShellArg "${config.home.homeDirectory}/.pi/agent/extensions/pi-permission-auto-review/config.json"}
       ${lib.optionalString cfg.enableProcesses ''
         run ${pkgs.python3}/bin/python ${./merge-settings.py} \
           ${managedProcessesConfig} ${lib.escapeShellArg "${config.home.homeDirectory}/.pi/agent/extensions/processes.json"}

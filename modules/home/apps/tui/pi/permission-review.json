@@ -1,0 +1,6 @@
+{
+  "provider": "openai-codex",
+  "model": "codex-auto-review",
+  "reasoning": "low",
+  "includeBaselinePolicy": true
+}

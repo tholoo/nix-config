@@ -10,7 +10,7 @@ buildNpmPackage {
   pname = "pi-extensions";
   version = "1.0.0";
   src = ./.;
-  npmDepsHash = "sha256-IKD3ao75at1gMHpYCJzFdXrgM5k8XZOr0PECu1UYqVI=";
+  npmDepsHash = "sha256-jK+NPcnaTS5tpOWboe4S4B7TySNno4nlOWXQG7DSBoo=";
   npmFlags = [ "--legacy-peer-deps" ];
   npmInstallFlags = [ "--ignore-scripts" ];
   nativeBuildInputs = [
@@ -45,7 +45,9 @@ buildNpmPackage {
     export PI_OFFLINE=1 PI_TELEMETRY=0
     export SHELL=${lib.escapeShellArg stdenv.shell}
     mkdir -p "$PI_CODING_AGENT_DIR"
-    for smoke in renderer spinner markdown processes-status; do
+    export PI_PERMISSION_TEST_CONFIG=${../../modules/home/apps/tui/pi/permissions.json}
+    export PI_REVIEW_TEST_CONFIG=${../../modules/home/apps/tui/pi/permission-review.json}
+    for smoke in renderer spinner markdown processes-status permissions; do
       timeout 90 pi --mode json --no-session --no-extensions --no-skills --no-prompt-templates \
         --no-themes --no-context-files -e "./tests/$smoke-smoke.ts" </dev/null
       test -s "$HOME/$smoke-smoke-passed"
@@ -62,7 +64,7 @@ buildNpmPackage {
     runHook postInstall
   '';
   meta = {
-    description = "Locked Pi extensions for tools, agents, goals, editing, UI, questions, worktrees and timestamps";
+    description = "Locked Pi extensions for permissions, tools, agents, goals, editing, UI, questions, worktrees and timestamps";
     license = lib.licenses.mit;
     platforms = lib.platforms.linux;
   };

@@ -33,6 +33,31 @@ def compile_extensions(root, esbuild):
     data["pi"]["extensions"] = ["./precompiled/index.js", "./precompiled/spinner.js"]
     manifest.write_text(json.dumps(data, indent=2) + "\n")
 
+    # The permission gate uses extensionless imports and #src aliases. Bundle
+    # its implementation and public service separately; their session registry
+    # is deliberately shared via Symbol.for(), not via module identity.
+    gate = Path(root) / "@gotgenes/pi-permission-system"
+    manifest = gate / "package.json"
+    data = json.loads(manifest.read_text())
+    # Package imports are exact targets, unlike relative TS imports. Make the
+    # upstream extensionless alias explicit for esbuild's package resolution.
+    data["imports"]["#src/*"] = "./src/*.ts"
+    manifest.write_text(json.dumps(data, indent=2) + "\n")
+    subprocess.run([
+        esbuild, str(gate / "src/index.ts"), str(gate / "src/service.ts"),
+        "--bundle", "--format=esm", "--platform=node", "--target=es2022",
+        "--external:@earendil-works/*", "--external:web-tree-sitter",
+        "--external:tree-sitter-bash", "--external:zod",
+        f"--outdir={gate / 'precompiled'}", "--log-level=warning",
+    ], check=True)
+    manifest = gate / "package.json"
+    data = json.loads(manifest.read_text())
+    data["pi"]["extensions"] = ["./precompiled/index.js"]
+    data["exports"]["."]["default"] = "./precompiled/service.js"
+    manifest.write_text(json.dumps(data, indent=2) + "\n")
+    # auto-review ships compiled ESM already and resolves the public service
+    # above at runtime, keeping Pi's provider/SDK aliases external.
+
     for name in PACKAGES:
         package = Path(root) / name
         sources = [p for p in package.rglob("*.ts") if not p.name.endswith(".d.ts")]

@@ -1,0 +1,21 @@
+{
+  "authorizerChain": ["auto-review"],
+  "permission": {
+    "*": "ask",
+    "path": "allow",
+    "external_directory": "ask",
+    "read": "allow",
+    "grep": "allow",
+    "find": "allow",
+    "ls": "allow",
+    "ask_user_question": "allow",
+    "bash": "ask"
+  },
+  "shellTools": {
+    "process": {
+      "commandArgument": "command",
+      "workdirArgument": "cwd"
+    }
+  },
+  "yoloMode": false
+}

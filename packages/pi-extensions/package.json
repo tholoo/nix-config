@@ -12,6 +12,8 @@
     "pi-claude-code-ui": "1.0.83",
     "@juicesharp/rpiv-ask-user-question": "2.10.1",
     "@narumitw/pi-worktree": "0.51.7",
-    "@narumitw/pi-stamp": "0.51.1"
+    "@narumitw/pi-stamp": "0.51.1",
+    "@gotgenes/pi-permission-system": "32.1.0",
+    "@mzwing/pi-permission-auto-review": "0.4.0"
   }
 }

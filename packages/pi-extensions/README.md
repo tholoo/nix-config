@@ -45,6 +45,41 @@ Listeners are removed on shutdown/reload; RPC/JSON/print modes do not install a
 TUI widget. The small event-bus contract is verified against the pinned package
 in the smoke test. Names are sanitized and rendering is width-bounded.
 
+## Permission gate and Codex auto-review
+
+`@gotgenes/pi-permission-system` 32.1.0 enforces tool permissions, with
+`@mzwing/pi-permission-auto-review` 0.4.0 registered as its `auto-review`
+authorizer. Home Manager installs writable configs from
+`modules/home/apps/tui/pi/{permissions,permission-review}.json` into the matching
+`~/.pi/agent/extensions/<package-name>/config.json` locations. Managed fields are
+restored on activation; unrelated preferences are retained. The extensions'
+`/permission-system` and `/permission-auto-review` commands remain available.
+
+The policy defaults to `ask`, allows ordinary file-inspection tools and user
+questions, and explicitly sends shell commands through review. The `process`
+tool's command/cwd arguments also use the shell gate; non-launch actions still
+pass through the generic tool gate. No custom Git denylist is installed, and
+YOLO mode is off. Outside-workspace access remains a human approval boundary:
+the upstream gate does not let an automatic reviewer approve its path asks.
+
+The reviewer uses `openai-codex` / `codex-auto-review` with the existing Codex
+login and its bundled baseline policy, not an API-key provider. Missing auth,
+invalid responses, or unavailable reviewers fall back to normal permission
+handling (a prompt with a UI, refusal when approval cannot be obtained).
+These are permission checks, **not a sandbox** or server-side branch protection.
+Trusted project configs and session approvals can change the effective policy.
+
+Both extensions are explicitly loaded in native subagents, including the
+researcher whose extension list overrides defaults. The pinned subagent runner
+publishes `PI_SUBAGENT_PARENT_SESSION`, allowing child asks to reach the parent's
+reviewer/UI. This does not retrofit external CLI runners with Pi's tool hooks.
+
+The gate's extensionless `#src` aliases are resolved at build time, and its
+public service is bundled separately. Both use the same session-keyed
+`Symbol.for()` registry. Tree-sitter's WASM files and Pi's SDK stay external;
+the auto-review package already ships compiled ESM. No upstream behavior patch
+is applied to either package.
+
 ## Validation
 
 ```sh
@@ -52,8 +87,8 @@ nix build .#pi-extensions
 ```
 
 The package check phase runs the output-preview unit tests and renderer,
-spinner, Markdown, and running-process widget smoke suites against the real Pi SDK in an isolated
-home, offline, without a model call. Markdown checks cover Mermaid modes,
+spinner, Markdown, running-process widget, and permission smoke suites against
+the real Pi SDK in an isolated home, offline, without a real model call. Markdown checks cover Mermaid modes,
 streaming/final/restored content, arbitrary transformations, full-block scope,
 transformer ordering/error fallback, thinking, user-message invalidation,
 resizing, ordinary Markdown, math, links, literal code (including incomplete
@@ -62,6 +97,13 @@ Existing renderer checks cover tool previews, diffs and image-result handling.
 The process-widget suite checks lifecycle cleanup, filtering, narrow/Unicode
 rendering, headless modes, and the upstream event bridge with actual successful
 and failing synthetic processes. It verifies completed records and logs survive.
+
+Permission checks use the managed configs and a synthetic Codex provider. They
+exercise registration/load order, shell approvals and denials, background
+process launches and stdin, authentication/response failures, the external-path
+boundary, headless-child forwarding, and missing-reviewer fallback. Commands in
+these permission fixtures are inspected, never executed; this does not test live
+Codex authentication or the real model's classification quality.
 
 A successful build validates the package; it does not activate Home Manager
 or replace extensions in an already-running Pi session.
