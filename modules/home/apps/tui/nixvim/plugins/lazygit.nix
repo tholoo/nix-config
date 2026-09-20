@@ -6,7 +6,8 @@
   ...
 }:
 let
-  edit = "${lib.getExe config.package} --headless -u NONE -i NONE -l ${./lazygit-edit.lua} \"$NVIM\"";
+  # Read NVIM inside the helper: Nushell treats "$NVIM" as a literal string.
+  edit = "${lib.getExe config.package} --headless -u NONE -i NONE -l ${./lazygit-edit.lua}";
   integrationConfig = pkgs.writeText "nvim-lazygit.json" (
     builtins.toJSON {
       # Let LazyGit distinguish cancelling a dialog from leaving the application.

@@ -11,8 +11,13 @@ end
 local function screen(buf)
 	return table.concat(vim.api.nvim_buf_get_lines(buf, 0, -1, false), "\n")
 end
-local function test(name, body)
+local function test(name, body, shell)
+	local original_shell = vim.env.SHELL
+	if shell then
+		vim.env.SHELL = shell
+	end
 	local ok, err = pcall(body)
+	vim.env.SHELL = original_shell
 	if ok then
 		print("PASS: " .. name)
 	else
@@ -104,7 +109,7 @@ test("Escape dismisses a popup, then quits at top level", function()
 	assert(vim.api.nvim_get_current_win() == source, "Escape did not return to the source window")
 end)
 
-test("e opens in the originating split and preserves unsaved text", function()
+local function edit_from_files()
 	vim.cmd.enew()
 	local modified = vim.api.nvim_get_current_buf()
 	vim.api.nvim_buf_set_lines(modified, 0, -1, false, { "unsaved work" })
@@ -131,9 +136,9 @@ test("e opens in the originating split and preserves unsaved text", function()
 	wait_for(function()
 		return not vim.api.nvim_win_is_valid(reopened)
 	end, "reopened LazyGit did not close")
-end)
+end
 
-test("e in the diff opens the selected line in the source window", function()
+local function edit_at_line()
 	local source, float, buf, job = launch()
 	vim.fn.chansend(job, "\r")
 	wait_for(function()
@@ -148,7 +153,16 @@ test("e in the diff opens the selected line in the source window", function()
 	end, "edit-at-line did not finish quitting LazyGit")
 	assert(vim.api.nvim_get_current_win() == source, "edit-at-line left the original window")
 	assert(vim.api.nvim_win_get_cursor(source)[1] == 2, "edit-at-line lost the selected line")
-end)
+end
+
+-- LazyGit executes os.edit through $SHELL. Nushell deliberately does not
+-- interpolate "$NVIM" inside a plain quoted string as POSIX shells do.
+for _, shell in ipairs({ "bash", "nu" }) do
+	local executable = vim.fn.exepath(shell)
+	assert(executable ~= "", "LazyGit regression checks require " .. shell .. " on PATH")
+	test("e opens in the originating split and preserves unsaved text (" .. shell .. ")", edit_from_files, executable)
+	test("e in the diff preserves the selected line (" .. shell .. ")", edit_at_line, executable)
+end
 
 vim.cmd.cd(original_cwd)
 vim.fn.delete(root, "rf")
