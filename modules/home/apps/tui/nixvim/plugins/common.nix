@@ -14,7 +14,16 @@
           menu.border = "rounded";
         };
         signature.enabled = true;
-        cmdline.enabled = false;
+        cmdline = {
+          enabled = true;
+          completion = {
+            menu.auto_show = true;
+            list.selection = {
+              preselect = false;
+              auto_insert = false;
+            };
+          };
+        };
       };
     };
     fzf-lua = {
