@@ -1,6 +1,8 @@
 { ... }:
 {
   plugins = {
+    # Blink discovers the VS Code-format collection and uses vim.snippet.
+    friendly-snippets.enable = true;
     blink-cmp = {
       enable = true;
       settings = {
