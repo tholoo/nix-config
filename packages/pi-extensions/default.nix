@@ -25,6 +25,8 @@ buildNpmPackage {
     # Builds on the completed-preview renderer above; keep process commands visible.
     patch --batch --fuzz=0 -d node_modules/pi-claude-code-ui -p1 < claude-ui-process-commands.patch
     patch --batch --fuzz=0 -d node_modules/pi-claude-code-ui -p1 < claude-ui-spinner.patch
+    # Retain core/extension Markdown transforms through the custom UI wrappers.
+    patch --batch --fuzz=0 -d node_modules/pi-claude-code-ui -p1 < claude-ui-markdown.patch
     cp output-preview.ts node_modules/pi-claude-code-ui/extensions/output-preview.ts
     python compile.py node_modules ${lib.getExe esbuild}
     runHook postBuild
@@ -39,7 +41,7 @@ buildNpmPackage {
     export PI_CODING_AGENT_DIR="$HOME/.pi/agent"
     export PI_OFFLINE=1 PI_TELEMETRY=0
     mkdir -p "$PI_CODING_AGENT_DIR"
-    for smoke in renderer spinner; do
+    for smoke in renderer spinner markdown; do
       timeout 90 pi --mode json --no-session --no-extensions --no-skills --no-prompt-templates \
         --no-themes --no-context-files -e "./tests/$smoke-smoke.ts" </dev/null
       test -s "$HOME/$smoke-smoke-passed"

@@ -10,7 +10,7 @@ in
 runCommand "nvim-mcp-bound"
   {
     meta = {
-      description = "Upstream Neovim MCP with optional per-workspace socket binding";
+      description = "Neovim MCP with workspace binding, structured tour loading and buffer snapshots";
       mainProgram = "nvim-mcp";
       platforms = lib.platforms.linux;
     };
@@ -21,10 +21,18 @@ runCommand "nvim-mcp-bound"
     interpreter="''${interpreter#\#!}"
     test -x "$interpreter"
     cp ${./bound.py} bound.py
+    cp ${./editor_tools.py} editor_tools.py
     cp -r ${./tests} tests
-    PYTHONDONTWRITEBYTECODE=1 "$interpreter" -m unittest discover -s tests -v
     mkdir -p $out/bin
     head -n1 ${lib.getExe upstream} > $out/bin/nvim-mcp
     cat ${./bound.py} >> $out/bin/nvim-mcp
+    cp editor_tools.py $out/bin/editor_tools.py
     chmod +x $out/bin/nvim-mcp
+    export PYTHONDONTWRITEBYTECODE=1
+    export NVIM_TEST=${
+      lib.getExe inputs.neovim-nightly-overlay.packages.${pkgs.stdenv.hostPlatform.system}.default
+    }
+    export TOUR_PLUGIN=${pkgs.mine.tour-nvim}
+    export MCP_COMMAND=$out/bin/nvim-mcp
+    "$interpreter" -m unittest discover -s tests -v
   ''

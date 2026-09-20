@@ -1,0 +1,66 @@
+--- a/SKILL.md
++++ b/SKILL.md
+@@ -11,7 +11,8 @@
+ ## Connect and inspect
+ 
+ Discover the existing Neovim MCP tools (`connect`, `get_state`, buffer readers,
+-`send_command`). Use `DEV_NVIM_SOCKET` when supplied; it identifies the editor
++`send_command`, `tour_load`, `read_buffer_snapshot`). Prefer the structured tools
++when available. Use `DEV_NVIM_SOCKET` when supplied; it identifies the editor
+ paired with this workspace. If that editor is unavailable, report the connection
+ failure rather than choosing another instance. Without a binding, match the
+ editor to the requested project; clarify only if several instances still match.
+@@ -26,6 +27,12 @@
+ through `send_command` and print its result with `vim.json.encode`. It returns raw
+ line arrays, a content revision, and metadata for loaded buffers; unsaved edits
+ take precedence over disk. Keep each inspected file's revision for delivery.
++For generic live-buffer inspection, prefer `read_buffer_snapshot` over numbered
++reads: it returns raw `lines`, `bufnr`, `modified`, and `changedtick`, optionally
++for a strict 1-based inclusive line range. It never loads buffers or reads disk.
++Compare buffer ID and changedtick only within the same editor session. For tour
++delivery, keep using `read_source` revisions: changedtick is not a content token
++and cannot be passed as a `tour_load` revision.
+ Preserve the user's source and saved/unsaved state while explaining it.
+ 
+ ## Author the data
+@@ -68,22 +75,29 @@
+ 
+ Write the v1 tour as UTF-8 JSON in a uniquely named temporary file on the editor's
+ filesystem, outside the project unless the user requested a checked-in tour.
+-Write a separate temporary options JSON containing
+-`{ "revisions": { "/absolute/source/path": "revision-from-inspection" } }`.
+ The agent and editor in a `dev` workspace share that filesystem.
+ 
+-Use MCP `send_command` to call `load_checked`, with actual paths substituted as
+-properly escaped Lua string literals:
++When `tour_load` is available, call it with the temporary tour path and the
++original inspection revision map directly:
+ 
+-```lua
+-lua local opts = vim.json.decode(table.concat(vim.fn.readfile("/tmp/unique-tour-options.json"), "\n")); print(vim.json.encode(require("tour").load_checked("/tmp/unique-tour.json", opts)))
++```json
++{
++  "path": "/tmp/unique-tour.json",
++  "revisions": { "/absolute/source/path": "revision-from-inspection" }
++}
+ ```
+ 
+-Keep tour data and revision expectations in their JSON files; interpolate only
+-paths into the command. Parse the JSON receipt from MCP's command output. Report
+-success only when `ok`, `persisted`, and `displayed` are all true, and confirm its
+-ID, current step, and step count. The interactive `:TourLoad` command reports
+-errors via notifications; use `load_checked` for machine-readable delivery.
++Read the structured receipt; no Lua command, printed-JSON parsing, or separate
++options file is needed for loading. Report success only when `ok`, `persisted`,
++and `displayed` are all true, and confirm its `id`, `current_step`, and
++`step_count`. Transport failures mean completion is unknown; inspect the editor
++and saved tour before deciding to retry. This tool never replays a failed RPC.
++
++If discovery confirms `tour_load` is absent (an older MCP server), use the
++`send_command` fallback in [the authoring interface](references/authoring.md):
++write revisions to a separate temporary options JSON, call `load_checked` with
++escaped paths, and parse the printed JSON receipt. A failure from an available
++`tour_load` is not a reason to bypass checked loading or its revision checks.
+ 
+ On `stale_source`, reread changed files and repair affected locations before
+ retrying. Do not refresh revision tokens solely to bypass the check. On schema or

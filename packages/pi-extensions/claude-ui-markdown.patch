@@ -1,0 +1,185 @@
+--- a/extensions/index.ts
++++ b/extensions/index.ts
+@@ -1417,8 +1417,8 @@
+ // border boxing) on every scroll/expand re-render — the dominant CPU cost on long chats,
+ // scaling linearly with chat length.
+ // Correctness:
+-//  - UserMessageComponent content is immutable after construction, so output is deterministic
+-//    given (width, epoch, mode).
++//  - UserMessageComponent invalidation/rebuild clears the cache: settings, transformers,
++//    padding and theme may change even when its source text is immutable.
+ //  - AssistantMessageComponent rebuilds children only via updateContent(), which clears the cache.
+ //  - CustomMessageComponent rebuilds children only via rebuild(), which clears the cache.
+ // The returned arrays are only ever spread-copied by Container.render (never mutated in place),
+@@ -1661,6 +1661,8 @@
+ }
+ 
+ type MarkdownThemeLike = ConstructorParameters<typeof Markdown>[3];
++type MarkdownStyle = ConstructorParameters<typeof Markdown>[4];
++type MarkdownOptions = ConstructorParameters<typeof Markdown>[5];
+ 
+ type ParagraphSegment =
+ 	| { kind: "markdown"; md: InstanceType<typeof Markdown> }
+@@ -1887,16 +1889,55 @@
+ 	return !/[.!?]\s/.test(plain) && plain.length <= 240;
+ }
+ 
+-function appendMarkdownSegment(segments: ParagraphSegment[], text: string, theme: MarkdownThemeLike): void {
++/** Keep code literal while applying the UI's optional math presentation. */
++function protectMarkdownCode(text: string): { text: string; restore: (value: string) => string } {
++	let prefix = "\uE000PI_CODE_";
++	while (text.includes(prefix)) prefix += "_";
++	const literals: string[] = [];
++	const parts: string[] = [];
++	// Fences (including quoted blocks), code spans, and indented code. A missing
++	// closing fence consumes the rest of a streaming block, as Markdown does.
++	const opening = /^[ \t]*(?:>[ \t]*)*(`{3,}|~{3,})[^\n]*(?:\n|$)|(`+)|^(?: {4}|\t)[^\n]*(?:\n|$)/gm;
++	let cursor = 0;
++	let match: RegExpExecArray | null;
++	while ((match = opening.exec(text))) {
++		let end = opening.lastIndex;
++		if (match[1]) {
++			const fence = match[1];
++			const closing = new RegExp(`^[ \\t]*(?:>[ \\t]*)*${fence[0]}{${fence.length},}[ \\t]*(?:\\n|$)`, "gm");
++			closing.lastIndex = end;
++			const close = closing.exec(text);
++			end = close ? closing.lastIndex : text.length;
++		} else if (match[2]) {
++			const closing = new RegExp("(?<!`)`{" + match[2].length + "}(?!`)", "g");
++			closing.lastIndex = end;
++			if (!closing.exec(text)) continue; // unmatched backticks are ordinary text
++			end = closing.lastIndex;
++		}
++		parts.push(text.slice(cursor, match.index), `${prefix}${literals.length}\uE001`);
++		literals.push(text.slice(match.index, end));
++		cursor = end;
++		opening.lastIndex = end;
++	}
++	parts.push(text.slice(cursor));
++	return {
++		text: parts.join(""),
++		restore: (value) => literals.reduce((result, literal, i) => result.split(`${prefix}${i}\uE001`).join(literal), value),
++	};
++}
++
++function appendMarkdownSegment(segments: ParagraphSegment[], text: string, theme: MarkdownThemeLike, options?: MarkdownOptions, style?: MarkdownStyle, restore: (value: string) => string = (value) => value): void {
+ 	if (!text.trim()) return;
+ 	const normalized = shouldFormatStandaloneMath(text) ? formatMathForDisplay(text, false) : replaceInlineMath(text);
+-	segments.push({ kind: "markdown", md: new Markdown(normalized, 0, 0, theme) });
++	segments.push({ kind: "markdown", md: new Markdown(restore(normalized), 0, 0, theme, style, options) });
+ }
+ 
+-function buildParagraphSegments(text: string, theme: MarkdownThemeLike): ParagraphSegment[] {
++function buildParagraphSegments(text: string, theme: MarkdownThemeLike, options?: MarkdownOptions, style?: MarkdownStyle): ParagraphSegment[] {
++	const code = protectMarkdownCode(text);
++	text = code.text;
+ 	const segments: ParagraphSegment[] = [];
+ 	if (!hasDisplayMathMarkers(text)) {
+-		appendMarkdownSegment(segments, text, theme);
++		appendMarkdownSegment(segments, text, theme, options, style, code.restore);
+ 		return segments;
+ 	}
+ 	const scanLoose = shouldScanLooseBracketMath(text);
+@@ -1904,12 +1945,12 @@
+ 	while (cursor < text.length) {
+ 		const next = findNextDisplayMathBlock(text, cursor, scanLoose);
+ 		if (!next) break;
+-		appendMarkdownSegment(segments, text.slice(cursor, next.index), theme);
++		appendMarkdownSegment(segments, text.slice(cursor, next.index), theme, options, style, code.restore);
+ 		const raw = text.slice(next.contentStart, next.contentEnd).trim();
+ 		if (raw) segments.push({ kind: "math", raw });
+ 		cursor = next.endIndex;
+ 	}
+-	appendMarkdownSegment(segments, text.slice(cursor), theme);
++	appendMarkdownSegment(segments, text.slice(cursor), theme, options, style, code.restore);
+ 	return segments;
+ }
+ 
+@@ -1991,14 +2032,20 @@
+ }
+ 
+ class DottedParagraph {
+-	private segments: ParagraphSegment[];
++	private text: string;
++	private segments: ParagraphSegment[] = [];
+ 	private markdownTheme: MarkdownThemeLike;
+ 	private cachedWidth?: number;
+ 	private cachedLines?: string[];
+ 
+-	constructor(text: string, markdownTheme: MarkdownThemeLike) {
++	constructor(
++		text: string,
++		markdownTheme: MarkdownThemeLike,
++		private markdownOptions?: MarkdownOptions,
++		private defaultTextStyle?: MarkdownStyle,
++	) {
++		this.text = stripTransientMagicContextTags(text);
+ 		this.markdownTheme = copySafeMarkdownTheme(markdownTheme);
+-		this.segments = buildParagraphSegments(stripTransientMagicContextTags(text), this.markdownTheme);
+ 	}
+ 
+ 	invalidate(): void {
+@@ -2025,6 +2072,12 @@
+ 			return this.cachedLines;
+ 		}
+ 		const contentWidth = safeWidth - PREFIX_W;
++		// Preserve Pi's complete display pipeline (Mermaid and extension hooks).
++		// Transform the whole block at its actual width before splitting out math,
++		// never once per segment or twice in the nested Markdown instances.
++		const text = this.markdownOptions?.transform?.(this.text, contentWidth) ?? this.text;
++		const { transform: _transform, ...options } = this.markdownOptions ?? {};
++		this.segments = buildParagraphSegments(text, this.markdownTheme, options, this.defaultTextStyle);
+ 		const lines = this.segments.flatMap((segment) => {
+ 			return segment.kind === "math"
+ 				? renderMathBlock(segment.raw, contentWidth, this.markdownTheme)
+@@ -2095,6 +2148,7 @@
+ 		text: string,
+ 		_markdownTheme: ConstructorParameters<typeof Markdown>[3],
+ 		_defaultTextStyle?: ConstructorParameters<typeof Markdown>[4],
++		private markdownOptions?: MarkdownOptions,
+ 	) {
+ 		this.text = stripTransientMagicContextTags(text);
+ 	}
+@@ -2124,7 +2178,7 @@
+ 			italic: false,
+ 			color: (s: string) => `${DIM_FG}${s}`,
+ 		};
+-		return new Markdown(this.text, 0, 0, plainTheme, plainStyle);
++		return new Markdown(this.text, 0, 0, plainTheme, plainStyle, this.markdownOptions);
+ 	}
+ 
+ 	invalidate(): void {
+@@ -2406,6 +2460,16 @@
+ 		const clamped = rendered.map((line) => clampLineWidth(line, borderWidth));
+ 		return storeMessageRenderCache(this, width, applyTerminalCopyZones(clamped));
+ 	};
++	// Core invalidation must reach transforms even when the source text and width
++	// are unchanged (e.g. Mermaid mode, theme or extension state changes).
++	for (const method of ["invalidate", "rebuild"] as const) {
++		const original = proto[method];
++		if (typeof original !== "function") continue;
++		proto[method] = function (...args: any[]) {
++			clearMessageRenderCache(this);
++			return original.apply(this, args);
++		};
++	}
+ 	proto[USER_MESSAGE_PATCH_FLAG] = true;
+ }
+ 
+@@ -2486,14 +2550,14 @@
+ 				const isThinking = !!(inner as any).defaultTextStyle?.italic;
+ 				if (isThinking) {
+ 					const style = (inner as any).defaultTextStyle;
+-					const replacement = new ThinkingParagraph(text, mdTheme, style);
++					const replacement = new ThinkingParagraph(text, mdTheme, style, (inner as any).options);
+ 					if ((child as any)?.child !== undefined) {
+ 						(child as any).child = replacement;
+ 					} else {
+ 						container.children[i] = replacement;
+ 					}
+ 				} else {
+-					const replacement = new DottedParagraph(text, mdTheme);
++					const replacement = new DottedParagraph(text, mdTheme, (inner as any).options, (inner as any).defaultTextStyle);
+ 					if ((child as any)?.child !== undefined) {
+ 						(child as any).child = replacement;
+ 					} else {

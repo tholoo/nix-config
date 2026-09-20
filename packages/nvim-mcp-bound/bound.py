@@ -1,4 +1,4 @@
-"""Optional, process-local socket binding for the upstream nvim-mcp server."""
+"""Upstream nvim-mcp with workspace binding and structured editor tools."""
 
 import asyncio
 import os
@@ -39,10 +39,12 @@ class BoundNeovimManager(NeovimManager):
 
 def main():
     from nvim_mcp import server
+    from editor_tools import register
 
     address = os.environ.get("DEV_NVIM_SOCKET")
     if address:
         server.manager = BoundNeovimManager(address)
+    register(server)
     server.main()
 
 
