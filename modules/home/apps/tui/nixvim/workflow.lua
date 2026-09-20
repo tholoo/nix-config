@@ -117,7 +117,7 @@ vim.api.nvim_create_autocmd("FileType", {
 vim.api.nvim_create_autocmd("TextYankPost", {
 	group = group,
 	callback = function()
-		vim.hl.on_yank({ timeout = 150 })
+		vim.hl.hl_op({ timeout = 150 })
 	end,
 })
 -- Ruff handles linting; basedpyright owns Python hover/type information.
