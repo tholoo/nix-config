@@ -187,6 +187,37 @@ def run(args):
             a = initial[0]["id"]
             b = split("l")
             assert pane(b)["pane_x"] > pane(a)["pane_x"], "l must split right"
+            for expected in (True, False):
+                os.write(master, b"\x1bf")
+                wait_for(
+                    lambda expected=expected: (
+                        json.loads(action("current-tab-info", "--json"))[
+                            "is_fullscreen_active"
+                        ]
+                        == expected
+                    ),
+                    "Alt+f must toggle fullscreen",
+                )
+            press("f")
+            wait_for(
+                lambda: json.loads(action("current-tab-info", "--json"))[
+                    "are_floating_panes_visible"
+                ],
+                "Alt+p f must show floating panes",
+            )
+            floating = [p for p in panes() if p["is_floating"]]
+            assert len(floating) == 1, floating
+            press("f")
+            wait_for(
+                lambda: (
+                    not json.loads(action("current-tab-info", "--json"))[
+                        "are_floating_panes_visible"
+                    ]
+                ),
+                "Alt+p f must hide floating panes",
+            )
+            action("close-pane", "--pane-id", str(floating[0]["id"]))
+            wait_for(lambda: len(panes()) == 2, "floating fixture pane did not close")
             focus(b)
             left = split("h")
             wait_for(
@@ -245,7 +276,7 @@ def run(args):
             )
             arrange_right_main(a, b, c)
             print(
-                "PASS: real hjkl and H/L bindings, both starting shapes, move-mode placement, and pane preservation"
+                "PASS: fullscreen/floating shortcuts, hjkl and H/L bindings, both starting shapes, move-mode placement, and pane preservation"
             )
         finally:
             command("kill-session", session, check=False)

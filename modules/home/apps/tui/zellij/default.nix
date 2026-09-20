@@ -168,7 +168,7 @@ in
               bind "Alt p"     { SwitchToMode "Normal" ; }
               bind "c"         { Clear ; }
               bind "e"         { TogglePaneEmbedOrFloating ; SwitchToMode "Normal" ; }
-              bind "f"         { ToggleFocusFullscreen ; SwitchToMode "Normal" ; }
+              bind "f"         { ToggleFloatingPanes ; SwitchToMode "Normal" ; }
               // Native splits open right/down. Creation blocks until the new pane
               // is focused, so swapping it left/up gives the opposite directions.
               bind "h" "Left"  { NewPane "Right" ; MovePane "Left" ; SwitchToMode "Normal" ; }
@@ -285,7 +285,7 @@ in
               bind "Alt ["             { PreviousSwapLayout ; }
               bind "Alt ]"             { NextSwapLayout ; }
 
-              bind "Alt f" { ToggleFloatingPanes; }
+              bind "Alt f" { ToggleFocusFullscreen; }
               bind "Alt b" { NewPane; }
               bind "Alt n" { NewTab ; }
               bind "Alt x" { CloseFocus; }
