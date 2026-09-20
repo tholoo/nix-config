@@ -43,6 +43,9 @@ let
           ]
         }
       )
+      ${lib.optionalString cfg.enableNotifications ''
+        wrapper_args+=(--set PI_NOTIFY_SEND ${lib.getExe' pkgs.libnotify "notify-send"})
+      ''}
       ${lib.optionalString (cfg.proxyUrl != null) ''
         wrapper_args+=(
           --set-default HTTP_PROXY ${lib.escapeShellArg cfg.proxyUrl}
@@ -166,7 +169,9 @@ let
       ]
       ++ lib.optional cfg.enableProcesses "${extensionRoot}/@aliou/pi-processes";
     # Replace the old discovery lists as well as the old npm package list.
-    extensions = lib.optional cfg.enableProcesses "${pkgs.mine.pi-extensions}/lib/pi-extensions/processes-status.js";
+    extensions =
+      lib.optional cfg.enableProcesses "${pkgs.mine.pi-extensions}/lib/pi-extensions/processes-status.js"
+      ++ lib.optional cfg.enableNotifications "${pkgs.mine.pi-extensions}/lib/pi-extensions/desktop-notify.js";
     skills = [ (toString skills) ];
     subagents = {
       defaultProvider = "openai-codex";
@@ -263,6 +268,13 @@ in
       type = types.bool;
       default = true;
       description = "Load the pinned adapter and shared MCP servers.";
+    };
+    enableNotifications = mkOption {
+      type = types.bool;
+      default =
+        lib.mine.listContainsList config.mine.tags.include [ "gui" ]
+        && !lib.mine.listContainsList config.mine.tags.exclude [ "gui" ];
+      description = "Notify the desktop when an interactive Pi response settles; disabled by default without the gui tag.";
     };
     enableProcesses = mkOption {
       type = types.bool;

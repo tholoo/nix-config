@@ -26,6 +26,10 @@ in
       installVimSyntax = true;
       settings = {
         confirm-close-surface = false;
+        # Agents send native desktop notifications themselves. Do not duplicate
+        # them through terminal escape sequences or shell command completion.
+        desktop-notifications = false;
+        notify-on-command-finish = "never";
         # Keep Persian/Arabic joining intact as the cursor moves through a word.
         font-shaping-break = "no-cursor";
         # theme and font managed by stylix

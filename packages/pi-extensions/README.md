@@ -90,6 +90,29 @@ family and missing-surface fallback are untouched. The patch applies with zero
 fuzz before bundling, so upstream drift fails the build. This is a local policy
 choice, not upstream's default; the reviewer package itself remains unpatched.
 
+## Desktop completion notifications
+
+`desktop-notify.ts` sends one native `notify-send` notification when the root
+interactive Pi session reaches `agent_settled`, after retries, compaction, and
+queued follow-ups have finished. Individual tool/model turns, subagents,
+headless/RPC sessions, cancelled runs, and sessions without a desktop D-Bus
+address do not notify. Terminal errors get a distinct notification instead of a
+success message. Duplicate settled events are coalesced, including while a
+notification is being delivered. Delivery is bounded and failure only adds a UI
+warning; it does not fail the completed agent turn.
+
+Only a sanitized project basename and generic completion status are shown—never
+assistant output, tool results, or error details. Arguments are passed directly
+to the executable, not through a shell. No terminal OSC sequence or bell is sent.
+
+Home Manager enables this through `mine.pi.enableNotifications` by default on
+GUI-tagged homes and supplies an absolute `PI_NOTIFY_SEND` path from `libnotify`.
+It is not included in native subagent extension lists. The Ghostty module
+separately disables `desktop-notifications` and sets `notify-on-command-finish`
+to `never`, avoiding terminal-generated duplicates globally. Other applications'
+native desktop notifications are unaffected. Reload Ghostty's configuration
+(or restart it), and activate/restart Pi to pick up the respective changes.
+
 ## Validation
 
 ```sh
@@ -97,7 +120,7 @@ nix build .#pi-extensions
 ```
 
 The package check phase runs the output-preview unit tests and renderer,
-spinner, Markdown, running-process widget, and permission smoke suites against
+spinner, Markdown, running-process widget, permission, and desktop-notification smoke suites against
 the real Pi SDK in an isolated home, offline, without a real model call. Markdown checks cover Mermaid modes,
 streaming/final/restored content, arbitrary transformations, full-block scope,
 transformer ordering/error fallback, thinking, user-message invalidation,
@@ -115,6 +138,11 @@ approvals/denials and symlinked skill reads, explicit path restrictions,
 headless-child forwarding (including outside paths), and missing-reviewer fallback. Commands in
 these permission fixtures are inspected, never executed; this does not test live
 Codex authentication or the real model's classification quality.
+
+Desktop-notification checks exercise settled-run deduplication, retries and
+follow-ups, cancellation/error handling, root/subagent and mode filtering,
+missing D-Bus, session resets, label sanitization, and delivery failures with a
+fake executable boundary. They do not send real desktop notifications.
 
 A successful build validates the package; it does not activate Home Manager
 or replace extensions in an already-running Pi session.

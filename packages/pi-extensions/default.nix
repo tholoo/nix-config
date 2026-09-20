@@ -33,8 +33,8 @@ buildNpmPackage {
     patch --batch --fuzz=0 -d node_modules/@gotgenes/pi-permission-system -p1 < permission-external-review.patch
     python compile.py node_modules ${lib.getExe esbuild}
     # Local read-only widget; pi-processes itself remains unpatched.
-    esbuild processes-status.ts --format=esm --platform=node --target=es2022 \
-      --outfile=processes-status.js --log-level=warning
+    esbuild processes-status.ts desktop-notify.ts --format=esm --platform=node --target=es2022 \
+      --outdir=. --log-level=warning
     runHook postBuild
   '';
   doCheck = true;
@@ -50,7 +50,7 @@ buildNpmPackage {
     mkdir -p "$PI_CODING_AGENT_DIR"
     export PI_PERMISSION_TEST_CONFIG=${../../modules/home/apps/tui/pi/permissions.json}
     export PI_REVIEW_TEST_CONFIG=${../../modules/home/apps/tui/pi/permission-review.json}
-    for smoke in renderer spinner markdown processes-status permissions; do
+    for smoke in renderer spinner markdown processes-status permissions desktop-notify; do
       timeout 90 pi --mode json --no-session --no-extensions --no-skills --no-prompt-templates \
         --no-themes --no-context-files -e "./tests/$smoke-smoke.ts" </dev/null
       test -s "$HOME/$smoke-smoke-passed"
@@ -63,7 +63,7 @@ buildNpmPackage {
     runHook preInstall
     mkdir -p $out/lib/pi-extensions
     cp -r node_modules $out/lib/pi-extensions/
-    cp processes-status.js $out/lib/pi-extensions/
+    cp processes-status.js desktop-notify.js $out/lib/pi-extensions/
     runHook postInstall
   '';
   meta = {
