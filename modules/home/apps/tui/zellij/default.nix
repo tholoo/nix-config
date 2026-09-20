@@ -84,6 +84,9 @@ in
         ${pkgs.coreutils}/bin/mv -fT -- "$zellij_new_config" "$zellij_config_file"
       ''}
     '';
+    # A local default layout loads its adjacent swap presets, including right-main.
+    xdg.configFile."zellij/layouts/default.kdl".source = ./layouts/default.kdl;
+    xdg.configFile."zellij/layouts/default.swap.kdl".source = ./layouts/default.swap.kdl;
     xdg.configFile."zellij/plugins/monocle.wasm".source =
       "${pkgs.mine.zellij-monocle}/zellij-monocle.wasm";
     xdg.configFile."zellij/plugins/room.wasm".source = "${pkgs.mine.zellij-room}/zellij-room.wasm";
@@ -138,7 +141,7 @@ in
       }
 
       // theme "base16"
-      // default_layout "simple"
+      default_layout "default"
       copy_on_select true
       // theme "catppuccin-mocha"
       // theme "dracula"
@@ -166,8 +169,14 @@ in
               bind "c"         { Clear ; }
               bind "e"         { TogglePaneEmbedOrFloating ; SwitchToMode "Normal" ; }
               bind "f"         { ToggleFocusFullscreen ; SwitchToMode "Normal" ; }
+              // Native splits open right/down. Creation blocks until the new pane
+              // is focused, so swapping it left/up gives the opposite directions.
+              bind "h" "Left"  { NewPane "Right" ; MovePane "Left" ; SwitchToMode "Normal" ; }
               bind "j" "Down"  { NewPane "Down" ; SwitchToMode "Normal" ; }
+              bind "k" "Up"    { NewPane "Down" ; MovePane "Up" ; SwitchToMode "Normal" ; }
               bind "l" "Right" { NewPane "Right" ; SwitchToMode "Normal" ; }
+              bind "H"         { PreviousSwapLayout ; SwitchToMode "Normal" ; }
+              bind "L"         { NextSwapLayout ; SwitchToMode "Normal" ; }
               bind "n"         { NewPane ; SwitchToMode "Normal" ; }
               bind "p"         { SwitchFocus ; SwitchToMode "Normal" ; }
               bind ";"         { FocusLastPane ; }
