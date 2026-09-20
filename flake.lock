@@ -1061,6 +1061,22 @@
     },
     "nixpkgs_12": {
       "locked": {
+        "lastModified": 1787736819,
+        "narHash": "sha256-cV5xEJJK3BvhU8rEd4mC9UsmDi5qscv/kzGPhBRC5WA=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "9fbb54b33e91ee4ca368e35a78e0613c720600b3",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixpkgs-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_13": {
+      "locked": {
         "lastModified": 1719254875,
         "narHash": "sha256-ECni+IkwXjusHsm9Sexdtq8weAq/yUyt1TWIemXt3Ko=",
         "owner": "nixos",
@@ -1075,7 +1091,7 @@
         "type": "github"
       }
     },
-    "nixpkgs_13": {
+    "nixpkgs_14": {
       "locked": {
         "lastModified": 0,
         "narHash": "sha256-/qlNWm/IEVVH7GfgAIyP6EsVZI6zjAx1cV5zNyrs+rI=",
@@ -1087,7 +1103,7 @@
         "type": "indirect"
       }
     },
-    "nixpkgs_14": {
+    "nixpkgs_15": {
       "locked": {
         "lastModified": 1728538411,
         "narHash": "sha256-f0SBJz1eZ2yOuKUr5CA9BHULGXVSn6miBuUWdTyhUhU=",
@@ -1418,6 +1434,7 @@
         "srvos": "srvos",
         "stylix": "stylix",
         "tandem": "tandem",
+        "tholo-cli": "tholo-cli",
         "tour-nvim": "tour-nvim",
         "vigiland": "vigiland",
         "zellij-agent-deck": "zellij-agent-deck",
@@ -1444,7 +1461,7 @@
     },
     "rust-overlay": {
       "inputs": {
-        "nixpkgs": "nixpkgs_14"
+        "nixpkgs": "nixpkgs_15"
       },
       "locked": {
         "lastModified": 1736476219,
@@ -1737,6 +1754,25 @@
         "type": "github"
       }
     },
+    "tholo-cli": {
+      "inputs": {
+        "nixpkgs": "nixpkgs_12"
+      },
+      "locked": {
+        "lastModified": 1789885861,
+        "narHash": "sha256-DLWTJWYRTF2KHuKh8DJ16sed2Oa/Vr1UsUEF00acBs0=",
+        "ref": "main",
+        "rev": "b92838f65f09350e3adfae09ef2d51f15967e63b",
+        "revCount": 4,
+        "type": "git",
+        "url": "ssh://git@github.com/tholoo/tholo-cli.git"
+      },
+      "original": {
+        "ref": "main",
+        "type": "git",
+        "url": "ssh://git@github.com/tholoo/tholo-cli.git"
+      }
+    },
     "tinted-kitty": {
       "flake": false,
       "locked": {
@@ -1904,7 +1940,7 @@
     },
     "vigiland": {
       "inputs": {
-        "nixpkgs": "nixpkgs_12"
+        "nixpkgs": "nixpkgs_13"
       },
       "locked": {
         "lastModified": 1719400387,
@@ -1960,7 +1996,7 @@
     },
     "zellij-switch": {
       "inputs": {
-        "nixpkgs": "nixpkgs_13",
+        "nixpkgs": "nixpkgs_14",
         "rust-overlay": "rust-overlay",
         "systems": "systems_12"
       },

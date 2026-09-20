@@ -44,6 +44,8 @@
       flake = false;
     };
 
+    tholo-cli.url = "git+ssh://git@github.com/tholoo/tholo-cli.git?ref=main";
+
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
 
     flake-utils.url = "github:numtide/flake-utils";
