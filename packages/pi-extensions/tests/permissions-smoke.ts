@@ -1,7 +1,7 @@
 /** Pinned gate + reviewer in Pi's SDK; synthetic provider, no commands executed. */
 import assert from "node:assert/strict";
 import { EventEmitter } from "node:events";
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, symlinkSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import gate from "../node_modules/@gotgenes/pi-permission-system/precompiled/index.js";
@@ -15,6 +15,14 @@ export default function (pi: ExtensionAPI) {
 		const agentDir = process.env.PI_CODING_AGENT_DIR!;
 		const workspace = join(process.env.HOME!, "permission-workspace");
 		mkdirSync(workspace, { recursive: true });
+		// Model a managed skill symlink whose canonical source is also outside cwd.
+		const skillSource = join(process.env.HOME!, "skill-source");
+		const skillLink = join(process.env.HOME!, "managed-skill");
+		mkdirSync(skillSource, { recursive: true });
+		writeFileSync(join(skillSource, "SKILL.md"), "# Synthetic skill\n");
+		symlinkSync(skillSource, skillLink);
+		const outsideFile = join(process.env.HOME!, "outside.txt");
+		const skillPrompt = `<available_skills><skill><name>fixture-skill</name><description>Synthetic skill</description><location>${skillLink}/SKILL.md</location></skill></available_skills>`;
 		for (const [name, variable] of [
 			["pi-permission-system", "PI_PERMISSION_TEST_CONFIG"],
 			["pi-permission-auto-review", "PI_REVIEW_TEST_CONFIG"],
@@ -91,7 +99,7 @@ export default function (pi: ExtensionAPI) {
 		try {
 			await gateEvent("session_start", { reason: "startup" });
 			await reviewEvent("session_start", { reason: "startup" });
-			await gateEvent("before_agent_start", { systemPrompt: "Synthetic test", prompt: "Inspect the synthetic fixture" });
+			await gateEvent("before_agent_start", { systemPrompt: skillPrompt, prompt: "Inspect the synthetic fixture" });
 			await test("both extensions load and share the keyed service, even gate-first", () => {
 				const service = getPermissionsService("permissions-smoke-root")!;
 				assert.ok(service);
@@ -139,11 +147,84 @@ export default function (pi: ExtensionAPI) {
 				assert.equal((await tool("bash", { command: "git status" })).block, true);
 				assert.equal(prompts, 2);
 			});
-			await test("outside-workspace access still needs a human despite model approval", async () => {
+			await test("outside-workspace writes proceed after model approval", async () => {
 				response = '{"outcome":"allow"}';
-				assert.equal((await tool("write", { path: join(process.env.HOME!, "outside.txt"), content: "synthetic" })).block, true);
-				assert.equal(prompts, 3);
+				const before = calls;
+				const beforePrompts = prompts;
+				const result = await tool("write", { path: outsideFile, content: "synthetic" });
+				assert.notEqual(result?.block, true, result?.reason);
+				assert.ok(calls > before, "outside access must be reviewed, not blanket-allowed");
+				assert.equal(prompts, beforePrompts);
 			});
+			await test("symlinked skills and their canonical source pass through auto-review", async () => {
+				const before = calls;
+				const beforePrompts = prompts;
+				for (const directory of [skillLink, skillSource]) {
+					const result = await tool("read", { path: join(directory, "SKILL.md") });
+					assert.notEqual(result?.block, true, result?.reason);
+				}
+				assert.ok(calls >= before + 2);
+				assert.equal(prompts, beforePrompts);
+			});
+			await test("shell and background outside-directory accesses are reviewable", async () => {
+				const beforePrompts = prompts;
+				for (const name of ["bash", "process"]) {
+					const before = calls;
+					const result = await tool(name, { action: "start", command: `cat ${JSON.stringify(outsideFile)}`, cwd: workspace });
+					assert.notEqual(result?.block, true, result?.reason);
+					assert.ok(calls > before);
+				}
+				assert.equal(prompts, beforePrompts);
+			});
+			await test("outside-workspace model denials still block without prompting", async () => {
+				response = '{"outcome":"deny","rationale":"Synthetic outside-access denial"}';
+				const before = calls;
+				const beforePrompts = prompts;
+				assert.equal((await tool("read", { path: outsideFile })).block, true);
+				assert.equal(calls, before + 1);
+				assert.equal(prompts, beforePrompts);
+				response = '{"outcome":"allow"}';
+			});
+			await test("outside-workspace reviewer failures still need human approval", async () => {
+				authenticated = false;
+				const beforePrompts = prompts;
+				assert.equal((await tool("read", { path: outsideFile })).block, true);
+				assert.equal(prompts, beforePrompts + 1);
+				authenticated = true;
+			});
+			const withRule = async (surface: string, action: string, body: () => Promise<void>) => {
+				const file = join(agentDir, "extensions/pi-permission-system/config.json");
+				const original = readFileSync(file, "utf8");
+				const config = JSON.parse(original);
+				config.permission[surface] = { "*": config.permission[surface], [outsideFile]: action };
+				try {
+					writeFileSync(file, JSON.stringify(config));
+					await gateEvent("resources_discover", { reason: "reload" });
+					await body();
+				} finally {
+					writeFileSync(file, original);
+					await gateEvent("resources_discover", { reason: "reload" });
+				}
+			};
+			await test("explicit path asks remain human-only despite model approval", () => withRule("path", "ask", async () => {
+				const beforePrompts = prompts;
+				assert.equal((await tool("read", { path: outsideFile })).block, true);
+				assert.equal(prompts, beforePrompts + 1);
+			}));
+			await test("explicit path denials cannot be overridden by auto-review", () => withRule("path", "deny", async () => {
+				const before = calls;
+				const beforePrompts = prompts;
+				assert.equal((await tool("read", { path: outsideFile })).block, true);
+				assert.equal(calls, before);
+				assert.equal(prompts, beforePrompts);
+			}));
+			await test("explicit outside-directory denials bypass the reviewer and block", () => withRule("external_directory", "deny", async () => {
+				const before = calls;
+				const beforePrompts = prompts;
+				assert.equal((await tool("read", { path: outsideFile })).block, true);
+				assert.equal(calls, before);
+				assert.equal(prompts, beforePrompts);
+			}));
 			await test("headless child asks forward to the parent's reviewer", async () => {
 				const prior = process.env.PI_SUBAGENT_PARENT_SESSION;
 				process.env.PI_SUBAGENT_PARENT_SESSION = "permissions-smoke-root";
@@ -160,10 +241,13 @@ export default function (pi: ExtensionAPI) {
 				try {
 					await childEvent("session_start", { reason: "startup" });
 					const before = calls;
+					const beforePrompts = prompts;
 					const result = await childEvent("tool_call", { toolName: "bash", input: { command: "git status" }, toolCallId: "child-fixture" });
 					assert.notEqual(result?.block, true, result?.reason);
-					assert.equal(calls, before + 1);
-					assert.equal(prompts, 3);
+					const external = await childEvent("tool_call", { toolName: "read", input: { path: outsideFile }, toolCallId: "child-external-fixture" });
+					assert.notEqual(external?.block, true, external?.reason);
+					assert.equal(calls, before + 2);
+					assert.equal(prompts, beforePrompts);
 				} finally {
 					await childEvent("session_shutdown");
 					if (prior === undefined) delete process.env.PI_SUBAGENT_PARENT_SESSION;
@@ -172,8 +256,10 @@ export default function (pi: ExtensionAPI) {
 			});
 			await reviewEvent("session_shutdown");
 			await test("a missing reviewer prompts instead of silently allowing", async () => {
+				const beforePrompts = prompts;
 				assert.equal((await tool("bash", { command: "git status" })).block, true);
-				assert.equal(prompts, 4);
+				assert.equal((await tool("read", { path: outsideFile })).block, true);
+				assert.equal(prompts, beforePrompts + 2);
 			});
 			writeFileSync(join(process.env.HOME!, "permissions-smoke-passed"), `${passed}\n`);
 		} catch (error) {

@@ -59,8 +59,12 @@ The policy defaults to `ask`, allows ordinary file-inspection tools and user
 questions, and explicitly sends shell commands through review. The `process`
 tool's command/cwd arguments also use the shell gate; non-launch actions still
 pass through the generic tool gate. No custom Git denylist is installed, and
-YOLO mode is off. Outside-workspace access remains a human approval boundary:
-the upstream gate does not let an automatic reviewer approve its path asks.
+YOLO mode is off. Outside-workspace access remains `ask`, but is delegated to
+the configured reviewer before human fallback. This includes read/write variants,
+symlink-resolved skill paths, shell/background calls, and forwarded child asks.
+It is not an outside-workspace allowlist: a model denial still blocks, and an
+unavailable reviewer still requires human approval. Explicit `path` asks remain
+human-only, and deterministic path/outside-directory denies remain authoritative.
 
 The reviewer uses `openai-codex` / `codex-auto-review` with the existing Codex
 login and its bundled baseline policy, not an API-key provider. Missing auth,
@@ -77,8 +81,14 @@ reviewer/UI. This does not retrofit external CLI runners with Pi's tool hooks.
 The gate's extensionless `#src` aliases are resolved at build time, and its
 public service is bundled separately. Both use the same session-keyed
 `Symbol.for()` registry. Tree-sitter's WASM files and Pi's SDK stay external;
-the auto-review package already ships compiled ESM. No upstream behavior patch
-is applied to either package.
+the auto-review package already ships compiled ESM.
+
+`permission-external-review.patch` intentionally changes the pinned gate's
+`src/authority/delegation-envelope.ts`: it removes only the `external_directory`
+family from the surfaces that automatic authorizers cannot approve. The `path`
+family and missing-surface fallback are untouched. The patch applies with zero
+fuzz before bundling, so upstream drift fails the build. This is a local policy
+choice, not upstream's default; the reviewer package itself remains unpatched.
 
 ## Validation
 
@@ -100,8 +110,9 @@ and failing synthetic processes. It verifies completed records and logs survive.
 
 Permission checks use the managed configs and a synthetic Codex provider. They
 exercise registration/load order, shell approvals and denials, background
-process launches and stdin, authentication/response failures, the external-path
-boundary, headless-child forwarding, and missing-reviewer fallback. Commands in
+process launches and stdin, authentication/response failures, outside-directory
+approvals/denials and symlinked skill reads, explicit path restrictions,
+headless-child forwarding (including outside paths), and missing-reviewer fallback. Commands in
 these permission fixtures are inspected, never executed; this does not test live
 Codex authentication or the real model's classification quality.
 

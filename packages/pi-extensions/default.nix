@@ -28,6 +28,9 @@ buildNpmPackage {
     # Retain core/extension Markdown transforms through the custom UI wrappers.
     patch --batch --fuzz=0 -d node_modules/pi-claude-code-ui -p1 < claude-ui-markdown.patch
     cp output-preview.ts node_modules/pi-claude-code-ui/extensions/output-preview.ts
+    # Delegate outside-workspace asks to the configured reviewer, not blanket allow.
+    # Explicit path asks remain human-only; denies and failure fallback are unchanged.
+    patch --batch --fuzz=0 -d node_modules/@gotgenes/pi-permission-system -p1 < permission-external-review.patch
     python compile.py node_modules ${lib.getExe esbuild}
     # Local read-only widget; pi-processes itself remains unpatched.
     esbuild processes-status.ts --format=esm --platform=node --target=es2022 \
