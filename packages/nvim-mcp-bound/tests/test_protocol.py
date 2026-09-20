@@ -52,11 +52,17 @@ class ProtocolTests(unittest.IsolatedAsyncioTestCase):
             "TOUR_PLUGIN": os.environ["TOUR_PLUGIN"],
             "DEV_NVIM_SOCKET": self.socket,
         }
+        self.env = env
         self.log = self.enterContext(open(self.root / "nvim.log", "w+"))
+        self.addCleanup(self.stop_editor)
+        self.start_editor()
+
+    def start_editor(self):
         self.editor = subprocess.Popen(
             [
                 os.environ["NVIM_TEST"],
                 "--headless",
+                "-n",  # Disposable restart fixtures must not leave recovery swap files.
                 "-u",
                 "NONE",
                 "-i",
@@ -67,12 +73,11 @@ class ProtocolTests(unittest.IsolatedAsyncioTestCase):
                 "lua vim.opt.rtp:prepend(vim.env.TOUR_PLUGIN)",
             ],
             cwd=self.root,
-            env=env,
+            env=self.env,
             stdin=subprocess.DEVNULL,
             stdout=self.log,
             stderr=self.log,
         )
-        self.addCleanup(self.stop_editor)
         deadline = time.monotonic() + 10
         while not Path(self.socket).exists():
             if self.editor.poll() is not None or time.monotonic() > deadline:
@@ -81,7 +86,6 @@ class ProtocolTests(unittest.IsolatedAsyncioTestCase):
             time.sleep(0.01)
         self.rpc = NvimClient.connect(self.socket)
         self.addCleanup(self.rpc.close)
-        self.env = env
 
     def stop_editor(self):
         if self.editor.poll() is None:
@@ -97,6 +101,12 @@ class ProtocolTests(unittest.IsolatedAsyncioTestCase):
         self.assertFalse(result.is_error, str(result))
         self.assertIsInstance(result.structured_content, dict, str(result))
         return result.structured_content
+
+    async def upstream_state(self, name):
+        # Upstream state tools return JSON text, unlike our structured snapshots.
+        result = await self.session.call_tool(name, {})
+        self.assertFalse(result.is_error, str(result))
+        return json.loads(result.content[0].text)
 
     def buffer(self, file="fixture.lua", lines=None):
         lines = lines if lines is not None else ["local λ = 1", "\treturn λ", ""]
@@ -190,6 +200,62 @@ class ProtocolTests(unittest.IsolatedAsyncioTestCase):
         after = await self.tool("read_buffer_snapshot", file=file)
         self.assertGreater(after["changedtick"], snap["changedtick"])
         self.assertEqual(after["lines"][0], "changed")
+
+    @with_session
+    async def test_editor_target_context_preserves_visual_selection_and_unsaved_text(self):
+        buf, lines = self.buffer(lines=["first function", "second function", "tail"])
+        self.rpc.exec_lua("vim.api.nvim_set_current_buf(...)", buf)
+        state = """return {vim.fn.mode(), vim.api.nvim_get_current_win(),
+            vim.api.nvim_get_current_buf(), vim.api.nvim_win_get_cursor(0),
+            vim.fn.getpos('v'), vim.api.nvim_buf_get_changedtick(0)}"""
+        for keys, mode in (
+            ("gg0vjl", "visual"),
+            ("gg0Vj", "visual_line"),
+            ("gg0" + chr(22) + "jl", "visual_block"),
+        ):
+            self.rpc.exec_lua("vim.cmd.normal({args = {...}, bang = true})", keys)
+            before = self.rpc.exec_lua(state)
+            full = await self.upstream_state("get_state")
+            active = full["windows"][0]
+            self.assertEqual(full["mode"], mode)
+            self.assertEqual(active["file"], "fixture.lua")
+            self.assertTrue(active["modified"])
+            self.assertEqual(active["line"], 2)
+            self.assertEqual(active["selection"]["start_line"], 1)
+            self.assertEqual(active["selection"]["end_line"], 2)
+            self.assertEqual(active["selection"]["mode"], mode)
+            brief = await self.upstream_state("get_state_brief")
+            self.assertNotIn("selection", brief["active_window"])
+            snap = await self.tool("read_buffer_snapshot", file=active["file"])
+            self.assertEqual(snap["lines"], lines)
+            self.assertTrue(snap["modified"])
+            self.assertEqual(self.rpc.exec_lua(state), before)
+            self.rpc.exec_lua(
+                "vim.cmd.normal({args = {string.char(27)}, bang = true})"
+            )
+        normal = await self.upstream_state("get_state")
+        self.assertEqual(normal["mode"], "normal")
+        self.assertNotIn(
+            "selection", normal["windows"][0], "old visual marks are not active context"
+        )
+        self.assertEqual((self.root / "fixture.lua").read_text(), "disk content\n")
+
+    @with_session
+    async def test_disconnected_editor_and_restart_keep_the_assigned_socket(self):
+        self.buffer()
+        await self.tool("read_buffer_snapshot", file="fixture.lua")
+        self.stop_editor()
+        self.rpc.close()
+        disconnected = await self.session.call_tool(
+            "read_buffer_snapshot", {"file": "fixture.lua"}
+        )
+        self.assertTrue(disconnected.is_error)
+        # A real replacement editor at the same socket must be usable by the
+        # existing MCP process, without inheriting the old buffer snapshot.
+        self.start_editor()
+        self.buffer(lines=["replacement editor"])
+        snapshot = await self.tool("read_buffer_snapshot", file="fixture.lua")
+        self.assertEqual(snapshot["lines"], ["replacement editor"])
 
     @with_session
     async def test_empty_buffer_and_argument_validation(self):
