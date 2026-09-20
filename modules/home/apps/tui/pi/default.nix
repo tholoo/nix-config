@@ -337,8 +337,10 @@ in
           unavailable, report that the workspace editor needs restarting.
           Otherwise match the instance to the current project and ask if multiple
           instances still match. Read editor state before acting.
-          Use buffer edits for open files so unsaved changes and undo history are
-          preserved. Save only as required by the task, then check diagnostics.
+          Prefer normal file tools for repository edits; Neovim 0.13 autoreloads
+          clean buffers. If connected, check target buffers first: use buffer
+          edits for unsaved changes or explicit in-editor work. Save only as
+          required by the task, then check diagnostics.
           For requested code tours or walkthroughs in Neovim, use the shared
           tour skill to author and open the walkthrough in that same editor.
         '';
