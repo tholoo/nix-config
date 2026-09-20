@@ -6,7 +6,7 @@ local ok, err = pcall(function()
 	assert(config.snippets.preset == "default", "keep Neovim's native snippet engine")
 	assert(config.keymap.preset == "default", "completion key preset changed")
 	assert(vim.tbl_contains(config.sources.default, "snippets"), "snippet source missing")
-	local keys = require("blink.cmp.keymap.presets").default
+	local keys = require("blink.cmp.keymap.presets").get("default")
 	assert(keys["<C-y>"][1] == "select_and_accept", "Ctrl Y must accept")
 	assert(keys["<Tab>"][1] == "snippet_forward", "Tab must jump forward")
 	assert(keys["<S-Tab>"][1] == "snippet_backward", "Shift Tab must jump backward")
@@ -34,14 +34,17 @@ local ok, err = pcall(function()
 			items = result.items
 		end)
 		assert(items and #items > 0, "Blink did not offer " .. ft .. " snippets")
+		-- Pick the documented templates deterministically. Table iteration order
+		-- varies, and some collection entries use unsupported nested placeholders.
+		local trigger = ft == "python" and "def" or "fn"
 		local candidate
 		for _, item in ipairs(items) do
-			if item.insertText:find("${1:", 1, true) and item.insertText:find("${2:", 1, true) then
+			if item.label == trigger then
 				candidate = item
 				break
 			end
 		end
-		assert(candidate, "no multi-placeholder snippet for " .. ft)
+		assert(candidate, "missing " .. ft .. " template: " .. trigger)
 		assert(candidate.insertTextFormat == vim.lsp.protocol.InsertTextFormat.Snippet)
 		vim.cmd.enew()
 		config.snippets.expand(candidate.insertText)
