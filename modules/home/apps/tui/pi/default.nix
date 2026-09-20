@@ -275,6 +275,7 @@ in
 
   config = mkIf cfg.enable {
     home.packages = [ package ];
+    home.shellAliases.h = "pi";
 
     # Pi writes settings interactively. Preserve unmanaged preferences, replace
     # managed top-level sections, and never merge back a removed npm package.
