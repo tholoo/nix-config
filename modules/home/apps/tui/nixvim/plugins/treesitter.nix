@@ -1,5 +1,8 @@
 { config, ... }:
 {
+  # Supply the language-specific function.inner/outer queries for mini.ai.
+  # Selection stays with mini.ai; no competing textobject keymaps are installed.
+  plugins.treesitter-textobjects.enable = true;
   plugins.treesitter = {
     enable = true;
     highlight.enable = true;

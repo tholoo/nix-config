@@ -58,7 +58,22 @@
         icons = { };
         statusline = { };
         pairs = { };
-        ai.n_lines = 100;
+        ai = {
+          n_lines = 100;
+          custom_textobjects = {
+            f.__raw = ''
+              function(ai_type, id, opts)
+                -- A containing function can extend beyond the usual neighborhood.
+                opts.n_lines = vim.api.nvim_buf_line_count(0)
+                return require("mini.ai").gen_spec.treesitter({
+                  a = "@function.outer", i = "@function.inner",
+                })(ai_type, id, opts)
+              end
+            '';
+            # Preserve mini.ai's function-call object under uppercase F.
+            F.__raw = ''require("mini.ai").gen_spec.function_call()'';
+          };
+        };
         surround.mappings = {
           add = "gsa";
           delete = "gsd";
