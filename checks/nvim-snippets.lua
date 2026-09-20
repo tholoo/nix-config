@@ -6,9 +6,17 @@ local ok, err = pcall(function()
 	assert(config.snippets.preset == "default", "keep Neovim's native snippet engine")
 	assert(config.keymap.preset == "default", "completion key preset changed")
 	assert(vim.tbl_contains(config.sources.default, "snippets"), "snippet source missing")
-	local keys = require("blink.cmp.keymap.presets").get("default")
-	assert(keys["<C-y>"][1] == "select_and_accept", "Ctrl Y must accept")
-	assert(keys["<Tab>"][1] == "snippet_forward", "Tab must jump forward")
+	local keys = require("blink.cmp.keymap").get_mappings(config.keymap, "default")
+	local selection = require("blink.cmp.completion.list").get_selection_mode({ mode = "default" })
+	assert(selection.preselect, "first completion must be highlighted")
+	assert(not selection.auto_insert, "highlighting must not insert text")
+	assert(keys["<C-n>"][1] == "select_next" and keys["<C-p>"][1] == "select_prev", "preserve Ctrl N/P navigation")
+	assert(keys["<CR>"] == nil, "Blink must not override normal Enter")
+	assert(keys["<C-y>"][1] == "select_and_accept", "preserve optional Ctrl Y acceptance")
+	assert(
+		vim.deep_equal(keys["<Tab>"], { "accept", "snippet_forward", "fallback" }),
+		"Tab must accept only a selected item, then try a snippet jump"
+	)
 	assert(keys["<S-Tab>"][1] == "snippet_backward", "Shift Tab must jump backward")
 
 	local registry = require("blink.cmp.sources.snippets.default.registry").new({})
@@ -47,14 +55,26 @@ local ok, err = pcall(function()
 		assert(candidate, "missing " .. ft .. " template: " .. trigger)
 		assert(candidate.insertTextFormat == vim.lsp.protocol.InsertTextFormat.Snippet)
 		vim.cmd.enew()
+		require("blink.cmp.keymap.apply").keymap_to_current_buffer(keys)
 		config.snippets.expand(candidate.insertText)
 		assert(vim.snippet.active({ direction = 1 }), ft .. " snippet did not activate")
 		local before = vim.api.nvim_win_get_cursor(0)
-		config.snippets.jump(1)
-		assert(not vim.deep_equal(before, vim.api.nvim_win_get_cursor(0)), ft .. " placeholder jump did not move")
+		-- With no completion selected, the actual Tab mapping must jump instead.
+		vim.fn.maparg("<Tab>", "i", false, true).callback()
+		assert(
+			vim.wait(1000, function()
+				return not vim.deep_equal(before, vim.api.nvim_win_get_cursor(0))
+			end, 10),
+			ft .. " Tab did not jump forward"
+		)
 		assert(vim.snippet.active({ direction = -1 }), ft .. " cannot jump backward")
-		config.snippets.jump(-1)
-		assert(vim.deep_equal(before, vim.api.nvim_win_get_cursor(0)), ft .. " backward jump did not return")
+		vim.fn.maparg("<S-Tab>", "s", false, true).callback()
+		assert(
+			vim.wait(1000, function()
+				return vim.deep_equal(before, vim.api.nvim_win_get_cursor(0))
+			end, 10),
+			ft .. " Shift Tab did not jump backward"
+		)
 		vim.snippet.stop()
 		vim.cmd("enew!")
 	end

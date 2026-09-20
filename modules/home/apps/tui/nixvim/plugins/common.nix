@@ -6,9 +6,19 @@
     blink-cmp = {
       enable = true;
       settings = {
-        keymap.preset = "default";
+        keymap = {
+          preset = "default";
+          "<Tab>" = [
+            "accept"
+            "snippet_forward"
+            "fallback"
+          ];
+        };
         completion = {
-          list.selection.preselect = false;
+          list.selection = {
+            preselect = true;
+            auto_insert = false;
+          };
           documentation = {
             auto_show = true;
             auto_show_delay_ms = 250;
