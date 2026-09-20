@@ -1759,11 +1759,11 @@
         "nixpkgs": "nixpkgs_12"
       },
       "locked": {
-        "lastModified": 1789885861,
-        "narHash": "sha256-DLWTJWYRTF2KHuKh8DJ16sed2Oa/Vr1UsUEF00acBs0=",
+        "lastModified": 1789892855,
+        "narHash": "sha256-dLItk0EoquERbKo6cb1SUr71OkyRPzH+JssPOHujvPw=",
         "ref": "main",
-        "rev": "b92838f65f09350e3adfae09ef2d51f15967e63b",
-        "revCount": 4,
+        "rev": "9fdd991660120dba44bdd5186394b54bfe4e50d7",
+        "revCount": 5,
         "type": "git",
         "url": "ssh://git@github.com/tholoo/tholo-cli.git"
       },
