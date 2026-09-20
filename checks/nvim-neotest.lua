@@ -96,11 +96,106 @@ local ok, err = pcall(function()
 		assert(vim.api.nvim_get_current_buf() == source_buf, "source buffer must remain open")
 		assert(vim.deep_equal(vim.fn.maparg("<Esc>", "n", false, true), source_escape), "source Escape mapping changed")
 	end
+
+	-- Drive the real panel consumer with successive synthetic runs. This checks
+	-- hidden-panel clearing as well as preservation when merely toggling it.
+	local client = {
+		listeners = {},
+		get_position = function()
+			return {
+				get_key = function()
+					return {
+						data = function()
+							return { type = "test" }
+						end,
+					}
+				end,
+			}
+		end,
+	}
+	local panel = require("neotest.consumers.output_panel")(client)
+	local latest_output = require("neotest.config").consumers.latest_output
+	if latest_output then
+		latest_output(client)
+	end
+	local function emit(event, ...)
+		local args = { ... }
+		local done, failure = false, nil
+		require("nio").run(function()
+			if client.listeners[event] then
+				local success, message = pcall(client.listeners[event], unpack(args))
+				if not success then
+					failure = message
+				end
+			end
+			done = true
+		end)
+		assert(
+			vim.wait(3000, function()
+				return done
+			end, 10),
+			"panel event did not finish: " .. event
+		)
+		assert(not failure, failure)
+	end
+	local function text()
+		return table.concat(vim.api.nvim_buf_get_lines(panel.buffer(), 0, -1, false), "\n")
+	end
+	local function contains(marker)
+		return text():find(marker, 1, true) ~= nil
+	end
+	local function output_file(marker)
+		local path = vim.fn.tempname()
+		vim.fn.writefile({ marker }, path)
+		return path
+	end
+	local old = output_file("OLD_RUN_MARKER")
+	local new_a = output_file("LATEST_RUN_A")
+	local new_b = output_file("LATEST_RUN_B")
+	emit("run", "synthetic", "suite", { "test_a", "test_b" })
+	emit("results", "synthetic", { test_a = { status = "passed", output = old } }, false)
+	assert(
+		vim.wait(3000, function()
+			return contains("OLD_RUN_MARKER")
+		end, 10),
+		"first run output missing"
+	)
+	assert(vim.fn.bufwinid(panel.buffer()) == -1, "running tests must not open the panel")
+
+	emit("run", "synthetic", "suite", { "test_a", "test_b" })
+	assert(not contains("OLD_RUN_MARKER"), "output panel retained the previous run")
+	emit("results", "synthetic", {
+		test_a = { status = "passed", output = new_a },
+		test_b = { status = "failed", output = new_b },
+	}, false)
+	assert(
+		vim.wait(3000, function()
+			return contains("LATEST_RUN_A") and contains("LATEST_RUN_B")
+		end, 10),
+		"panel must retain all output from the latest run"
+	)
+	for _ = 1, 2 do
+		mapping(" tO").callback()
+		assert(vim.fn.bufwinid(panel.buffer()) ~= -1, "Space tO must open panel")
+		assert(
+			contains("LATEST_RUN_A") and contains("LATEST_RUN_B") and not contains("OLD_RUN_MARKER"),
+			"toggling must preserve only current output"
+		)
+		mapping(" tO").callback()
+	end
+	panel.open()
+	emit("run", "synthetic", "suite", { "test_a" })
+	assert(not contains("LATEST_RUN_A") and not contains("LATEST_RUN_B"), "visible panel must also clear on a new run")
+	assert(vim.fn.bufwinid(panel.buffer()) ~= -1, "clearing must not close the panel")
+	panel.close()
+	for _, path in ipairs({ old, new_a, new_b }) do
+		vim.fn.delete(path)
+	end
 end)
 if not ok then
 	io.stderr:write(tostring(err) .. "\n")
 	vim.cmd.cquit()
 else
-	print("PASS: neotest adapters, test actions, tour navigation, and output Escape/reopen")
+	print("PASS: neotest adapters, test actions, tour navigation, output Escape/reopen, and latest-run output panel")
 	vim.cmd("qa!")
 end

@@ -28,6 +28,14 @@
       # Keep results available without opening windows after every run.
       output.open_on_run = false;
       quickfix.open = false;
+      # Listen to runs, not keymaps, so watcher and summary runs clear it too.
+      consumers.latest_output.__raw = ''
+        function(client)
+          client.listeners.run = function()
+            require("neotest").output_panel.clear()
+          end
+        end
+      '';
     };
   };
 
