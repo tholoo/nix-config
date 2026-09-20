@@ -46,6 +46,7 @@ in
         })
         ./plugins/lsp.nix
         ./plugins/conform.nix
+        ./plugins/dap.nix
         ./plugins/treesitter.nix
       ];
       # Stylix supplies the full desktop palette through mini.base16.
