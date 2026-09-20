@@ -40,6 +40,15 @@
 
   extraConfigLua = ''
     local neotest = require("neotest")
+    vim.api.nvim_create_autocmd("FileType", {
+      group = vim.api.nvim_create_augroup("editor_neotest_output", { clear = true }),
+      pattern = "neotest-output",
+      callback = function(event)
+        vim.keymap.set({ "n", "t" }, "<Esc>", function()
+          vim.api.nvim_win_close(0, true)
+        end, { buffer = event.buf, silent = true, desc = "Close test output" })
+      end,
+    })
     local map = function(lhs, rhs, desc)
       vim.keymap.set("n", lhs, rhs, { silent = true, desc = desc })
     end

@@ -57,11 +57,50 @@ local ok, err = pcall(function()
 	for _, keys in ipairs({ " tr", " tc" }) do
 		assert(vim.fn.maparg(keys, "n") == "", "old tour mapping remains: " .. keys)
 	end
+
+	-- Use the real output consumer with synthetic results, not a project runner.
+	local source_win = vim.api.nvim_get_current_win()
+	local source_buf = vim.api.nvim_get_current_buf()
+	local source_escape = vim.fn.maparg("<Esc>", "n", false, true)
+	local output = require("neotest.consumers.output")({
+		listeners = {},
+		get_nearest = function()
+			return {
+				data = function()
+					return { id = "fixture", name = "Synthetic test" }
+				end,
+			},
+				"synthetic"
+		end,
+		get_results = function()
+			return { fixture = { status = "passed", short = "Synthetic test output\nPassed" } }
+		end,
+	})
+	for _ = 1, 2 do
+		output.open({ short = true, enter = true, auto_close = true })
+		assert(
+			vim.wait(3000, function()
+				return vim.bo.filetype == "neotest-output"
+			end, 10),
+			"test output did not open"
+		)
+		local output_win = vim.api.nvim_get_current_win()
+		assert(vim.api.nvim_win_get_config(output_win).relative ~= "", "output must be a popup")
+		for _, mode in ipairs({ "n", "t" }) do
+			local escape = vim.fn.maparg("<Esc>", mode, false, true)
+			assert(escape.buffer == 1 and escape.desc == "Close test output", "missing buffer-local Escape")
+		end
+		vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), "xt", false)
+		assert(not vim.api.nvim_win_is_valid(output_win), "Escape must close test output")
+		assert(vim.api.nvim_get_current_win() == source_win, "Escape must return to the source window")
+		assert(vim.api.nvim_get_current_buf() == source_buf, "source buffer must remain open")
+		assert(vim.deep_equal(vim.fn.maparg("<Esc>", "n", false, true), source_escape), "source Escape mapping changed")
+	end
 end)
 if not ok then
 	io.stderr:write(tostring(err) .. "\n")
 	vim.cmd.cquit()
 else
-	print("PASS: neotest adapters, all test actions, and preserved tour navigation")
+	print("PASS: neotest adapters, test actions, tour navigation, and output Escape/reopen")
 	vim.cmd("qa!")
 end
