@@ -33,6 +33,9 @@ in
       package = inputs.neovim-nightly-overlay.packages.${pkgs.stdenv.hostPlatform.system}.default;
       imports = [
         ./plugins/common.nix
+        (import ./plugins/lazygit.nix {
+          configPath = "${config.xdg.configHome}/lazygit/config.yml";
+        })
         (import ./plugins/tour.nix {
           tourPlugin = pkgs.mine.tour-nvim;
         })
