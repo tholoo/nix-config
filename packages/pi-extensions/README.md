@@ -27,6 +27,19 @@ Keep this as a patch stack for now. If migrating to a maintained fork later,
 carry over these regression tests and upstream provenance, then pin the fork
 revision rather than retaining a second patch stack.
 
+## Question header length
+
+`ask-user-question-header.patch` removes only the 16-character header limit from
+`@juicesharp/rpiv-ask-user-question` 2.10.1's tool schema and matching guidance.
+Headers remain required strings; option-label lengths, question/option counts,
+and reserved-label validation are unchanged. Rendering keeps the upstream
+width-aware wrapping/clipping; the original header text is not truncated.
+
+The patch applies with zero fuzz before compilation. The `question-header`
+smoke suite tests the registered schema, synthetic RPC execution and prompt
+events, plus long and Unicode headers in single-question, tab and review views
+at narrow and wide widths. No model requests or interactive prompts are made.
+
 ## Running-process status companion
 
 `processes-status.ts` is a local, read-only extension; `@aliou/pi-processes`

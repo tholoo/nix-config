@@ -1,0 +1,49 @@
+--- a/tool/types.ts
++++ b/tool/types.ts
+@@ -4,7 +4,6 @@
+ export const MAX_QUESTIONS = 4;
+ export const MIN_OPTIONS = 2;
+ export const MAX_OPTIONS = 4;
+-export const MAX_HEADER_LENGTH = 16;
+ export const MAX_LABEL_LENGTH = 60;
+ 
+ /**
+@@ -60,8 +59,7 @@
+ 			'The complete question to ask the user. Should be clear, specific, and end with a question mark. Example: "Which library should we use for date formatting?" If multiSelect is true, phrase it accordingly, e.g. "Which features do you want to enable?"',
+ 	}),
+ 	header: Type.String({
+-		maxLength: MAX_HEADER_LENGTH,
+-		description: `MAX ${MAX_HEADER_LENGTH} CHARACTERS — hard limit, requests over the limit are rejected. Very short chip/tag shown next to the question. Examples: "Auth method", "Library", "Approach".`,
++		description: 'Short chip/tag shown next to the question. Prefer a concise label; longer headers are accepted. Examples: "Auth method", "Library", "Approach".',
+ 	}),
+ 	options: Type.Array(OptionSchema, {
+ 		minItems: MIN_OPTIONS,
+--- a/docs/tool-schema.md
++++ b/docs/tool-schema.md
+@@ -10,7 +10,7 @@
+   questions: [
+     {
+       question: string,            // full question text, ends with "?"
+-      header: string,              // chip label, max 16 chars
++      header: string,              // chip label; prefer concise text
+       options: [
+         {
+           label: string,           // 1-5 words, max 60 chars
+@@ -31,13 +31,14 @@
+ | Field | Constraint | Enforced by |
+ | --- | --- | --- |
+ | `questions` | 1-4 entries | TypeBox schema + `validateQuestionnaire` |
+-| `questions[].header` | max 16 characters | TypeBox schema only |
++| `questions[].header` | string, no length limit | TypeBox schema only |
+ | `questions[].options` | 2-4 entries | TypeBox schema (both bounds) + `validateQuestionnaire` (minimum only) |
+ | `options[].label` | max 60 characters | TypeBox schema only |
+ | `options[].preview` | single-select questions only | tool description (multi-select tabs render checkbox rows) |
+ 
+-The two `maxLength` limits are checked by the parameter schema before `execute` runs;
+-the runtime validator does not re-check them.
++The option-label `maxLength` limit is checked by the parameter schema before `execute`
++runs; the runtime validator does not re-check it. Header lengths are unrestricted in
++this locally patched package; the UI wraps or clips their display to fit the terminal.
+ 
+ ### Reserved option labels
+ 

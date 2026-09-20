@@ -140,7 +140,10 @@ initializing a highlighter at startup.
 tool. Its dialog supports multiple questions, single/multiple selections,
 option previews, notes, and custom text answers. Tab changes questions and
 the Submit tab reviews answers. Ctrl+] collapses/reopens the dialog; Escape
-cancels it. English and the upstream question guidance remain the defaults.
+cancels it. English remains the default. A local package patch removes the
+16-character header limit and its hard-limit guidance: long headers are accepted,
+with normal display wrapping/clipping rather than a rejected tool call. Other
+schema limits and validation remain unchanged.
 Ctrl+G in a text answer uses Pi's configured external editor.
 
 `@narumitw/pi-worktree` 0.51.7 adds `/worktree`, an interactive manager for

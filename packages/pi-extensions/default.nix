@@ -31,6 +31,8 @@ buildNpmPackage {
     # Delegate outside-workspace asks to the configured reviewer, not blanket allow.
     # Explicit path asks remain human-only; denies and failure fallback are unchanged.
     patch --batch --fuzz=0 -d node_modules/@gotgenes/pi-permission-system -p1 < permission-external-review.patch
+    # Header length is a display concern, not a reason to reject a question.
+    patch --batch --fuzz=0 -d node_modules/@juicesharp/rpiv-ask-user-question -p1 < ask-user-question-header.patch
     python compile.py node_modules ${lib.getExe esbuild}
     # Local read-only widget; pi-processes itself remains unpatched.
     esbuild processes-status.ts desktop-notify.ts paired-editor.ts --format=esm --platform=node --target=es2022 \
@@ -50,7 +52,7 @@ buildNpmPackage {
     mkdir -p "$PI_CODING_AGENT_DIR"
     export PI_PERMISSION_TEST_CONFIG=${../../modules/home/apps/tui/pi/permissions.json}
     export PI_REVIEW_TEST_CONFIG=${../../modules/home/apps/tui/pi/permission-review.json}
-    for smoke in renderer spinner markdown processes-status permissions desktop-notify paired-editor; do
+    for smoke in renderer spinner markdown processes-status permissions desktop-notify paired-editor question-header; do
       timeout 90 pi --mode json --no-session --no-extensions --no-skills --no-prompt-templates \
         --no-themes --no-context-files -e "./tests/$smoke-smoke.ts" </dev/null
       test -s "$HOME/$smoke-smoke-passed"

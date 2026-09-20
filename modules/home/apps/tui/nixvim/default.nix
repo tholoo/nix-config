@@ -33,6 +33,10 @@ in
       package = inputs.neovim-nightly-overlay.packages.${pkgs.stdenv.hostPlatform.system}.default;
       imports = [
         ./plugins/common.nix
+        (import ./plugins/neotest.nix {
+          testPlugins =
+            inputs.neovim-nightly-overlay.inputs.nixpkgs.legacyPackages.${pkgs.stdenv.hostPlatform.system}.vimPlugins;
+        })
         (import ./plugins/lazygit.nix {
           configPath = "${config.xdg.configHome}/lazygit/config.yml";
         })
