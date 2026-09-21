@@ -25,6 +25,7 @@ in
       installBatSyntax = true;
       installVimSyntax = true;
       settings = {
+        keybind = [ "ctrl+enter=unbind" ];
         confirm-close-surface = false;
         # Agents send native desktop notifications themselves. Do not duplicate
         # them through terminal escape sequences or shell command completion.
