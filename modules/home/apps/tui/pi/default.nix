@@ -323,7 +323,16 @@ in
       ''}
     '';
 
+    # Mutable training data is deliberately outside Pi's config and the store.
+    home.activation.agentPreferenceRecords = config.lib.dag.entryAfter [ "writeBoundary" ] ''
+      run ${pkgs.coreutils}/bin/install -d -m 0700 \
+        ${lib.escapeShellArg "${config.home.homeDirectory}/.local/share/agent-preferences"} \
+        ${lib.escapeShellArg "${config.home.homeDirectory}/.local/share/agent-preferences/records"}
+    '';
+
     home.file = {
+      ".pi/agent/skills/record-preference/SKILL.md".source = ./skills/record-preference/SKILL.md;
+      ".pi/agent/prompts/record-preference.md".source = ./prompts/record-preference.md;
       ".pi/agent/AGENTS.md" = mkIf (cfg.hostContext != null) { text = cfg.hostContext; };
       ".pi/agent/APPEND_SYSTEM.md".text =
         builtins.readFile ./instructions.md
