@@ -1,16 +1,22 @@
 { ... }:
 {
   plugins = {
-    # Blink discovers the VS Code-format collection and uses vim.snippet.
+    # LuaSnip supports the collection's nested placeholders (e.g. Python ase).
     friendly-snippets.enable = true;
+    luasnip = {
+      enable = true;
+      fromVscode = [ { } ];
+    };
     blink-cmp = {
       enable = true;
       settings = {
+        snippets.preset = "luasnip";
         keymap = {
           preset = "default";
           "<Tab>" = [
-            "accept"
+            # Typing in a placeholder can reopen completion; keep Tab jumping.
             "snippet_forward"
+            "accept"
             "fallback"
           ];
         };

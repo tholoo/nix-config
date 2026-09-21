@@ -31,6 +31,9 @@ in
       viAlias = true;
       vimAlias = true;
       package = inputs.neovim-nightly-overlay.packages.${pkgs.stdenv.hostPlatform.system}.default;
+      # LuaSnip's jsregexp dependency must use the nightly editor's LuaJIT.
+      plugins.luasnip.package =
+        inputs.neovim-nightly-overlay.inputs.nixpkgs.legacyPackages.${pkgs.stdenv.hostPlatform.system}.vimPlugins.luasnip;
       imports = [
         ./plugins/common.nix
         ./plugins/rip-substitute.nix
