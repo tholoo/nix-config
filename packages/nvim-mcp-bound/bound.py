@@ -32,7 +32,7 @@ class BoundNeovimManager(NeovimManager):
     async def _connect_to(self, path):
         if not Path(path).is_absolute() or str(Path(path).resolve()) != self.address:
             raise OSError(
-                "This MCP server is bound to its dev workspace's Neovim socket"
+                "This MCP server is bound to its paired workspace's Neovim socket"
             )
         return await super()._connect_to(self.address)
 

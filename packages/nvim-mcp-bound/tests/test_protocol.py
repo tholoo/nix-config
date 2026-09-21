@@ -12,6 +12,7 @@ from pathlib import Path
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 from nvim_mcp.client import NvimClient
+from prompt_snapshot import snapshot
 
 
 def with_session(test):
@@ -147,6 +148,87 @@ class ProtocolTests(unittest.IsolatedAsyncioTestCase):
         path = self.root / "tour'\"\\.json"
         path.write_text(json.dumps(data))
         return path, data
+
+    def test_prompt_snapshot_refreshes_cursor_and_unsaved_text_without_mutation(self):
+        buf, lines = self.buffer(lines=["function A()", "end", "function B()", "end"])
+        self.rpc.exec_lua("vim.api.nvim_set_current_buf(...)", buf)
+        a = snapshot(self.socket)
+        self.assertEqual(a["cursor"], {"line": 1, "byte_col": 0})
+        self.assertEqual([line["text"] for line in a["lines"]], lines)
+        self.assertFalse(a["omitted"])
+        self.assertTrue(a["modified"])
+        self.rpc.exec_lua("vim.api.nvim_win_set_cursor(0, {3, 2})")
+        b = snapshot(self.socket)
+        self.assertEqual(b["changedtick"], a["changedtick"])
+        self.assertEqual(b["cursor"], {"line": 3, "byte_col": 2})
+        self.rpc.exec_lua("vim.api.nvim_buf_set_lines(0, 2, 3, true, {'function changed()'})")
+        changed = snapshot(self.socket)
+        self.assertGreater(changed["changedtick"], b["changedtick"])
+        self.assertEqual(changed["lines"][2]["text"], "function changed()")
+        self.assertEqual((self.root / "fixture.lua").read_text(), "disk content\n")
+        self.assertEqual(snapshot(self.socket), changed)
+        other, _ = self.buffer("other.lua", ["OTHER BUFFER CONTENT IS NOT ATTACHED"])
+        current = snapshot(self.socket)
+        self.assertIn(other, [b["bufnr"] for b in current["buffers"]])
+        self.assertNotIn("OTHER BUFFER CONTENT", json.dumps(current))
+
+    def test_prompt_snapshot_active_visual_modes_are_read_only(self):
+        buf, _ = self.buffer(lines=["first function", "second function", "tail"])
+        self.rpc.exec_lua("vim.api.nvim_set_current_buf(...)", buf)
+        state = """return {vim.fn.mode(), vim.api.nvim_get_current_win(),
+          vim.api.nvim_get_current_buf(), vim.api.nvim_win_get_cursor(0),
+          vim.fn.getpos('v'), vim.api.nvim_buf_get_changedtick(0)}"""
+        for keys, kind in (("gg0vjl", "character"), ("gg0Vj", "line"), ("gg0" + chr(22) + "jl", "block")):
+            self.rpc.exec_lua("vim.cmd.normal({args = {...}, bang = true})", keys)
+            before = self.rpc.exec_lua(state)
+            data = snapshot(self.socket)
+            self.assertEqual(data["selection"]["kind"], kind)
+            self.assertEqual(data["selection"]["anchor"]["line"], 1)
+            self.assertEqual(data["selection"]["cursor"]["line"], 2)
+            self.assertEqual(self.rpc.exec_lua(state), before)
+            self.rpc.exec_lua("vim.cmd.normal({args = {string.char(27)}, bang = true})")
+        self.assertNotIn("selection", snapshot(self.socket))
+
+    def test_prompt_snapshot_large_buffer_and_huge_selection_are_bounded(self):
+        buf, _ = self.buffer(lines=[f"line {i} " + "word " * 30 for i in range(10000)])
+        self.rpc.exec_lua("vim.api.nvim_set_current_buf(...)", buf)
+        self.rpc.exec_lua("vim.cmd.normal({args = {'ggV7000G'}, bang = true})")
+        data = snapshot(self.socket, max_bytes=2048, max_lines=20)
+        self.assertTrue(data["omitted"])
+        self.assertLessEqual(len(data["lines"]), 20)
+        self.assertLessEqual(data["text_bytes"], 2048)
+        self.assertIn(7000, [line["line"] for line in data["lines"]])
+        self.assertEqual(data["selection"]["anchor"]["line"], 1)
+        self.assertEqual(data["total_lines"], 10000)
+
+    def test_prompt_snapshot_multibyte_long_line_keeps_cursor_excerpt(self):
+        buf, _ = self.buffer(lines=["λ" * 5000 + "CURSOR" + "λ" * 5000])
+        self.rpc.exec_lua("vim.api.nvim_set_current_buf(...)", buf)
+        self.rpc.exec_lua("vim.api.nvim_win_set_cursor(0, {1, 10000})")
+        data = snapshot(self.socket, max_bytes=1024, max_lines=20)
+        self.assertTrue(data["omitted"])
+        line = data["lines"][0]
+        self.assertTrue(line["truncated"])
+        self.assertIn("CURSOR", line["text"])
+        self.assertGreater(line["byte_col"], 0)
+        self.assertLessEqual(len(line["text"].encode()) + 1, 1024)
+        self.assertNotIn("\ufffd", line["text"])
+
+    def test_prompt_snapshot_skips_special_buffers_and_reconnects(self):
+        self.rpc.exec_lua("vim.bo.buftype='nofile'; vim.api.nvim_buf_set_lines(0,0,-1,true,{'SPECIAL BUFFER'})")
+        data = snapshot(self.socket)
+        self.assertEqual(data["lines"], [])
+        self.assertIn("regular editing buffer", data["reason"])
+        self.stop_editor()
+        self.rpc.close()
+        with self.assertRaises(Exception):
+            snapshot(self.socket)
+        self.start_editor()
+        buf, _ = self.buffer(lines=["restarted"])
+        self.rpc.exec_lua("vim.api.nvim_set_current_buf(...)", buf)
+        self.assertEqual(snapshot(self.socket)["lines"][0]["text"], "restarted")
+        with self.assertRaises(ValueError):
+            snapshot("relative.sock")
 
     @with_session
     async def test_tool_discovery_and_annotations(self):

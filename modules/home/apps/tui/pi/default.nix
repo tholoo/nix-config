@@ -46,6 +46,13 @@ let
       ${lib.optionalString cfg.enableNotifications ''
         wrapper_args+=(--set PI_NOTIFY_SEND ${lib.getExe' pkgs.libnotify "notify-send"})
       ''}
+      ${lib.optionalString (cfg.enableMcp && config.mine.nixvim.enable) ''
+        wrapper_args+=(
+          --set PI_EDITOR_SNAPSHOT ${pkgs.mine.nvim-mcp-bound}/bin/nvim-prompt-snapshot
+          --set PI_EDITOR_CONTEXT_BYTES ${toString cfg.editorContext.maxBytes}
+          --set PI_EDITOR_CONTEXT_LINES ${toString cfg.editorContext.maxLines}
+        )
+      ''}
       ${lib.optionalString (cfg.proxyUrl != null) ''
         wrapper_args+=(
           --set-default HTTP_PROXY ${lib.escapeShellArg cfg.proxyUrl}
@@ -272,6 +279,16 @@ in
       default = true;
       description = "Load the pinned adapter and shared MCP servers.";
     };
+    editorContext.maxBytes = mkOption {
+      type = types.ints.between 1024 131072;
+      default = 24576;
+      description = "Maximum UTF-8 source bytes attached from the paired editor per prompt.";
+    };
+    editorContext.maxLines = mkOption {
+      type = types.ints.between 20 2000;
+      default = 400;
+      description = "Maximum source lines attached from the paired editor per prompt.";
+    };
     enableNotifications = mkOption {
       type = types.bool;
       default =
@@ -338,22 +355,22 @@ in
         builtins.readFile ./instructions.md
         + lib.optionalString (cfg.enableMcp && config.mine.nixvim.enable) ''
 
-          Editor context: when a current-request paired-editor notice is present,
-          resolve ambiguous references such as "combine these functions" through
-          nvim MCP before choosing a target. Explicit filenames/symbols and clear
-          conversation references take precedence. Otherwise inspect the active
-          selection, then cursor context, then active buffer; ask if the target
-          remains unclear. State which editor location you used.
-          Discover the nvim MCP tools and read get_state for selection-sensitive
-          requests; get_state_brief omits selections. Use read_buffer_snapshot for
-          the relevant live text, including unsaved changes. An active visual
-          selection is context; old visual marks are not a current selection.
+          Editor context: the paired-editor snapshot attached to the current
+          user message includes unsaved text and its cursor/active selection.
+          Resolve "this", "these" and "here" from that snapshot: selection, then
+          cursor, then active buffer. A new prompt's location supersedes earlier
+          editor locations, so "what about this?" can refer to a different function.
+          Explicit filenames/symbols take precedence. State which location you used.
+          Use the supplied text directly; request omitted or additional content
+          through nvim MCP read_buffer_snapshot. For a fresh selection read, use
+          get_state; get_state_brief omits selections. Old visual marks are not
+          an active selection. Ask if the target remains ambiguous.
           Read-only inspection must preserve cursor, focus, selection and buffers.
-          Refresh relevant state before editing if it may have changed.
-          The paired notice describes launch configuration, not a verified live
-          connection. Use only the assigned socket. If unavailable, report it and
+          Snapshots describe prompt-time state. Refresh the target before editing,
+          and prefer newer tool results over the earlier snapshot.
+          Use only the assigned socket. If unavailable, report it and
           ask for the target or an editor restart; never fall back to another editor.
-          Without a current paired-editor notice, inspect a running editor only
+          Without current paired-editor context, inspect a running editor only
           when the user requests it. Inherited environment variables alone do not
           establish task context for a child agent or another workspace. For an
           explicit editor request, honor DEV_NVIM_SOCKET if set; otherwise match
