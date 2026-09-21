@@ -58,6 +58,19 @@
         icons = { };
         statusline = { };
         pairs = { };
+        jump2d = {
+          spotter.__raw = ''require("mini.jump2d").builtin_opts.word_start.spotter'';
+          mappings.start_jumping = "<CR>";
+          allowed_windows.not_current = false;
+          allowed_lines = {
+            blank = false;
+            fold = false;
+          };
+          view = {
+            dim = true;
+            n_steps_ahead = 2;
+          };
+        };
         ai = {
           n_lines = 100;
           custom_textobjects = {
