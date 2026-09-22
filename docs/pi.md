@@ -155,9 +155,9 @@ It does not create a worktree automatically or replace subagents' own worktree
 handling.
 
 Switching through `/worktree` moves Pi's session, not the surrounding terminal
-or the Neovim pane paired by `dev`. The existing editor socket binding remains
+or the Neovim pane paired by `tholo eh`. The existing editor socket binding remains
 with the original workspace. To use a paired editor in another worktree, open
-a separate tab in that directory and run `dev` there.
+a separate tab in that directory and run `tholo eh` there.
 
 `@narumitw/pi-stamp` 0.51.1 adds dim message timestamps and response duration.
 Managed defaults use local 24-hour time with seconds; model/token metadata and
@@ -188,7 +188,7 @@ Only explicit yanks mirror to the system clipboard; deletes and changes use the
 extension's internal register. When Neovim is enabled, Ctrl+G opens the draft in
 the configured Neovim executable, independent of old `EDITOR`/`VISUAL` values.
 Save and quit to return the draft to Pi, then submit it normally. This opens a
-temporary editor in Pi's pane, not the paired editor in the left pane of `dev`.
+temporary editor in Pi's pane, not the paired editor in the left pane of `tholo eh`.
 
 ## Goals
 
