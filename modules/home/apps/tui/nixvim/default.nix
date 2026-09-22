@@ -36,6 +36,7 @@ in
         inputs.neovim-nightly-overlay.inputs.nixpkgs.legacyPackages.${pkgs.stdenv.hostPlatform.system}.vimPlugins.luasnip;
       imports = [
         ./plugins/common.nix
+        ./plugins/leap.nix
         ./plugins/rip-substitute.nix
         (import ./plugins/neotest.nix {
           testPlugins =
