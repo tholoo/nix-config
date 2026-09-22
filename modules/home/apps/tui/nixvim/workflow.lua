@@ -50,6 +50,19 @@ end, "Toggle buffer format on save")
 map("n", "<leader>uh", function()
 	vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr = 0 }), { bufnr = 0 })
 end, "Toggle inlay hints")
+local function toggle_virtual_lines(current_line)
+	local opts = vim.diagnostic.config().virtual_lines
+	local current_line_active = type(opts) == "table" and opts.current_line == true
+	local enabled = opts and current_line_active == current_line
+	vim.diagnostic.config({ virtual_lines = not enabled and { current_line = current_line } })
+	print("Diagnostic virtual lines: " .. (enabled and "off" or current_line and "current line" or "all lines"))
+end
+map("n", "<leader>ul", function()
+	toggle_virtual_lines(true)
+end, "Toggle current-line diagnostic virtual lines")
+map("n", "<leader>uL", function()
+	toggle_virtual_lines(false)
+end, "Toggle all diagnostic virtual lines")
 map("n", "<C-d>", "<C-d>zz", "Half page down")
 map("n", "<C-u>", "<C-u>zz", "Half page up")
 map("n", "<C-o>", "<C-o>zvzz", "Older jump")
@@ -64,6 +77,7 @@ vim.diagnostic.config({
 	severity_sort = true,
 	update_in_insert = false,
 	virtual_text = false,
+	virtual_lines = { current_line = true },
 	float = { border = "rounded", source = true },
 	signs = { text = { [1] = "󰅚", [2] = "󰀪", [3] = "󰋽", [4] = "󰌶" } },
 })
