@@ -90,6 +90,7 @@ in
     xdg.configFile."zellij/plugins/monocle.wasm".source =
       "${pkgs.mine.zellij-monocle}/zellij-monocle.wasm";
     xdg.configFile."zellij/plugins/room.wasm".source = "${pkgs.mine.zellij-room}/zellij-room.wasm";
+    xdg.configFile."zellij/plugins/zextract.wasm".source = "${pkgs.mine.zellij-zextract}/zextract.wasm";
     xdg.configFile."zellij/config.kdl".text = ''
       // DEFAULT: https://github.com/zellij-org/zellij/blob/main/zellij-utils/assets/config/default.kdl
 
@@ -322,6 +323,15 @@ in
                     SwitchToMode "Normal"
                 }
               ''}
+
+              // Extract matches from the current pane's scrollback.
+              bind "Alt e" {
+                  LaunchOrFocusPlugin "file:~/.config/zellij/plugins/zextract.wasm" {
+                      floating true
+                      move_to_focused_tab true
+                  };
+                  SwitchToMode "Normal"
+              }
 
               // open monocle in a new floating pane and open any results in a new tiled/floating pane
               bind "Alt '" {
