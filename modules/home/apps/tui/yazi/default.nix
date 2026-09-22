@@ -76,6 +76,13 @@ in
         }
       ];
       settings = lib.mkOptionDefault {
+        opener.play = lib.mkIf config.programs.mpv.enable [
+          {
+            run = "${lib.getExe config.programs.mpv.finalPackage} -- %s";
+            desc = "Play in mpv";
+            orphan = true;
+          }
+        ];
         opener.open = [
           {
             run = ''for path in %s; do ${lib.getExe' pkgs.xdg-utils "xdg-open"} "$path"; done'';
@@ -83,25 +90,36 @@ in
             orphan = true;
           }
         ];
-        open.prepend_rules = [
-          {
-            mime = "application/{zip,rar,7z*,tar,gzip,xz,zstd,bzip*,lzma,compress,archive,cpio,arj,xar,ms-cab*}";
-            use = [
-              "extract"
-              "edit"
-              "open"
-              "reveal"
-            ];
-          }
-          {
-            url = "*";
-            use = [
-              "edit"
-              "open"
-              "reveal"
-            ];
-          }
-        ];
+        open.prepend_rules =
+          lib.optionals config.programs.mpv.enable [
+            {
+              mime = "video/*";
+              use = [
+                "play"
+                "open"
+                "reveal"
+              ];
+            }
+          ]
+          ++ [
+            {
+              mime = "application/{zip,rar,7z*,tar,gzip,xz,zstd,bzip*,lzma,compress,archive,cpio,arj,xar,ms-cab*}";
+              use = [
+                "extract"
+                "edit"
+                "open"
+                "reveal"
+              ];
+            }
+            {
+              url = "*";
+              use = [
+                "edit"
+                "open"
+                "reveal"
+              ];
+            }
+          ];
         mgr = {
           ratio = [
             1

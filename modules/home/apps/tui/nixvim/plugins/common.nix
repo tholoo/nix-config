@@ -140,15 +140,6 @@
         ];
       };
     };
-    yazi = {
-      enable = true;
-      settings = {
-        open_for_directories = true;
-        floating_window_scaling_factor = 1.0;
-        yazi_floating_window_border = "none";
-        keymaps.open_file_in_tab = false;
-      };
-    };
     render-markdown = {
       enable = true;
       settings = {

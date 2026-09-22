@@ -37,6 +37,10 @@ in
       imports = [
         ./plugins/common.nix
         ./plugins/leap.nix
+        (import ./plugins/yazi.nix {
+          mpvPackage = if config.programs.mpv.enable then config.programs.mpv.finalPackage else null;
+          filePackage = pkgs.file;
+        })
         ./plugins/rip-substitute.nix
         (import ./plugins/neotest.nix {
           testPlugins =
