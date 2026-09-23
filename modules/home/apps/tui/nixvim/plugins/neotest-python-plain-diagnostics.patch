@@ -1,0 +1,25 @@
+diff --git a/neotest_python/unittest.py b/neotest_python/unittest.py
+--- a/neotest_python/unittest.py
++++ b/neotest_python/unittest.py
+@@ -1,5 +1,6 @@
+ import inspect
+ import os
++import re
+ import sys
+ import traceback
+ import unittest
+@@ -15,3 +16,5 @@
++ANSI_ESCAPE = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
++
+ class UnittestNeotestAdapter(NeotestAdapter):
+     def case_file(self, case) -> str:
+         return str(Path(inspect.getmodule(case).__file__).absolute())  # type: ignore
+@@ -80,7 +83,7 @@ class UnittestNeotestAdapter(NeotestAdapter):
+                                 break
+                     results[case_id] = {
+                         "status": NeotestResultStatus.FAILED,
+-                        "errors": [{"message": message, "line": error_line}],
++                        "errors": [{"message": ANSI_ESCAPE.sub("", message), "line": error_line}],
+                         "short": None,
+                     }
+                 for case, message in result.skipped:

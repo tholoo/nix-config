@@ -9,6 +9,10 @@
       vimPlugins = prev.vimPlugins.extend (
         _plugins: _old: {
           inherit (testPlugins) neotest nvim-nio;
+          # Python 3.14 colors unittest tracebacks; diagnostics need plain text.
+          neotest-python = _old.neotest-python.overrideAttrs (old: {
+            patches = (old.patches or [ ]) ++ [ ./neotest-python-plain-diagnostics.patch ];
+          });
         }
       );
     })
