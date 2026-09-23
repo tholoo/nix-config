@@ -43,7 +43,7 @@ in
       mimeApps = {
         enable = true;
         defaultApplications = {
-          "application/pdf" = "${pkgs.zathura}/share/application/org.pwmt.zathura.desktop";
+          "application/pdf" = "org.pwmt.zathura-pdf-mupdf.desktop";
 
           "text/html" = "zen-beta.desktop";
           "x-scheme-handler/http" = "zen-beta.desktop";
