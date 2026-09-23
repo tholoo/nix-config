@@ -122,6 +122,32 @@ map("n", "N", "Nzvzz", "Previous search match")
 map("x", "<", "<gv", "Indent left")
 map("x", ">", ">gv", "Indent right")
 
+-- Keep inactive Rust blocks readable without changing diagnostic data used by
+-- popups, copying, or code actions. Only the rendered underline is shortened.
+local underline = vim.diagnostic.handlers.underline
+vim.diagnostic.handlers.underline = {
+	show = function(namespace, bufnr, diagnostics, opts)
+		local rendered = vim.tbl_map(function(diagnostic)
+			if
+				diagnostic.source ~= "rust-analyzer"
+				or (diagnostic.code ~= "inactive-code" and diagnostic.code ~= "inactive_code")
+			then
+				return diagnostic
+			end
+			local marker = vim.deepcopy(diagnostic)
+			local line = vim.api.nvim_buf_get_lines(bufnr, marker.lnum, marker.lnum + 1, false)[1] or ""
+			marker.end_lnum = marker.lnum
+			marker.end_col = diagnostic.end_lnum == marker.lnum and diagnostic.end_col or #line
+			if marker._tags then
+				marker._tags.unnecessary = nil
+			end
+			return marker
+		end, diagnostics)
+		underline.show(namespace, bufnr, rendered, opts)
+	end,
+	hide = underline.hide,
+}
+
 vim.diagnostic.config({
 	severity_sort = true,
 	update_in_insert = false,
