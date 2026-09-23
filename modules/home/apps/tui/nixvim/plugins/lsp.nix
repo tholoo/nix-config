@@ -38,7 +38,16 @@
     yamlls.enable = true;
     taplo.enable = true;
     html.enable = true;
-    cssls.enable = true;
+    cssls = {
+      enable = true;
+      config.on_init.__raw = ''
+        function(client)
+          client:notify("css/customDataChanged", {
+            { vim.uri_from_fname("${./tailwind.css-data.json}") }
+          })
+        end
+      '';
+    };
     marksman.enable = true;
   };
   # fzf-lua centers after the async jump, including single-result navigation.
