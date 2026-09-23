@@ -107,7 +107,7 @@ in
         laststatus = 3;
         cmdheight = 1;
         winborder = "rounded";
-        wrap = false;
+        wrap = true;
         breakindent = true;
         scrolloff = 6;
         sidescrolloff = 8;
