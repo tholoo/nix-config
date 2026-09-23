@@ -76,7 +76,22 @@ function M.new(opts)
 					then
 						callback(nil, "Expected a live tiled Zellij pane")
 					else
-						callback(pane)
+						-- Zellij leaves fullscreen off when there is no other pane
+						-- to hide. UI bars, floats, and other tabs do not need zooming.
+						local sole_pane = pane.tab_id ~= nil
+						for _, other in ipairs(panes) do
+							if
+								other.tab_id == pane.tab_id
+								and (other.id ~= pane.id or other.is_plugin)
+								and not other.is_floating
+								and not other.is_suppressed
+								and other.is_selectable ~= false
+							then
+								sole_pane = false
+								break
+							end
+						end
+						callback(pane, nil, sole_pane)
 					end
 					return
 				end
@@ -115,13 +130,17 @@ function M.new(opts)
 				callback("Editor is exiting")
 				return
 			end
-			query(function(pane, err)
+			query(function(pane, err, sole_pane)
 				if err then
 					callback(err)
 					return
 				end
 				local columns, lines = size()
-				if pane.is_fullscreen and columns == pane.pane_content_columns and lines == pane.pane_content_rows then
+				if
+					(pane.is_fullscreen or sole_pane)
+					and columns == pane.pane_content_columns
+					and lines == pane.pane_content_rows
+				then
 					callback()
 				elseif vim.uv.hrtime() >= deadline then
 					callback("Timed out waiting for fullscreen and Neovim's terminal resize")
@@ -164,10 +183,10 @@ function M.new(opts)
 			elseif not target or not session or session == "" then
 				finish("Missing Zellij session or terminal pane identity")
 			else
-				query(function(pane, err)
+				query(function(pane, err, sole_pane)
 					if err then
 						finish(err)
-					elseif pane.is_fullscreen then
+					elseif pane.is_fullscreen or sole_pane then
 						ready(finish)
 					else
 						-- Even a timed-out command may have reached Zellij. Re-query

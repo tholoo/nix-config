@@ -60,8 +60,13 @@ local function rig(options)
 					is_floating = r.floating,
 					pane_content_columns = r.fullscreen and 120 or 60,
 					pane_content_rows = 40,
+					tab_id = 1,
 				}
-				local panes = { { id = 7, is_plugin = true }, { id = 99, is_plugin = false } }
+				local panes = r.other_panes and vim.deepcopy(r.other_panes)
+					or {
+						{ id = 7, is_plugin = true, tab_id = 1, is_suppressed = true },
+						{ id = 99, is_plugin = false, tab_id = 1 },
+					}
 				if not r.missing then
 					table.insert(panes, pane)
 				end
@@ -102,6 +107,29 @@ test("already-fullscreen panes stay fullscreen", function()
 	r.zoom.release(lease)
 	r.zoom.shutdown()
 	assert(r.fullscreen and r.toggles == 0)
+end)
+test("sole selectable pane needs no fullscreen toggle", function()
+	local r = rig({
+		other_panes = {
+			{ id = 8, is_plugin = false, tab_id = 2 },
+			{ id = 9, is_plugin = false, tab_id = 1, is_floating = true },
+			{ id = 10, is_plugin = false, tab_id = 1, is_suppressed = true },
+			{ id = 11, is_plugin = true, tab_id = 1, is_selectable = false },
+		},
+	})
+	local lease, err = r.acquire()
+	assert(lease and not err, err)
+	r.zoom.release(lease)
+	r.zoom.shutdown()
+	assert(not r.fullscreen and r.toggles == 0)
+end)
+test("a selectable tiled plugin still requires fullscreen", function()
+	local r = rig({ other_panes = { { id = 7, is_plugin = true, tab_id = 1 } } })
+	local lease = assert(r.acquire())
+	assert(r.fullscreen and r.toggles == 1)
+	r.zoom.release(lease)
+	r.zoom.shutdown()
+	assert(not r.fullscreen and r.toggles == 2)
 end)
 test("outside Zellij runs no commands", function()
 	local r = rig({ env = {} })

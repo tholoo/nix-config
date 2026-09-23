@@ -1840,11 +1840,11 @@
     "tour-nvim": {
       "flake": false,
       "locked": {
-        "lastModified": 1789880089,
-        "narHash": "sha256-DxnYOHoC/Gs76ErmuBblq2O3v2cb5jDclxrbl85RyYY=",
+        "lastModified": 1790150123,
+        "narHash": "sha256-oJrAHBioGFIZG/uTpsr/JlrftQ7AjDn+vddwJ56U3fU=",
         "owner": "tholoo",
         "repo": "tour.nvim",
-        "rev": "2c17bdab5769381dec9c2cb1ca4cdea19f5ded8a",
+        "rev": "3d9cdd0ea79edf3c7a2cae813fda3f91c4f20d60",
         "type": "github"
       },
       "original": {

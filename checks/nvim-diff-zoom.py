@@ -142,9 +142,13 @@ def run(args):
             + " "
             + json.dumps(str(file))
             + "; }\n"
-            + "   pane command="
-            + json.dumps(shutil.which("bash"))
-            + ' { args "--noprofile" "--norc"; }\n'
+            + (
+                ""
+                if args.single_pane
+                else "   pane command="
+                + json.dumps(shutil.which("bash"))
+                + ' { args "--noprofile" "--norc"; }\n'
+            )
             + "  }\n }\n}\n"
         )
         started = False
@@ -167,6 +171,24 @@ def run(args):
             )
             pane_id = int(lua('vim.env.ZELLIJ_PANE_ID:gsub("^terminal_", "")'))
             initial = panes()
+            if args.single_pane:
+                assert len(initial) == 1
+                # Capture errors instead of letting the small detached UI block
+                # RPC on a hit-enter prompt when the regression is present.
+                execute(
+                    'vim.g.fixture_messages = {}; vim.notify = function(message) '
+                    'local messages = vim.g.fixture_messages; table.insert(messages, message); '
+                    'vim.g.fixture_messages = messages end'
+                )
+                toggle()
+                wait_for(lambda: diff_count() == 2, "single-pane diff did not open", timeout=5)
+                assert not panes()[0]["is_fullscreen"], "single pane was needlessly zoomed"
+                toggle()
+                wait_for(lambda: diff_count() == 0, "single-pane diff did not close")
+                assert not lua("vim.g.fixture_messages"), lua("vim.g.fixture_messages")
+                assert lua("#vim.api.nvim_list_wins()") == 1
+                print("PASS: single-pane diff opens and closes without fullscreen or timeout")
+                return
             assert len(initial) == 2, initial
             sentinel = next(p for p in initial if p["id"] != pane_id)
 
@@ -302,7 +324,7 @@ def run(args):
                 print(
                     "Fixture diagnostics:",
                     lua(
-                        '(function() local result = {}; for _, w in ipairs(vim.api.nvim_list_wins()) do table.insert(result, {window=w, width=vim.api.nvim_win_get_width(w), tab=vim.api.nvim_win_get_tabpage(w), diff=vim.wo[w].diff, buffer=vim.api.nvim_buf_get_name(vim.api.nvim_win_get_buf(w))}) end; return {windows=result, columns=vim.o.columns, messages=vim.api.nvim_exec2("messages", {output=true}).output} end)()'
+                        '(function() local result = {}; for _, w in ipairs(vim.api.nvim_list_wins()) do table.insert(result, {window=w, width=vim.api.nvim_win_get_width(w), tab=vim.api.nvim_win_get_tabpage(w), diff=vim.wo[w].diff, buffer=vim.api.nvim_buf_get_name(vim.api.nvim_win_get_buf(w))}) end; return {windows=result, columns=vim.o.columns, messages=vim.g.fixture_messages or vim.api.nvim_exec2("messages", {output=true}).output} end)()'
                     ),
                 )
             raise
@@ -315,4 +337,5 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--nvim", required=True)
     parser.add_argument("--zellij", default=shutil.which("zellij"))
+    parser.add_argument("--single-pane", action="store_true")
     run(parser.parse_args())
