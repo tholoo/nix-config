@@ -40,6 +40,55 @@ map("n", "<leader>w", "<cmd>write<cr>", "Save")
 map("n", "<Esc>", "<cmd>nohlsearch<cr>", "Clear search highlight")
 map("n", "U", "<C-r>", "Redo")
 map("n", "<leader>cd", vim.diagnostic.open_float, "Line diagnostics")
+local function copy_diagnostics(current_line)
+	local opts = current_line and { lnum = vim.api.nvim_win_get_cursor(0)[1] - 1 } or {}
+	local diagnostics = vim.diagnostic.get(0, opts)
+	if #diagnostics == 0 then
+		vim.notify("No diagnostics on " .. (current_line and "this line" or "this buffer"))
+		return
+	end
+	table.sort(diagnostics, function(a, b)
+		if a.lnum ~= b.lnum then
+			return a.lnum < b.lnum
+		elseif a.col ~= b.col then
+			return a.col < b.col
+		end
+		return a.message < b.message
+	end)
+	local filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ":~:.")
+	if filename == "" then
+		filename = "[No Name]"
+	end
+	local lines = {}
+	for _, diagnostic in ipairs(diagnostics) do
+		local severity = vim.diagnostic.severity[diagnostic.severity] or "UNKNOWN"
+		local source = diagnostic.source and (" [" .. diagnostic.source .. "]") or ""
+		local code = diagnostic.code and (" (" .. tostring(diagnostic.code) .. ")") or ""
+		table.insert(
+			lines,
+			string.format(
+				"%s:%d:%d: %s%s%s: %s",
+				filename,
+				diagnostic.lnum + 1,
+				diagnostic.col + 1,
+				severity,
+				source,
+				code,
+				diagnostic.message
+			)
+		)
+	end
+	local text = table.concat(lines, "\n")
+	vim.fn.setreg('"', text)
+	vim.fn.setreg("+", text)
+	vim.notify(string.format("Copied %d diagnostic%s", #diagnostics, #diagnostics == 1 and "" or "s"))
+end
+map("n", "<leader>cy", function()
+	copy_diagnostics(true)
+end, "Copy current-line diagnostics")
+map("n", "<leader>cY", function()
+	copy_diagnostics(false)
+end, "Copy buffer diagnostics")
 map({ "n", "x" }, "<leader>cf", function()
 	require("conform").format({ async = true, lsp_format = "fallback" })
 end, "Format")
