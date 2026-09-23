@@ -39,9 +39,12 @@ else
 	end
 	local function show_completion()
 		cmp.show({ providers = { "buffer" } })
-		assert(vim.wait(2000, function()
-			return cmp.is_visible() and cmp.get_selected_item() ~= nil
-		end, 10), "buffer completion must be visible and selected")
+		assert(
+			vim.wait(2000, function()
+				return cmp.is_visible() and cmp.get_selected_item() ~= nil
+			end, 10),
+			"buffer completion must be visible and selected"
+		)
 	end
 	local scenario = coroutine.create(function()
 		input("<Esc>")
@@ -52,9 +55,12 @@ else
 			config.sources.default = { "snippets" }
 			input("i" .. case[2])
 			cmp.show({ providers = { "snippets" } })
-			assert(vim.wait(2000, function()
-				return cmp.is_visible() and cmp.get_selected_item() ~= nil
-			end, 10), case[1] .. " snippets must appear")
+			assert(
+				vim.wait(2000, function()
+					return cmp.is_visible() and cmp.get_selected_item() ~= nil
+				end, 10),
+				case[1] .. " snippets must appear"
+			)
 			assert(cmp.get_selected_item().label == case[2], "expected template: " .. case[2])
 			input("<Tab>")
 			assert(config.snippets.active({ direction = 1 }), case[1] .. " snippet must expand")
@@ -96,30 +102,61 @@ else
 			vim.trim(vim.api.nvim_get_current_line()) == selected,
 			"Tab must still accept completion outside snippets"
 		)
-		-- Accept the reported nested template through the real completion pipeline.
-		input("<Esc>")
-		vim.cmd("enew!")
-		vim.bo.filetype = "python"
-		config.sources.default = { "snippets" }
-		input("iase")
-		cmp.show({ providers = { "snippets" } })
-		assert(vim.wait(2000, function()
-			return cmp.is_visible() and cmp.get_selected_item() ~= nil
-		end, 10), "Python snippets must appear in completion")
-		assert(cmp.get_selected_item().label == "ase", "expected Python ase snippet")
-		input("<Tab>")
-		assert(
-			vim.api.nvim_get_current_line() == "self.assertEqual(expected, actual, 'message')",
-			"accepting ase must expand its nested placeholders instead of deleting the trigger"
+		for _, leave_keys in ipairs({ "<Esc>o", "<Esc>A<CR>" }) do
+			-- Accept the reported nested template through the real completion pipeline.
+			input("<Esc>")
+			vim.cmd("enew!")
+			vim.bo.filetype = "python"
+			config.sources.default = { "snippets" }
+			input("iase")
+			cmp.show({ providers = { "snippets" } })
+			assert(
+				vim.wait(2000, function()
+					return cmp.is_visible() and cmp.get_selected_item() ~= nil
+				end, 10),
+				"Python snippets must appear in completion"
+			)
+			assert(cmp.get_selected_item().label == "ase", "expected Python ase snippet")
+			input("<Tab>")
+			assert(
+				vim.api.nvim_get_current_line() == "self.assertEqual(expected, actual, 'message')",
+				"accepting ase must expand its nested placeholders instead of deleting the trigger"
+			)
+			assert(config.snippets.active({ direction = 1 }), "ase placeholders must remain active")
+			input("wanted<Tab>")
+			input("received<Tab>")
+			assert(
+				vim.api.nvim_get_current_line() == "self.assertEqual(wanted, received, 'message')",
+				"ase placeholder editing and Tab navigation must work"
+			)
+			-- Leaving a snippet before its final tabstop must release Tab ownership.
+			cmp.hide()
+			input(leave_keys)
+			local next_line = vim.api.nvim_win_get_cursor(0)[1]
+			assert(next_line == 2, "expected a new line below ase")
+			input("<Tab>")
+			assert(vim.api.nvim_win_get_cursor(0)[1] == next_line, "Tab jumped back into the previous ase snippet")
+			assert(not config.snippets.active({ direction = 1 }), "snippet stayed active after leaving its region")
+			input("ase")
+			cmp.show({ providers = { "snippets" } })
+			assert(
+				vim.wait(2000, function()
+					return cmp.is_visible() and cmp.get_selected_item() ~= nil
+				end, 10),
+				"next-line snippet completion must appear"
+			)
+			assert(cmp.get_selected_item().label == "ase", "expected another ase completion")
+			input("<Tab>")
+			assert(vim.api.nvim_win_get_cursor(0)[1] == next_line, "new snippet jumped to the previous line")
+			assert(
+				vim.trim(vim.api.nvim_get_current_line()) == "self.assertEqual(expected, actual, 'message')",
+				"Tab must accept a second ase snippet on the next line"
+			)
+			require("luasnip").unlink_current()
+		end
+		print(
+			"PASS: snippet collection, expansion, placeholder navigation, ordinary completion, Python ase acceptance and exit"
 		)
-		assert(config.snippets.active({ direction = 1 }), "ase placeholders must remain active")
-		input("wanted<Tab>")
-		input("received<Tab>")
-		assert(
-			vim.api.nvim_get_current_line() == "self.assertEqual(wanted, received, 'message')",
-			"ase placeholder editing and Tab navigation must work"
-		)
-		print("PASS: snippet collection, expansion, placeholder navigation, ordinary completion, Python ase acceptance")
 		vim.cmd("qa!")
 	end)
 	-- Yield to Neovim's input loop between key presses and snippet selections.

@@ -6,6 +6,12 @@
     luasnip = {
       enable = true;
       fromVscode = [ { } ];
+      # Release Tab navigation when leaving an unfinished snippet.
+      settings.region_check_events = [
+        "CursorMoved"
+        "CursorMovedI"
+        "InsertEnter"
+      ];
     };
     blink-cmp = {
       enable = true;
